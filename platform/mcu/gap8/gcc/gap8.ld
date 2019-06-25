@@ -52,7 +52,7 @@ MEMORY
 
 __L1_STACK_SIZE      = 0x400;
 
-__FC_STACK_SIZE      = 0x1000;
+__FC_STACK_SIZE      = 0x100;
 
 __IRQ_STACK_SIZE     = 0x400;
 
@@ -273,10 +273,10 @@ SECTIONS
         *(.heapfcram)
 
         . = ALIGN(4);
-        PROVIDE(__heapfcram_start = .);
+        __heapfcram_start = .;
     } > FC_tcdm
 
-     PROVIDE(__heapfcram_size = LENGTH(FC_tcdm) + ORIGIN(FC_tcdm) - __heapfcram_start);
+     __heapfcram_size = LENGTH(FC_tcdm) + ORIGIN(FC_tcdm) - __heapfcram_start;
 
     .libgomp (ORIGIN(L1_sram) ): AT(__l1_preload_start_inL2)
     {

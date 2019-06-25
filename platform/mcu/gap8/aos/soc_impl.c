@@ -94,12 +94,13 @@ size_t soc_get_cur_sp()
 krhino_err_proc_t g_err_proc = NULL;//soc_err_proc;
 
 #if defined (__GNUC__)
+
 extern char __heapfcram_start;
 extern char __heapfcram_size;
 
 k_mm_region_t g_mm_region[] = {
 {
-   (uint8_t *)&__heapfcram_start, (uint32_t)&__heapfcram_size},
+   (uint8_t*)&__heapfcram_start, (uint32_t)&__heapfcram_size},
 };
 #else
 #error "Tool chain not supported!"

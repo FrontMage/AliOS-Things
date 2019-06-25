@@ -16,7 +16,7 @@
 #include "pin_mux.h"
 #include "cores/TARGET_RISCV_32/pmsis_gcc.h"
 
-#define AOS_START_STACK 256
+#define AOS_START_STACK 512
 
 extern int application_start(int argc, char **argv);
 extern int vfs_init(void);
@@ -81,8 +81,8 @@ int main(void)
 {
     platform_init();
 
-    aos_init();
     hal_uart_init(&uart_0);
+    aos_init();
     krhino_task_dyn_create(&g_aos_app, "aos-init", 0, AOS_DEFAULT_APP_PRI, 0, AOS_START_STACK, (task_entry_t)sys_init, 1);
 
     // uses first_task_start
