@@ -1,0 +1,10 @@
+config AOS_MCU_GAP8
+    bool
+    select AOS_ARCH_RI5CY_GAP8
+    select AOS_COMP_RHINO
+    help
+      driver & sdk for platform/mcu gap8
+
+if AOS_MCU_GAP8
+# Configurations for mcu gap8
+endif

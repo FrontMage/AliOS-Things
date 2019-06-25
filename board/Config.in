@@ -272,6 +272,15 @@ if AOS_BOARD_FRDMKL82Z
     source "platform/arch/arm/armv6m/Config.in"
 endif
 
+source "board/gapuino8/Config.in"
+if AOS_BOARD_GAPUINO8
+    config AOS_BUILD_BOARD
+        default "gapuino8"
+
+    source "platform/mcu/gap8/Config.in"
+    source "platform/arch/risc-v/ri5cy_gap8/Config.in"
+endif
+
 source "board/gd32f307c-eval/Config.in"
 if AOS_BOARD_GD32F307C_EVAL
     config AOS_BUILD_BOARD
