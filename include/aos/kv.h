@@ -5,6 +5,8 @@
 #ifndef AOS_KV_H
 #define AOS_KV_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -48,7 +50,7 @@ int aos_kv_set(const char *key, const void *value, int len, int sync);
  *
  * @return  0 on success, negative error on failure.
  */
-int aos_kv_get(const char *key, void *buffer, int *buffer_len);
+int aos_kv_get(const char *key, void *buffer, int32_t *buffer_len);
 
 /**
  * Delete the KV pair by its key.
@@ -93,7 +95,7 @@ int aos_kv_secure_set(const char *key, const void *value, int len, int sync);
  *
  * @return  0 on success, negative error on failure.
  */
-int aos_kv_secure_get(const char *key, void *buffer, int *buffer_len);
+int aos_kv_secure_get(const char *key, void *buffer, int32_t *buffer_len);
 
 #ifdef __cplusplus
 }

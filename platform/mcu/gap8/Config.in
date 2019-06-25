@@ -1,0 +1,14 @@
+config AOS_MCU_GAP8
+    bool aos_mcu_gap8
+    select AOS_ARCH_RI5CY_GAP8
+    select AOS_COMP_RHINO
+    select AOS_MCU_GAP8_AUTOTILER
+    select AOS_MCU_GAP8_BASELIBC
+    help
+      driver & sdk for platform/mcu gap8
+
+if AOS_MCU_GAP8
+# Configurations for greenwaves autotiler
+    source platform/mcu/gap8/autotiler_v3/Config.in
+    source platform/mcu/gap8/libc/Config.in
+endif

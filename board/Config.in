@@ -272,6 +272,15 @@ if AOS_BOARD_FRDMKL82Z
     source "platform/arch/arm/armv6m/Config.in"
 endif
 
+source "board/gapoc_a_qpif/Config.in"
+if AOS_BOARD_GAPOC_A_QPIF
+    config AOS_BUILD_BOARD
+        default "gapoc_a_qpif"
+
+    source "platform/mcu/gap8/Config.in"
+    source "platform/arch/risc-v/ri5cy_gap8/Config.in"
+endif
+
 source "board/gd32f307c-eval/Config.in"
 if AOS_BOARD_GD32F307C_EVAL
     config AOS_BUILD_BOARD

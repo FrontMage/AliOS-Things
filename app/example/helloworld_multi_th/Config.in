@@ -1,0 +1,9 @@
+config AOS_APP_HELLOWORLD_MULTI_TH
+    bool "helloworld_multi_th"
+    select AOS_COMP_OSAL_AOS
+    help
+        Hello World Multi Thread
+
+if AOS_APP_HELLOWORLD_MULTI_TH
+# Configurations for app helloworld multi thread
+endif

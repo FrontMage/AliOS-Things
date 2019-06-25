@@ -83,10 +83,23 @@ if AOS_APP_HELLOWORLD
         default "helloworld"
 endif
 
+source "app/example/helloworld_cluster/Config.in"
+if AOS_APP_HELLOWORLD_CLUSTER
+    config AOS_BUILD_APP
+        default "helloworld_cluster"
+endif
+
 source "app/example/http2app/Config.in"
 if AOS_APP_HTTP2APP
     config AOS_BUILD_APP
         default "http2app"
+endif
+
+
+source "app/example/helloworld_multi_th/Config.in"
+if AOS_APP_HELLOWORLD_MULTI_TH
+    config AOS_BUILD_APP
+        default "helloworld_multi_th"
 endif
 
 source "app/example/id2_app/Config.in"
@@ -141,6 +154,12 @@ source "app/example/mqttapp/Config.in"
 if AOS_APP_MQTTAPP
     config AOS_BUILD_APP
         default "mqttapp"
+endif
+
+source "app/example/openocd_semihosting/Config.in"
+if AOS_APP_OPENOCD_SEMIHOSTING
+    config AOS_BUILD_APP
+        default "openocd_semihosting"
 endif
 
 source "app/example/otaapp/Config.in"

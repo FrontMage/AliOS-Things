@@ -1,0 +1,9 @@
+config AOS_BOARD_GAPOC_A_QPIF
+    bool "GAPOC_A_QPIF"
+    select AOS_MCU_GAP8
+    select AOS_COMP_KERNEL_INIT
+    help
+
+if AOS_BOARD_GAPOC_A_QPIF
+# Configurations for board gapoc_a_qpif
+endif

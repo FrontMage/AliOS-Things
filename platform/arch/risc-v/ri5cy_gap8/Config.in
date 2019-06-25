@@ -1,0 +1,8 @@
+config AOS_ARCH_RI5CY_GAP8
+    bool
+    help
+      arch for ri5cy
+
+if AOS_ARCH_RI5CY_GAP8
+# Configurations for arch ri5cy
+endif

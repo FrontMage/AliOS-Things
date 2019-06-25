@@ -1,0 +1,11 @@
+{
+    "cmd": [
+        {
+            "Linux32": "@AOSROOT@/platform/mcu/gap8/tools/flasher.sh",
+            "Linux64": "@AOSROOT@/platform/mcu/gap8/tools/flasher.sh",
+            "OSX": "@AOSROOT@/platform/mcu/gap8/tools/flasher.sh"
+        },
+        "@AOSROOT@",
+        "@TARGET@"
+    ]
+}

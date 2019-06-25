@@ -47,7 +47,7 @@ int aos_kv_set(const char *key, const void *value, int len, int sync)
     return _kv_to_aos_res(kv_item_set(key, value, len));
 }
 
-int aos_kv_get(const char *key, void *buffer, int *buffer_len)
+int aos_kv_get(const char *key, void *buffer, int32_t *buffer_len)
 {
     return _kv_to_aos_res(kv_item_get(key, buffer, buffer_len));
 }
@@ -67,7 +67,7 @@ int aos_kv_secure_set(const char *key, const void *value, int len, int sync)
     return _kv_to_aos_res(kv_item_secure_set(key, value, len));
 }
 
-int aos_kv_secure_get(const char *key, void *buffer, int *buffer_len)
+int aos_kv_secure_get(const char *key, void *buffer, int32_t *buffer_len)
 {
     return _kv_to_aos_res(kv_item_secure_get(key, buffer, buffer_len));
 }
