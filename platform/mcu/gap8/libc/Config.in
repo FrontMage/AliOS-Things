@@ -1,0 +1,8 @@
+config AOS_MCU_GAP8_BASELIBC
+    bool aos_mcu_gap8_baselibc
+    help
+      gap8 baselibc tiny port
+
+if AOS_MCU_GAP8_BASELIBC
+# Configurations for mcu gap8
+endif

@@ -1,0 +1,9 @@
+config AOS_APP_GAP_FS_TO_L3_COPY
+    bool "gap_fs_to_l3_copy"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Fs_To_L3_Copy Test
+
+if AOS_APP_GAP_FS_TO_L3_COPY
+# Configurations for app face detection
+endif

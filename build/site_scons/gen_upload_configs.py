@@ -17,6 +17,7 @@ registry_board = {
     'mk3060': ['mk3060.json'],
     'stm32': ['stm32_stlink.json'],
     'starterkit': ['starterkit_erase.json', 'stm32_stlink.json'],
+    'gapuino8': ['gap8.json'],
     'developerkit': ['stm32_stlink.json'],
     'b_l475e': ['stm32_stlink.json'],
     'eml3047': ['stm32_stlink.json'],
@@ -177,6 +178,18 @@ stm32_openocd = {
 ],
 }
 #flash_configs['stm32_openocd'] = stm32_openocd
+
+gap8 = {
+'cmd': [
+    {
+        'Linux64': '@AOSROOT@/platform/mcu/gap8/tools/flasher.sh',
+        'Linux32': '@AOSROOT@/platform/mcu/gap8/tools/flasher.sh',
+        'OSX': '@AOSROOT@/platform/mcu/gap8/tools/flasher.sh'
+    },
+    '@AOSROOT@', '@TARGET@'
+],
+}
+flash_configs['gap8'] = gap8
 
 pca10040 = {
 'cmd': [

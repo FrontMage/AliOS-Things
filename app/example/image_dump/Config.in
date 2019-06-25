@@ -1,0 +1,9 @@
+config AOS_APP_IMAGE_DUMP
+    bool "image_dump"
+    select AOS_COMP_OSAL_AOS
+    help
+        Image dumper (to be used with openocd)
+
+if AOS_APP_IMAGE_DUMP
+# Configurations for app image_dump
+endif

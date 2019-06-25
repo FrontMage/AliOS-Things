@@ -1,0 +1,9 @@
+config AOS_APP_HYBERBUS_TEST
+    bool "hyperbus_test"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Hyperbus test
+
+if AOS_APP_HYBERBUS_TEST
+# Configurations for app helloworld
+endif

@@ -1,0 +1,9 @@
+config AOS_APP_GAP_CIFAR10
+    bool "gap_cifar10"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Cifar10 Test
+
+if AOS_APP_GAP_CIFAR10
+# Configurations for app face detection
+endif

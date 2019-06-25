@@ -1,0 +1,9 @@
+config AOS_APP_GAP_FACE_REID
+    bool "gap_face_reid"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Face ReID Demo
+
+if AOS_APP_GAP_FACE_REID
+# Configurations for app face reidentification
+endif

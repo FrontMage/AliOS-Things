@@ -1,0 +1,9 @@
+config AOS_APP_HELLOWORLD_CLUSTER
+    bool "HelloWorld_Cluster"
+    select AOS_COMP_OSAL_AOS
+    help
+        Hello World Cluster
+
+if AOS_APP_HELLOWORLD_CLUSTER
+# Configurations for app helloworld
+endif

@@ -20,6 +20,18 @@
     "esp8266": [
         "esp8266.json"
     ],
+    "gapuino8": [
+        "gap8.json"
+    ],
+    "gap8_qpif_breakout": [
+        "gap8.json"
+    ],
+    "gapoc_a_qpif": [
+        "gap8.json"
+    ],
+    "gapoc_a": [
+        "gap8.json"
+    ],
     "m400": [
         "stm32_stlink.json"
     ],

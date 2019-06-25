@@ -843,7 +843,7 @@ CASE(test_kv, aos_2_001)
     char *set_value = "test_kv_value";
     int  set_len = strlen(set_value);
     char get_value[32] = {0};
-    int  get_len = 32;
+    int32_t  get_len = 32;
     int  ret = -1;
 
     ret = aos_kv_set(key, set_value, set_len, 1);
@@ -861,7 +861,7 @@ CASE(test_kv, aos_2_002)
     char *set_value = "test_kv_value";
     int  set_len = strlen(set_value);
     char get_value[32] = {0};
-    int  get_len = 32;
+    int32_t  get_len = 32;
     int  ret = -1;
 
     aos_kv_del(key);
@@ -882,7 +882,7 @@ CASE(test_kv, aos_2_003)
     char set_value[64] = {0};
     int  set_len = 0;
     char get_value[64] = {0};
-    int  get_len = 0;
+    int32_t  get_len = 0;
     int  ret = -1;
     int  i = 0;
 

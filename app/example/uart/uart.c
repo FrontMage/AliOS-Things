@@ -15,40 +15,49 @@
 
 
 #include "aos/kernel.h"
+
 #include "aos/hal/uart.h"
 
 #include "driver/uart.h"
 
 #define HAL_WAIT_FOREVER 0xFFFFFFFFU
 
+
+uint8_t receive_bytes[22];
+
 int application_start(int argc, char *argv[])
 {
-
     printf("uart sample application started...\n");
 
-
-    uart_config_t uartConfig;
-    uartConfig.baud_rate = 9600; 
+    // use two stop bits just in case
+    uart_config_t uart_config;
+    uart_config.baud_rate = 115200; 
+    uart_config.mode = MODE_TX_RX; 
+    uart_config.stop_bits = STOP_BITS_1; 
     uart_dev_t uart;
-    uart.port = 1; //for esp8266 , when the port set is 1 ,then the uart1 ande uart2 is the same baud_rate , but the uart1 is for log 
-    uart.config = uartConfig;
+    uart.port = 0;
+    uart.config = uart_config;
     hal_uart_init(&uart);
 
-    uint8_t receive_bytes[15];
     int32_t ret = -1;
     uint32_t i, recv_size = 0;
     while (1)
     {
-        ret = hal_uart_recv_II(&uart, &receive_bytes, 15, &recv_size, HAL_WAIT_FOREVER);
-        if ((ret == 0))
+    #if 1
+        for(int i=0; i<20; i++)
         {
-            for (i = 0; i < recv_size; i++)
-                printf("hal_uart_recv_II ch = %d ,recv_size= %d \n", receive_bytes[i], recv_size);
-            // en:return by the way you came  ch: 原路返回数据
-            hal_uart_send(&uart,receive_bytes,recv_size,1000); 
-
+            ret = hal_uart_recv(&uart, &receive_bytes[i], 1, HAL_WAIT_FOREVER);
         }
+
+        // en:return by the way you came  ch: 原路返回数据
+        for(int i = 0; i<20; i++)
+        {
+            hal_uart_send(&uart, &receive_bytes[i], 1, HAL_WAIT_FOREVER);
+        }
+    #else
+        hal_uart_recv(&uart, &receive_bytes[i], 1, HAL_WAIT_FOREVER);
+        hal_uart_send(&uart, &receive_bytes[i], 1, HAL_WAIT_FOREVER);
+    #endif
     }
-    aos_loop_run();
     return 0;
 }

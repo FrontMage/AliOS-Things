@@ -1,0 +1,9 @@
+config AOS_BOARD_GAP8_QPIF_BREAKOUT
+    bool "GAP8_QPIF_BREAKOUT"
+    select AOS_MCU_GAP8
+    select AOS_COMP_KERNEL_INIT
+    help
+
+if AOS_BOARD_GAP8_QPIF_BREAKOUT
+# Configurations for board gap8_qpif_breakout
+endif

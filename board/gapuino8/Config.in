@@ -1,0 +1,9 @@
+config AOS_BOARD_GAPUINO8
+    bool "GAPUINO8"
+    select AOS_MCU_GAP8
+    select AOS_COMP_KERNEL_INIT
+    help
+
+if AOS_BOARD_GAPUINO8
+# Configurations for board gapuino8
+endif

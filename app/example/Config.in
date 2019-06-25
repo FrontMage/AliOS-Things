@@ -83,10 +83,34 @@ if AOS_APP_HELLOWORLD
         default "helloworld"
 endif
 
+source "app/example/helloworld_cluster/Config.in"
+if AOS_APP_HELLOWORLD_CLUSTER
+    config AOS_BUILD_APP
+        default "helloworld_cluster"
+endif
+
+source "app/example/hyperbus_test/Config.in"
+if AOS_APP_HYBERBUS_TEST
+    config AOS_BUILD_APP
+        default "hyperbus_test"
+endif
+
 source "app/example/http2app/Config.in"
 if AOS_APP_HTTP2APP
     config AOS_BUILD_APP
         default "http2app"
+endif
+
+source "app/example/gap_lora/Config.in"
+if AOS_APP_GAP_LORA
+    config AOS_BUILD_APP
+        default "gap_lora"
+endif
+
+source "app/example/helloworld_multi_th/Config.in"
+if AOS_APP_HELLOWORLD_MULTI_TH
+    config AOS_BUILD_APP
+        default "helloworld_multi_th"
 endif
 
 source "app/example/id2_app/Config.in"
@@ -141,6 +165,12 @@ source "app/example/mqttapp/Config.in"
 if AOS_APP_MQTTAPP
     config AOS_BUILD_APP
         default "mqttapp"
+endif
+
+source "app/example/openocd_semihosting/Config.in"
+if AOS_APP_OPENOCD_SEMIHOSTING
+    config AOS_BUILD_APP
+        default "openocd_semihosting"
 endif
 
 source "app/example/otaapp/Config.in"
@@ -250,6 +280,48 @@ source "app/example/uapp2/Config.in"
 if AOS_APP_UAPP2
     config AOS_BUILD_APP
         default "uapp2"
+endif
+
+source "app/example/gap_face_detection/Config.in"
+if AOS_APP_GAP_FACE_DETECTION
+    config AOS_BUILD_APP
+        default "gap_face_detection"
+endif
+
+source "app/example/gap_cifar10/Config.in"
+if AOS_APP_GAP_CIFAR10
+    config AOS_BUILD_APP
+        default "gap_cifar10"
+endif
+
+source "app/example/gap_face_reid/Config.in"
+if AOS_APP_GAP_FACE_REID
+    config AOS_BUILD_APP
+        default "gap_face_reid"
+endif
+
+source "app/example/gap_fs/Config.in"
+if AOS_APP_GAP_FS
+    config AOS_BUILD_APP
+        default "gap_fs"
+endif
+
+source "app/example/gap_fs_to_l3_copy/Config.in"
+if AOS_APP_GAP_FS_TO_L3_COPY
+    config AOS_BUILD_APP
+        default "gap_fs_to_l3_copy"
+endif
+
+source "app/example/gap_mnist/Config.in"
+if AOS_APP_GAP_MNIST
+    config AOS_BUILD_APP
+        default "gap_mnist"
+endif
+
+source "app/example/image_dump/Config.in"
+if AOS_APP_IMAGE_DUMP
+    config AOS_BUILD_APP
+        default "image_dump"
 endif
 
 endchoice
