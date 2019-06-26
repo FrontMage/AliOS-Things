@@ -40,14 +40,13 @@ $(NAME)_CFLAGS += -Wno-unused-value -Wno-strict-aliasing
 #../freedom-e-sdk/bsp/drivers/plic/plic_driver.c   \
 #../aos/global_interrupts.c \
 
-$(NAME)_SOURCES := hal_uart.c               \
-                   gcc/startup_gap8.S       \
-                   gcc/gap8_iet.S           \
-                   tinyprintf/tinyprintf.c  \
-                   aos/soc_impl.c           \
-                   aos/aos.c                \
-                   drivers/aos_uart.c       \
-                   drivers/gap_bridge.c       \
+$(NAME)_SOURCES := gcc/startup_gap8.S                        \
+                   gcc/gap8_iet.S                            \
+                   tinyprintf/tinyprintf.c                   \
+                   aos/soc_impl.c                            \
+                   aos/aos.c                                 \
+                   drivers/aos_uart.c                        \
+                   drivers/gap_bridge.c                      \
                    pmsis_backend/event_kernel/event_kernel.c \
                    system_gap8.c
 
