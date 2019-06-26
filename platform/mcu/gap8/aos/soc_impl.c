@@ -108,22 +108,36 @@ k_mm_region_t g_mm_region[] = {
 
 #include "tinyprintf.h"
 
+#define PRINTF_BUFF_SIZE 16
+
+uint32_t g_printf_buff_cur_size = 0;
+char g_printf_buff[PRINTF_BUFF_SIZE];
+
 void tfp_putc(void *data, char c)
 {
-  hal_uart_send(&uart_0, &c, 1, -1);
-  asm volatile (
-          "nop\t\n"
-          "nop\t\n"
-          "nop\t\n"
-          "nop\t\n"
-          "nop\t\n"
-          :::);
+    g_printf_buff[g_printf_buff_cur_size] = c;
+    g_printf_buff_cur_size++;
+    if((c=='\n') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))
+    {
+        hal_uart_send(&uart_0, g_printf_buff, g_printf_buff_cur_size, -1);
+        g_printf_buff_cur_size = 0;
+    }
 }
+
+static kmutex_t g_printf_mutex;
+static int printf_is_init = 0;
 
 // bridge to the tinyprintf
 __attribute__ ((export))
 int printf(const char *fmt, ...)
 {
+    if(!printf_is_init)
+    {
+        krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
+        krhino_mutex_unlock(&g_printf_mutex);
+        printf_is_init= 1;
+    }
+    krhino_mutex_lock(&g_printf_mutex, RHINO_WAIT_FOREVER);
     va_list va;
     va_start(va, fmt);
     /* Only lock the printf if the cluster is up to avoid mixing FC and cluster output */
@@ -131,6 +145,7 @@ int printf(const char *fmt, ...)
     tfp_format(NULL, tfp_putc, fmt, va);
     // ideally should unlock here
     va_end(va);
+    krhino_mutex_unlock(&g_printf_mutex);
     return 0;
 }
 
