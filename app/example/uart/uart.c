@@ -15,6 +15,7 @@
 
 
 #include "aos/kernel.h"
+
 #include "aos/hal/uart.h"
 
 #include "driver/uart.h"
@@ -26,11 +27,12 @@ int application_start(int argc, char *argv[])
 
     printf("uart sample application started...\n");
 
-
     uart_config_t uartConfig;
     uartConfig.baud_rate = 9600; 
+    uartConfig.mode = MODE_TX_RX; 
+    uartConfig.stop_bits =STOP_BITS_1; 
     uart_dev_t uart;
-    uart.port = 1; //for esp8266 , when the port set is 1 ,then the uart1 ande uart2 is the same baud_rate , but the uart1 is for log 
+    uart.port = 0; //for esp8266 , when the port set is 1 ,then the uart1 ande uart2 is the same baud_rate , but the uart1 is for log 
     uart.config = uartConfig;
     hal_uart_init(&uart);
 

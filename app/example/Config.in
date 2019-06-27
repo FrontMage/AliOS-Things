@@ -89,6 +89,12 @@ if AOS_APP_HTTP2APP
         default "http2app"
 endif
 
+source "app/example/gap_lora/Config.in"
+if AOS_APP_GAP_LORA
+    config AOS_BUILD_APP
+        default "gap_lora"
+endif
+
 source "app/example/id2_app/Config.in"
 if AOS_APP_ID2_CLIENT
     config AOS_BUILD_APP

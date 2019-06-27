@@ -78,10 +78,11 @@ void __systick_handler(void)
 int main(void)
 {
     platform_init();
-
-    hal_uart_init(&uart_0);
+#ifdef __PRINTF_USE_UART__
+    //hal_uart_init(&uart_0);
+#endif
     aos_init();
-    krhino_task_dyn_create(&g_aos_app, "aos-init", 0, AOS_DEFAULT_APP_PRI, 0, AOS_START_STACK, (task_entry_t)sys_init, 1);
+    krhino_task_dyn_create(&g_aos_app, "aos-init", 0, AOS_DEFAULT_APP_PRI, 0, AOS_START_STACK*2, (task_entry_t)sys_init, 1);
 
     // uses first_task_start
     aos_start();

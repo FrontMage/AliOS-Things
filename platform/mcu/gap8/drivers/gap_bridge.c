@@ -204,16 +204,16 @@ void BRIDGE_Delay()
         int irq_en = NVIC_GetEnableIRQ(FC_SOC_EVENT_IRQN);
         NVIC_DisableIRQ(FC_SOC_EVENT_IRQN);
 
-        SOC_EU_SetFCMask(REF32K_CLK_RISE_EVENT);
+        hal_soc_eu_set_fc_mask(REF32K_CLK_RISE_EVENT);
 
         int event = 0;
         do {
-            event = EU_EVT_MaskWaitAndClr(1 << FC_SOC_EVENT_IRQN);
+            event = hal_eu_evt_mask_wait_and_clr(1 << FC_SOC_EVENT_IRQN);
         } while (!(event & (1 << FC_SOC_EVENT_IRQN)));
 
         EU_CORE_DEMUX->BUFFER_CLEAR = (1 << FC_SOC_EVENT_IRQN);
 
-        SOC_EU_ClearFCMask(REF32K_CLK_RISE_EVENT);
+        hal_soc_eu_clear_fc_mask(REF32K_CLK_RISE_EVENT);
         /* Restore IRQ */
         if (irq_en)
             NVIC_EnableIRQ(FC_SOC_EVENT_IRQN);
