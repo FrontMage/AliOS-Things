@@ -106,7 +106,7 @@ void system_init(void)
     /* PMU Init */
     
     // For cluster mostly: need to come after fc event handler init
-    SystemCoreClockUpdate();
+    //SystemCoreClockUpdate();
 
     /* FC Icache Enable*/
     SCBC->ICACHE_ENABLE = 0xFFFFFFFF;

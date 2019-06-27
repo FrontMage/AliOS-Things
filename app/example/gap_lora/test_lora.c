@@ -10,6 +10,11 @@
 #include "chips/gap8/drivers/pin_names.h"
 #include "chips/gap8/drivers/pin_config.h"
 
+#include "pmsis.h"
+#include "pmsis_driver/uart_internal.h"
+
+extern int32_t hal_uart_recv_async(uart_dev_t *uart, void *data, uint32_t expect_size, uint32_t timeout, pi_task_t *task_block);
+
 /* ***************************************************************************
 // ***  Define Authentification as either ABP or OTAA (uncomment only one)  * */
 //#define LORA_JOIN_METHOD    ABP
@@ -49,35 +54,38 @@ char Response[AT_RESP_ARRAY_LENGTH];
 
 GPIO_Type *const gpio_addrs[] = GPIO_BASE_PTRS;
 
+char receive_byte;
+static volatile uint8_t Cmd_string[AT_CMD_ARRAY_LENGTH];
 static void GAPOC_LORA_AT_Cmd(uart_dev_t *uart, const char* pCmd_Core, char* Response_String)
     // Send AT read command and receive  response, char per char
     //   (!!Beware - means interrupts at rate =baudrate)
 {
-    
+    int ret, index, real_size;   
     AT_Resp_State = AT_RESP_NOT_STARTED;
-    static volatile uint8_t Cmd_string[AT_CMD_ARRAY_LENGTH];
     // !!! BEWARE -  did'nt (always) without static keywork -- we're passing a pointer to a string that must stay alive in memory
 
+    pi_task_t task_block;
+    pi_task_block(&task_block);
+    
+    ret = hal_uart_recv_async(uart, &receive_byte, 1, HAL_WAIT_FOREVER, &task_block);
     strcpy((char*)Cmd_string, (char*)"AT");
     strcat((char*)Cmd_string, (char*)pCmd_Core);
     strcat((char*)Cmd_string, (char*)"\r\n");
 
     printf("IN AT_CMD: uart_send %i bytes\n",strlen((char *)Cmd_string));
+    
+
     // Now send command over UART :
     hal_uart_send(uart, (uint8_t *)Cmd_string, strlen((char *)Cmd_string), HAL_WAIT_FOREVER);
 
-    printf("-----------------------\n");
-    printf("Sent CMD\n");
-    printf("-----------------------\n");
-
-    int end_of_cmd = 0;
-    char receive_byte;
     while(AT_Resp_State != AT_RESP_DONE)
     {
-        int ret, index, real_size;
-        printf("going to receive\n");
-        ret = hal_uart_recv_II(uart, &receive_byte, 1, &real_size, HAL_WAIT_FOREVER);
-        printf("received byte=%c\n",receive_byte);
+        pi_task_wait_on(&task_block);
+        pi_task_block(&task_block);
+        printf("received byte:%c\n",receive_byte);
+        hal_uart_send(uart, &receive_byte, 1, HAL_WAIT_FOREVER);
+        ret = hal_uart_recv_async(uart, &receive_byte, 1, HAL_WAIT_FOREVER, &task_block);
+#if 1
         if ((AT_Resp_State == AT_RESP_NOT_STARTED) && (receive_byte == '+'))  
         {// looking for '+', start char of any response
             index = 0;
@@ -95,6 +103,7 @@ static void GAPOC_LORA_AT_Cmd(uart_dev_t *uart, const char* pCmd_Core, char* Res
                 Response_String[index++] = receive_byte; // Receive chars between leading S3S4 and 2nd S3SA
             }
         }
+#endif
     }   
 }
 
@@ -405,7 +414,7 @@ int application_start(int argc, char *argv[])
            
     // led
     //GAPOC_GPIO_Set_High(GPIO_A0_A3);
-#if 0
+#if 1
     GAPOC_LORA_AT_Cmd(&uart, "+RESET", Response);
     printf("Got Resp.:  %s\n",Response);
     aos_msleep(LORA_RESET_LATENCY_MSEC);
