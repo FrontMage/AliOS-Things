@@ -12,8 +12,6 @@
 #include <aos/kernel.h>
 #include <aos/hal/uart.h>
 #include "board.h"
-#include "clock_config.h"
-#include "pin_mux.h"
 #include "cores/TARGET_RISCV_32/pmsis_gcc.h"
 
 #define AOS_START_STACK 512
