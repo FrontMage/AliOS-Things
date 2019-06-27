@@ -1,0 +1,8 @@
+config AOS_APP_GAP_LORA
+    bool "gap_lora"
+    help
+        this is a uart lora sample on gapoc
+
+if AOS_APP_GAP_LORA
+# Configurations for app gap lora
+endif

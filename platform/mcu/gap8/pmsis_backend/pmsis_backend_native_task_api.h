@@ -1,8 +1,6 @@
 #ifndef __PMSIS_BACKEND_NATIVE_TASK_API__
 #define __PMSIS_BACKEND_NATIVE_TASK_API__
 
-
-
 // temp types until backend is really done
 typedef void * __os_native_task_t;
 
