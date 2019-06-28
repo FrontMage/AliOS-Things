@@ -43,23 +43,18 @@
 #include "pmsis.h"
 #include "pmsis_driver/uart_internal.h"
 
+#include "lora_config.h"
+
 extern int32_t hal_uart_recv_async(uart_dev_t *uart, void *data, uint32_t expect_size, uint32_t timeout, pi_task_t *task_block);
 
 /* ***************************************************************************
 // ***  Define DEBUG mode * */
 #define DBG_PRINT   printf
 
-// ***  Define Authentification as either ABP or OTAA (uncomment only one)  * */
-#define OTAA 1
-#define ABP 2
-
-// ***  Define Authentification as either ABP or OTAA (uncomment only one)  * */
-#define LORA_JOIN_METHOD    OTAA
-
 /*  ************************************************************************* */
 
 #define  AT_CMD_ARRAY_LENGTH       32   //arbitrary limit
-#define  AT_RESP_ARRAY_LENGTH      64   //arbitrary limit
+#define  AT_RESP_ARRAY_LENGTH      512   //arbitrary limit
 
 /* Variables used. */
 #define BUFFER_SIZE      2048
@@ -94,10 +89,11 @@ GPIO_Type *const gpio_addrs[] = GPIO_BASE_PTRS;
 char receive_byte;
 static volatile uint8_t Cmd_string[AT_CMD_ARRAY_LENGTH];
 
-static void GAPOC_LORA_AT_Cmd(uart_dev_t *uart, const char* pCmd_Core, char* Response_String)
+static void GAPOC_LORA_AT_Cmd(uart_dev_t *uart, const char* pCmd_Core, char* Response_String, uint32_t Num_Resp)
     // Send AT read command and receive  response, char per char
     //   (!!Beware - means interrupts at rate =baudrate)
 {
+    uint32_t Resp_idx = 0;
     int ret, index, real_size;
     AT_Resp_State = AT_RESP_NOT_STARTED;
     // !!! BEWARE -  did'nt (always) without static keywork -- we're passing a pointer to a string that must stay alive in memory
@@ -113,30 +109,37 @@ static void GAPOC_LORA_AT_Cmd(uart_dev_t *uart, const char* pCmd_Core, char* Res
     // Now send command over UART :
     hal_uart_send(uart, (uint8_t *)Cmd_string, strlen((char *)Cmd_string), HAL_WAIT_FOREVER);
 
-    while(AT_Resp_State != AT_RESP_DONE)
+    while (Resp_idx < Num_Resp)
     {
-        pi_task_wait_on(&task_block);
-        pi_task_block(&task_block);
-        //hal_uart_send(uart, &receive_byte, 1, HAL_WAIT_FOREVER);
-        ret = hal_uart_recv_async(uart, &receive_byte, 1, HAL_WAIT_FOREVER, &task_block);
-
-        if ((AT_Resp_State == AT_RESP_NOT_STARTED) && (receive_byte == '+'))
-        {// looking for '+', start char of any response
-            index = 0;
-            AT_Resp_State = AT_RESP_IN_PROGRESS;
-        }
-        else if (AT_Resp_State == AT_RESP_IN_PROGRESS)
+        while(AT_Resp_State != AT_RESP_DONE)
         {
-            if ((receive_byte == '\r') || (receive_byte == '\n'))
-            {//end of response (1st part if multiple)
-                Response_String[index]='\0';  // obliterate EOL character and append end of string marker char
-                AT_Resp_State = AT_RESP_DONE;
+            pi_task_wait_on(&task_block);
+            pi_task_block(&task_block);
+            //hal_uart_send(uart, &receive_byte, 1, HAL_WAIT_FOREVER);
+            ret = hal_uart_recv_async(uart, &receive_byte, 1, HAL_WAIT_FOREVER, &task_block);
+
+            if ((AT_Resp_State == AT_RESP_NOT_STARTED) && (receive_byte == '+'))
+            {// looking for '+', start char of any response
+                index = 0;
+                AT_Resp_State = AT_RESP_IN_PROGRESS;
             }
-            else
+            else if (AT_Resp_State == AT_RESP_IN_PROGRESS)
             {
-                Response_String[index++] = receive_byte; // Receive chars between leading S3S4 and 2nd S3SA
+                if ((receive_byte == '\r') || (receive_byte == '\n'))
+                {//end of response (1st part if multiple)
+                    Response_String[index]='\0';  // obliterate EOL character and append end of string marker char
+                    AT_Resp_State = AT_RESP_DONE;
+                }
+                else
+                {
+                    Response_String[index++] = receive_byte; // Receive chars between leading S3S4 and 2nd S3SA
+                }
             }
         }
+        AT_Resp_State = AT_RESP_NOT_STARTED;
+        Resp_idx++;
+        ret = hal_uart_recv_async(uart, &receive_byte, 1, HAL_WAIT_FOREVER, &task_block);
+        //DBG_PRINT("Got Resp. #%d:  %s\n", (int)Resp_idx, Response);
     }
 }
 
@@ -270,7 +273,6 @@ const PinMap PinMap_UART_RX[] = {
     {NC  ,  NC    , 0}
 };
 
-#define LORA_UART_AT_BAUDRATE_bps  9600
 // Convert to pure reg access!
 static void gapoc_lora_pin_config(void)
 {
@@ -450,7 +452,8 @@ int application_start(int argc, char *argv[])
     // led
     //GAPOC_GPIO_Set_High(GPIO_A0_A3);
 
-    GAPOC_LORA_AT_Cmd(&uart, "+RESET", Response);
+    printf("CMD RESET: %s\n", AT_RESET);
+    GAPOC_LORA_AT_Cmd(&uart, AT_RESET, Response, 1);
     DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
     aos_msleep(LORA_RESET_LATENCY_MSEC);
     //GAPOC_GPIO_Set_Low(GAPOC_HEARTBEAT_LED);
@@ -459,7 +462,7 @@ int application_start(int argc, char *argv[])
 
     // First, Just send "AT" to check status OK  --
     DBG_PRINT("Going to send command\n");
-    GAPOC_LORA_AT_Cmd(&uart, "", Response);
+    GAPOC_LORA_AT_Cmd(&uart, AT, Response, 1);
     DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
     if (strncmp( Response, "AT: OK", 6) != 0)
     {
@@ -471,52 +474,59 @@ int application_start(int argc, char *argv[])
         // BEWARE -- At present, GAPOC_LORA_AT_Cmd is designed to handle a single line (ended by CR/LF) of response
         //  so take care not to send "combined" AT commands/queries that return multiple responses
 
-        GAPOC_LORA_AT_Cmd(&uart, "+ID=DevAddr,\"26 01 15 B4\"", Response);             // Device Address: 4 bytes
+        GAPOC_LORA_AT_Cmd(&uart, AT_DEVADDR, Response, 1);             // Device Address: 4 bytes
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+ID=DevEui,\"d8 96 e0 ff ff 01 17 fb\"", Response);  // Device Extended Unique ID: 8 bytes
+        GAPOC_LORA_AT_Cmd(&uart, AT_DEVEUI, Response, 1);  // Device Extended Unique ID: 8 bytes
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+ID=AppEui,\"d8 96 e0 ff ff 00 00 00\"", Response);  // App Extended Unique ID: 8 bytes
+        GAPOC_LORA_AT_Cmd(&uart, AT_APPEUI, Response, 1);  // App Extended Unique ID: 8 bytes
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+CLASS=A", Response);
+        GAPOC_LORA_AT_Cmd(&uart, AT_CLASS, Response, 1);
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+DR=CN470", Response);     // Band scheme: eg. CN470 or EU868
+        GAPOC_LORA_AT_Cmd(&uart, FREQ, Response, 1);     // Band scheme: eg. CN470 or EU868
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+POWER=6", Response);  // Will be rounded to closest supported value (depending on band used)
+        GAPOC_LORA_AT_Cmd(&uart, POWER, Response, 1);  // Will be rounded to closest supported value (depending on band used)
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+LW=DC, OFF", Response);   // Duty Cycle Limitation On/Off
+        GAPOC_LORA_AT_Cmd(&uart, DCL_OFF, Response, 1);   // Duty Cycle Limitation On/Off
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+LW=JDC,OFF", Response);   // Join Duty Cycle Limitation On/Off
+        GAPOC_LORA_AT_Cmd(&uart, JOIN_DCL_OFF, Response, 1);   // Join Duty Cycle Limitation On/Off
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
 
 #if LORA_JOIN_METHOD==ABP
         DBG_PRINT("ABP Join Mode\n");
-        GAPOC_LORA_AT_Cmd(&uart, "+KEY=NwkSKey,\"01 23 45 67 89 AB CD EF 01 23 45 67 89 AB CD EF\"", Response);    // Network Session Key: 16 bytes
+        GAPOC_LORA_AT_Cmd(&uart, AT_NWKSKEY, Response, 1);    // Network Session Key: 16 bytes
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+KEY=AppSKey,\"01 23 45 67 89 AB CD EF 01 23 45 67 89 AB CD EF\"", Response);    // App Session Key: 16 bytes
+        GAPOC_LORA_AT_Cmd(&uart, AT_APPSKEY, Response, 1);    // App Session Key: 16 bytes
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+MODE=LWABP",Response);
+        GAPOC_LORA_AT_Cmd(&uart, JOIN_MODE, Response, 1);
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
 #elif LORA_JOIN_METHOD==OTAA
         DBG_PRINT("OTAA Join Mode\n");
-        GAPOC_LORA_AT_Cmd(&uart, "+KEY=AppKey,\"76 5F C6 CC F0 CF 1F E2 D3 3E 2F B7 17 EC F6 E4\"", Response);    // Applicatin Key: 16 bytes
+        GAPOC_LORA_AT_Cmd(&uart, AT_APPKEY, Response, 1);    // Applicatin Key: 16 bytes
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+MODE=LWOTAA",Response);
+        GAPOC_LORA_AT_Cmd(&uart, JOIN_MODE, Response, 1);
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
 
-        GAPOC_LORA_AT_Cmd(&uart, "+JOIN", Response);
+        GAPOC_LORA_AT_Cmd(&uart, JOIN_CMD, Response, 3);
         DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
+        while (strncmp( Response, "JOIN: Join failed", 17) == 0)
+        {
+            DBG_PRINT("*** PROBLEM - LoRa Join Failed, retry ***\n");
+            GAPOC_LORA_AT_Cmd(&uart, JOIN_CMD, Response, 3);
+            DBG_PRINT("%d: Got Resp.:  %s\n", AT_Resp_State, Response);
+        }
+
 #else
 #error "You didn't select a valid join Method"
 #endif
@@ -524,8 +534,19 @@ int application_start(int argc, char *argv[])
     }
     aos_msleep(LORA_RESET_LATENCY_MSEC);
 
-    while (1)
+    // Some other possible settings through AT commands not used here:
+    // +PORT to select port # (1-255) on which MSGs will be sent
+    // +ADR to enable/disable Adaptive Data Rate
+    // others: see Rising HF's "LoRaWAN Class ABC AT Command Specification"
+
+//    for (int loop=0; loop<LOOP; loop++)
     {
+        GAPOC_LORA_AT_Cmd(&uart, MSG,Response, 1);
+        DBG_PRINT("Got Resp.:  %s\n",Response);
+//        aos_msleep(LATENCY*1000);
     }
+
+    DBG_PRINT("\n\n *** Done ***\n\n");
+
     return 0;
 }
