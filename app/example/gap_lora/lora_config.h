@@ -43,10 +43,10 @@
 #define LORA_UART_AT_BAUDRATE_bps  9600
 
 #if  ZONE==CN
-#define DEVADDR         "\"26 01 15 B4\""
-#define DEVEUI          "\"d8 96 e0 ff ff 01 17 fb\""
-#define APPEUI          "\"d8 96 e0 ff ff 00 00 00\""
-#define FREQ            "+DR=CN470"
+#define DEVADDR         "\"66 b7 2d 27\""
+#define DEVEUI          "\"d8 96 e0 ff 00 01 10 c6\""
+#define APPEUI          "\"d8 96 e0 ef ff 00 00 00\""
+#define FREQ            "+DR=CN470ALID"
 #else
 #define DEVADDR         "\"26 01 2B 84\""
 #define DEVEUI          "\"8C F9 57 20 00 00 FF 99\""
