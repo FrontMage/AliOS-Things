@@ -95,10 +95,10 @@ if AOS_APP_GAP_LORA
         default "gap_lora"
 endif
 
-source "app/example/helloworld-multi-threads/Config.in"
+source "app/example/helloworld_multi_th/Config.in"
 if AOS_APP_HELLOWORLD_MULTI_TH
     config AOS_BUILD_APP
-        default "helloworld-multi-threads"
+        default "helloworld_multi_th"
 endif
 
 source "app/example/id2_app/Config.in"

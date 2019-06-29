@@ -1,4 +1,4 @@
-NAME := helloworld-multi-threads
+NAME := helloworld_multi_th
 
 $(NAME)_MBINS_TYPE := app
 $(NAME)_VERSION := 1.0.0
