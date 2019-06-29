@@ -1,3 +1,0 @@
-[submodule "platform/mcu/gap8/PMSIS"]
-	path = platform/mcu/gap8/PMSIS
-	url = git@gitlab.greenwaves-tech.com:gwt_sdk_developer/PMSIS.git
