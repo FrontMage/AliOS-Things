@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <k_api.h>
+#include <k_mm.h>
 #include <hal/base.h>
 #include <aos/kernel.h>
 #include <aos/hal/uart.h>
@@ -42,7 +43,7 @@ static void sys_init(void)
 
 // port to PMSIS on top?
 #ifdef AOS_LOOP
-    aos_loop_init();
+    //aos_loop_init();
 #endif
 #endif
 
@@ -75,11 +76,16 @@ void __systick_handler(void)
     krhino_intrpt_exit();
 }
 
+extern char __heapl2ram_start;
+extern char __heapl2ram_size;
+
+#define PRINTF_USE_UART
+
 int main(void)
 {
     platform_init();
-#ifdef __PRINTF_USE_UART__
-    //hal_uart_init(&uart_0);
+#ifdef PRINTF_USE_UART
+    hal_uart_init(&uart_0);
 #endif
     aos_init();
     krhino_task_dyn_create(&g_aos_app, "aos-init", 0, AOS_DEFAULT_APP_PRI, 0, AOS_START_STACK*2, (task_entry_t)sys_init, 1);

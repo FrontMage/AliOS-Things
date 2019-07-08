@@ -63,7 +63,7 @@
 #include <stdint.h>
 #include "system_gap8.h"
 #include "pmsis.h"
-#include "rtos/malloc/pmsis_l2_malloc.h"
+#include DEFAULT_MALLOC_INC
 //#include "drivers/gap_common.h"
 //#include "drivers/gap_debug.h"
 
@@ -71,8 +71,8 @@
    -- Core clock
    ---------------------------------------------------------------------------- */
 
-extern char __heapl2ram_start;
-extern char __heapl2ram_size;
+extern char __heapfcram_start;
+extern char __heapfcram_size;
 
 uint32_t SystemCoreClock = DEFAULT_SYSTEM_CLOCK;
 
@@ -94,9 +94,6 @@ void system_init(void)
     /* If we need to protect the access to peripheral IRQ, we need do as SysTick_Handler */
     /* by using ecall form U mode to M mode */
 
-    // Use pmsis event handler here --> init vector table
-
-
     /* Deactivate all soc events as they are active by default */
     SOCEU->FC_MASK_MSB = 0xFFFFFFFF;
     SOCEU->FC_MASK_LSB = 0xFFFFFFFF;
@@ -117,8 +114,8 @@ void system_init(void)
 
     __enable_irq();
 
-    /* Initialize our l2 malloc functions */
-    pmsis_l2_malloc_init((void*)&__heapl2ram_start,(uint32_t)&__heapl2ram_size);
+    /* Initialize our fc tcdm malloc functions */
+    pmsis_fc_tcdm_malloc_init((void*)&__heapfcram_start,(uint32_t)&__heapfcram_size);
 }
 
 void system_setup_systick(uint32_t tick_rate_hz)

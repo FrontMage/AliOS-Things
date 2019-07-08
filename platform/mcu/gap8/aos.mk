@@ -10,7 +10,7 @@ $(NAME)_VERSION    := 1.0.0
 $(NAME)_SUMMARY    := driver & sdk for platform/mcu gap8
 
 $(NAME)_COMPONENTS += arch_riscy
-$(NAME)_COMPONENTS += rhino
+$(NAME)_COMPONENTS += rhino newlib_stub
 
 GLOBAL_INCLUDES += aos/                               \
 		   drivers/                                   \

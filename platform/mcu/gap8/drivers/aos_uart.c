@@ -3,7 +3,7 @@
 #include <aos/hal/uart.h>
 #include <errno.h>
 
-#if 0
+#if 1
 uart_dev_t uart_0 = {
     .port = 0,                                                  /* uart port */
     .config = {115200, DATA_WIDTH_8BIT, NO_PARITY, STOP_BITS_1,
@@ -16,7 +16,7 @@ int32_t hal_uart_init(uart_dev_t *uart)
 {
     if(!__global_uart_drv_data[uart->port])
     {
-        struct uart_driver_data *data = pmsis_l2_malloc(sizeof(struct uart_driver_data));
+        struct uart_driver_data *data = pi_default_malloc(sizeof(struct uart_driver_data));
         
         uart->priv = data;
         data->uart_id = uart->port;
@@ -76,8 +76,19 @@ int32_t hal_uart_init(uart_dev_t *uart)
                 conf.parity_mode, conf.enable_tx, conf.enable_rx,
                 conf.baudrate_bps, conf.src_clock_Hz);
         data->uart_open_nb = 1;
-        krhino_mutex_create(&data->uart_mutex, "uart_mutex");
-        krhino_mutex_unlock(&data->uart_mutex);
+
+        krhino_mutex_create(&data->uart_mutex_rx, "uart_mutex_rx");
+        krhino_mutex_create(&data->uart_mutex_tx, "uart_mutex_tx");
+
+        krhino_mutex_unlock(&data->uart_mutex_rx);
+        krhino_mutex_unlock(&data->uart_mutex_tx);
+
+        // ---------------
+        // setup rx polling
+        // TODO: to achieve higher baudrate
+        // ++++++ avoid any blocking on other threads
+        // ++++++ manage first level fifo (circular buffer?)
+        // ---------------
         __global_uart_drv_data[conf.uart_id] = data;
     }
     else
@@ -92,62 +103,55 @@ int32_t hal_uart_init(uart_dev_t *uart)
 
 int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_t timeout)
 {
-    //krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex, HAL_WAIT_FOREVER);
+    krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex_tx, HAL_WAIT_FOREVER);
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
-        void *l2_buff = pmsis_l2_malloc(size);;
+        void *l2_buff = krhino_mm_alloc(size);
         if(!l2_buff)
         {
-            //krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex);
+            krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_tx);
             return EIO;
         }
         memcpy(l2_buff, data, size);
-        //for(int i=0; i<size;i++)
-        {
-            pi_task_t task_block;
-            pi_task_block(&task_block);
-            __pi_uart_write(uart->priv, l2_buff, size, &task_block);
-            pi_task_wait_on(&task_block);
-        }
-        pmsis_l2_malloc_free(l2_buff, size);
+        pi_task_t task_block;
+        pi_task_block(&task_block);
+        __pi_uart_write(uart->priv, l2_buff, size, &task_block);
+        pi_task_wait_on(&task_block);
+        pi_task_destroy(&task_block);
+        krhino_mm_free(l2_buff);
     }
     else
     {
-        //__pi_uart_write(uart->priv, data, size, &task_block);
-        //pi_task_wait_on(&task_block);
-        //for(int i=0; i<size;i++)
-        {
             pi_task_t task_block;
             pi_task_block(&task_block);
             __pi_uart_write(uart->priv, data, size, &task_block);
             pi_task_wait_on(&task_block);
-        }
+            pi_task_destroy(&task_block);
     }
     
-    //pi_task_destroy(&task_block);
-    //krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex);
+    krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_tx);
     return 0;
 }
 
 int32_t hal_uart_recv(uart_dev_t *uart, void *data, uint32_t expect_size, uint32_t timeout)
 {
-    krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex, HAL_WAIT_FOREVER);
+    krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx, HAL_WAIT_FOREVER);
     pi_task_t task_block;
     pi_task_block(&task_block);
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
-        void *l2_buff = pmsis_l2_malloc(expect_size);;
+        void *l2_buff = krhino_mm_alloc(expect_size);;
         if(!l2_buff)
         {
-            krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex);
+            krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
             return EIO;
         }
         __pi_uart_read(uart->priv, l2_buff, expect_size, &task_block);
         pi_task_wait_on(&task_block);
         memcpy(data, l2_buff, expect_size);
-        pmsis_l2_malloc_free(l2_buff, expect_size);
+        krhino_mm_free(l2_buff);
     }
     else
     {
@@ -156,24 +160,25 @@ int32_t hal_uart_recv(uart_dev_t *uart, void *data, uint32_t expect_size, uint32
     }
 
     pi_task_destroy(&task_block);
-    krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex);
+    krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
     return 0;
 }
 
+// Will only work with l2 buffer!!
 int32_t hal_uart_recv_async(uart_dev_t *uart, void *data, uint32_t expect_size, uint32_t timeout, pi_task_t *task_block)
 {
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
         printf("OUPSSSS\n");
-        void *l2_buff = pmsis_l2_malloc(expect_size);;
+        void *l2_buff = krhino_mm_alloc(expect_size);;
         if(!l2_buff)
         {
             return EIO;
         }
         __pi_uart_read(uart->priv, l2_buff, expect_size, task_block);
         memcpy(data, l2_buff, expect_size);
-        pmsis_l2_malloc_free(l2_buff, expect_size);
+        krhino_mm_free(l2_buff);
     }
     else
     {
@@ -186,22 +191,22 @@ int32_t hal_uart_recv_async(uart_dev_t *uart, void *data, uint32_t expect_size, 
 int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size,
                          uint32_t *recv_size, uint32_t timeout)
 {
-    krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex, HAL_WAIT_FOREVER);
+    krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx, HAL_WAIT_FOREVER);
     pi_task_t task_block;
     pi_task_block(&task_block);
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
-        void *l2_buff = pmsis_l2_malloc(expect_size);;
+        void *l2_buff = krhino_mm_alloc(expect_size);;
         if(!l2_buff)
         {
-            krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex);
+            krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
             return EIO;
         }
         __pi_uart_read(uart->priv, l2_buff, expect_size, &task_block);
         pi_task_wait_on(&task_block);
         memcpy(data, l2_buff, expect_size);
-        pmsis_l2_malloc_free(l2_buff, expect_size);
+        krhino_mm_free(l2_buff);
     }
     else
     {
@@ -212,7 +217,7 @@ int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size,
     pi_task_destroy(&task_block);
     // udma does not support partial transfers, so if we're here, we got everything
     *recv_size = expect_size;
-    krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex);
+    krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
     return 0;
 }
 

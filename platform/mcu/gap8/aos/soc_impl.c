@@ -54,8 +54,16 @@ tick_t soc_elapsed_ticks_get(void)
     return 0;
 }
 #endif
+#endif
 
-
+size_t soc_get_cur_sp()
+{
+    size_t sp = 0;
+#if defined (__GNUC__)
+	__asm volatile("mv %0,sp\n" :"=r"(sp));
+#endif
+    return sp;
+}
 
 static void soc_print_stack()
 {
@@ -77,34 +85,34 @@ static void soc_print_stack()
     printf("\r\n");
     return;
 }
-#endif
 
 #include <aos/hal/uart.h>
 extern uart_dev_t uart_0;
 
-size_t soc_get_cur_sp()
+void soc_err_proc(kstat_t err)
 {
-    size_t sp = 0;
-#if defined (__GNUC__)
-	__asm volatile("mv %0,sp\n" :"=r"(sp));
-#endif
-    return sp;
+    (void)err;
+    soc_print_stack();
+    assert(0);
 }
 
-krhino_err_proc_t g_err_proc = NULL;//soc_err_proc;
+krhino_err_proc_t g_err_proc = soc_err_proc;
 
 #if defined (__GNUC__)
 
-extern char __heapfcram_start;
-extern char __heapfcram_size;
+extern char __heapl2ram_start;
+extern char __heapl2ram_size;
 
-k_mm_region_t g_mm_region[] = {
+k_mm_region_t g_mm_region[] =
 {
-   (uint8_t*)&__heapfcram_start, (uint32_t)&__heapfcram_size},
+    {(uint8_t*)&__heapl2ram_start, (uint32_t)&__heapl2ram_size},
 };
+
 #else
 #error "Tool chain not supported!"
 #endif
+
+#define PRINTF_USE_UART
 
 #include "tinyprintf.h"
 #include "gap_debug.h"
@@ -150,7 +158,7 @@ int printf(const char *fmt, ...)
     {
         krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
         krhino_mutex_unlock(&g_printf_mutex);
-#ifndef __PRINTF_USE_UART__
+#ifndef PRINTF_USE_UART
         BRIDGE_Init();
 #endif
         printf_is_init= 1;
@@ -183,14 +191,4 @@ int puts(const char *str)
     return 0;
 }
 
-#if 0
-PUTCHAR_PROTOTYPE
-{
-  if (ch == '\n') {
-    hal_uart_send(&uart_0, (void *)"\r", 1, 30000);
-  }
-  hal_uart_send(&uart_0, &ch, 1, 30000);
-  return ch;
-}
-#endif
 int g_region_num = sizeof(g_mm_region)/sizeof(k_mm_region_t);

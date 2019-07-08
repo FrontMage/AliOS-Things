@@ -42,7 +42,7 @@
 #define RHINO_CONFIG_MM_TLF                  1
 #endif
 #ifndef RHINO_CONFIG_MM_MAXMSIZEBIT
-#define RHINO_CONFIG_MM_MAXMSIZEBIT          17
+#define RHINO_CONFIG_MM_MAXMSIZEBIT          19
 #endif
 #ifndef RHINO_CONFIG_GCC_RETADDR
 #define RHINO_CONFIG_GCC_RETADDR             1

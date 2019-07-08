@@ -4,8 +4,16 @@
 #include "aos/kernel.h"
 #include <k_api.h>
 
+#define __INC_TO_STRING(x) #x
 
 #define UART_DRIVER_DATA_IMPLEM_SPECIFC \
-    kmutex_t uart_mutex;
+    kmutex_t uart_mutex_rx;\
+    kmutex_t uart_mutex_tx;
+
+// default malloc for driver structs etc (might not be compatible with udma!)
+#define pi_default_malloc(x) pmsis_fc_tcdm_malloc(x)
+#define pi_default_free(x,y) pmsis_fc_tcdm_malloc_free(x,y)
+
+#define DEFAULT_MALLOC_INC  __INC_TO_STRING(rtos/malloc/pmsis_fc_tcdm_malloc.h)
 
 #endif
