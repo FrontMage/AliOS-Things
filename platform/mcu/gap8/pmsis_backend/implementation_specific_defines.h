@@ -6,6 +6,10 @@
 
 #define __INC_TO_STRING(x) #x
 
+#define IMPLEM_MUTEX_OBJECT_TYPE \
+    void *mutex_object;\
+    kmutex_t mutex_static;
+
 #define UART_DRIVER_DATA_IMPLEM_SPECIFC \
     kmutex_t uart_mutex_rx;\
     kmutex_t uart_mutex_tx;

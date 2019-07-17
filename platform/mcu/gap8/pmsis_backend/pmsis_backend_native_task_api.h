@@ -29,6 +29,12 @@ static inline void __os_native_task_suspend(__os_native_task_t *task)
     krhino_task_del(task);
 }
 
+static inline void __os_native_yield(void)
+{
+    krhino_task_yield();
+}
+
+
 static inline void *__os_native_api_create_task(void (*entry)(void*),
         void *arg,
         char *name,
@@ -43,18 +49,15 @@ static inline void *__os_native_api_create_task(void (*entry)(void*),
 static inline int __os_native_api_mutex_init(pmsis_mutex_t *mutex)
 {
     // allocate all ram for us
-    krhino_mutex_dyn_create(&(mutex->mutex_object),"pmsis_mutex");
-    if(mutex->mutex_object)
-    {
-        mutex->release = __os_native_mutex_unlock;
-        mutex->take = __os_native_mutex_lock;
-        return 0;
-    }
-    return -1;
+    krhino_mutex_create(&(mutex->mutex_static),"pmsis_mutex");
+    mutex->mutex_object = &(mutex->mutex_static);
+    mutex->release = __os_native_mutex_unlock;
+    mutex->take = __os_native_mutex_lock;
+    return 0;
 }
 
 static inline int __os_native_api_mutex_deinit(pmsis_mutex_t *mutex)
 {
-    krhino_mutex_dyn_del(&(mutex->mutex_object));
+    krhino_mutex_del(&(mutex->mutex_static));
 }
 #endif

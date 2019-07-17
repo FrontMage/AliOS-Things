@@ -79,16 +79,16 @@ void __systick_handler(void)
 extern char __heapl2ram_start;
 extern char __heapl2ram_size;
 
-#define PRINTF_USE_UART
+//#define PRINTF_USE_UART
 
 int main(void)
 {
     platform_init();
+    aos_init();
+    krhino_task_dyn_create(&g_aos_app, "aos-init", 0, AOS_DEFAULT_APP_PRI, 0, AOS_START_STACK*2, (task_entry_t)sys_init, 1);
 #ifdef PRINTF_USE_UART
     hal_uart_init(&uart_0);
 #endif
-    aos_init();
-    krhino_task_dyn_create(&g_aos_app, "aos-init", 0, AOS_DEFAULT_APP_PRI, 0, AOS_START_STACK*2, (task_entry_t)sys_init, 1);
 
     // uses first_task_start
     aos_start();

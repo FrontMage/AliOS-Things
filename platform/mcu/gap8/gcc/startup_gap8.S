@@ -30,7 +30,7 @@
  *******************************************************************************************/
 
 
-        .file "startup_GAP8.S"
+        .file "startup_gap8.S"
 
 /*******************************************************************************
 	This file contains the Bootcode	and initializes the Interrupt Vector
@@ -60,8 +60,8 @@
         .extern __fc_bss_start__
   	.extern __fc_bss_end__
 
-	.extern CLUSTER_SleepWait
-	.extern SystemInit
+	.extern cl_cluster_exec_loop
+	.extern system_init
 	.extern main
         .extern exit
 	.extern ill_ins_handler
@@ -80,11 +80,10 @@
 	csrr a0, 0xf14 /* Cluster ID */
 	srli a0, a0, 5
 
-#ifdef FEATURE_CLUSTER
 	li a1, 32 /* FC_Cluster ID */
-	bne a1, a0, CLUSTER_SleepWait
-#endif
-	li a0, 0x1800 /* Set MSTATUS : Machine Mode */
+	bne a1, a0, cl_cluster_exec_loop
+	
+    li a0, 0x1800 /* Set MSTATUS : Machine Mode */
 	csrw mstatus, a0
 
 	li a0, 0x1c000100 /* Set MTVEC */

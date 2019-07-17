@@ -62,6 +62,7 @@
 
 #include <stdint.h>
 #include "system_gap8.h"
+#include "pmsis_driver/pmu/pmsis_pmu.h"
 #include "pmsis.h"
 #include DEFAULT_MALLOC_INC
 //#include "drivers/gap_common.h"
@@ -84,7 +85,7 @@ uint32_t SystemCoreClock = DEFAULT_SYSTEM_CLOCK;
 
 void SystemCoreClockUpdate(void)
 {
-    SystemCoreClock = fll_get_frequency(FLL_SOC);
+    SystemCoreClock = pi_fll_get_frequency(FLL_SOC);
 }
 
 void system_init(void)
@@ -113,6 +114,7 @@ void system_init(void)
     NVIC_EnableIRQ(FC_SOC_EVENT_IRQN);
 
     __enable_irq();
+    pi_pmu_init();
 
     /* Initialize our fc tcdm malloc functions */
     pmsis_fc_tcdm_malloc_init((void*)&__heapfcram_start,(uint32_t)&__heapfcram_size);

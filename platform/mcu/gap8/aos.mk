@@ -47,7 +47,6 @@ $(NAME)_SOURCES := gcc/startup_gap8.S                          \
                    aos/aos.c                                   \
                    drivers/aos_uart.c                          \
                    drivers/gap_bridge.c                        \
-                   pmsis_backend/event_kernel/event_kernel.c   \
                    pmsis_backend/pmsis_backend_native_task_api.c \
                    system_gap8.c
 

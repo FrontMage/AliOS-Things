@@ -112,7 +112,7 @@ k_mm_region_t g_mm_region[] =
 #error "Tool chain not supported!"
 #endif
 
-#define PRINTF_USE_UART
+//#define PRINTF_USE_UART
 
 #include "tinyprintf.h"
 #include "gap_debug.h"
