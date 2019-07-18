@@ -1,0 +1,9 @@
+config AOS_BOARD_GAPOC_A
+    bool "GAPOC_A"
+    select AOS_MCU_GAP8
+    select AOS_COMP_KERNEL_INIT
+    help
+
+if AOS_BOARD_GAPOC_A
+# Configurations for board gapoc_a
+endif
