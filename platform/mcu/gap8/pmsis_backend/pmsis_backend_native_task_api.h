@@ -7,6 +7,8 @@
 
 #define PI_DEFAULT_STACK_SIZE 512
 
+extern void platform_exit(int code);
+
 // temp types until backend is really done
 typedef void* __os_native_task_t;
 
@@ -26,7 +28,7 @@ static inline void __os_native_api_restore_irq(int irq_enable)
 
 static inline void __os_native_task_suspend(__os_native_task_t *task)
 {
-    krhino_task_del(task);
+    krhino_task_del((ktask_t*)task);
 }
 
 static inline void __os_native_yield(void)
@@ -59,5 +61,10 @@ static inline int __os_native_api_mutex_init(pmsis_mutex_t *mutex)
 static inline int __os_native_api_mutex_deinit(pmsis_mutex_t *mutex)
 {
     krhino_mutex_del(&(mutex->mutex_static));
+}
+
+static inline void __os_native_exit(int err)
+{
+    platform_exit(err);
 }
 #endif

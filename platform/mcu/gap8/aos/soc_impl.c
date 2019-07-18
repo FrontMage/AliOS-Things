@@ -76,7 +76,7 @@ static void soc_print_stack()
     p = (int*)cur;
     while(p < (int*)end) {
         if(i%4==0) {
-            printf("\r\n%08x:",(uint32_t)p);
+            printf("\r\n%08lx:",(uint32_t)p);
         }
         printf("%08x ", *p);
         i++;

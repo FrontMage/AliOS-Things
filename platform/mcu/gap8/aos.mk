@@ -19,12 +19,7 @@ GLOBAL_INCLUDES += aos/                               \
            tinyprintf/
 
 
-#-mthumb -mthumb-interwork
-GLOBAL_CFLAGS +=
-
-GLOBAL_CFLAGS += -w
-
-GLOBAL_ASMFLAGS += -w
+GLOBAL_CFLAGS += -Wno-unused-function
 
 #--specs=nosys.specs
 GLOBAL_LDFLAGS += -Wl,--gc-sections   \
@@ -36,9 +31,6 @@ $(NAME)_CFLAGS += -Wall -Werror -Wno-unused-variable -Wno-unused-parameter -Wno-
 $(NAME)_CFLAGS += -Wno-type-limits -Wno-sign-compare -Wno-pointer-sign -Wno-uninitialized
 $(NAME)_CFLAGS += -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable
 $(NAME)_CFLAGS += -Wno-unused-value -Wno-strict-aliasing
-
-#../freedom-e-sdk/bsp/drivers/plic/plic_driver.c   \
-#../aos/global_interrupts.c \
 
 $(NAME)_SOURCES := gcc/startup_gap8.S                          \
                    gcc/gap8_iet.S                              \
@@ -53,7 +45,14 @@ $(NAME)_SOURCES := gcc/startup_gap8.S                          \
 GLOBAL_LDS_FILES += platform/mcu/gap8/gcc/gap8.ld
 include ./platform/mcu/gap8/PMSIS/pmsis.mk
 
+GLOBAL_CFLAGS   += -D__GAP8__ -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER
+GLOBAL_ASMFLAGS += -D__GAP8__ -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER
+
 #GLOBAL_CFLAGS += -DUSE_M_TIME -DUSE_PLIC
+
+GLOBAL_CFLAGS   += -O3 -march=rv32imcxgap8 -g
+GLOBAL_ASMFLAGS += -O3 -march=rv32imcxgap8 -g
+GLOBAL_LDFLAGS  += -O3 -march=rv32imcxgap8 -g
 
 #GLOBAL_CFLAGS += -march=rv32imac -mabi=ilp32 -g
 #GLOBAL_ASMFLAGS += -march=rv32imac -mabi=ilp32 -g

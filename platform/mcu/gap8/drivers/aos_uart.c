@@ -2,6 +2,7 @@
 #include "pmsis_driver/uart_internal.h"
 #include <aos/hal/uart.h>
 #include <errno.h>
+#include <stdio.h>
 
 #if 1
 uart_dev_t uart_0 = {
@@ -125,7 +126,7 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
     {
             pi_task_t task_block;
             pi_task_block(&task_block);
-            __pi_uart_write(uart->priv, data, size, &task_block);
+            __pi_uart_write(uart->priv, (void*)data, size, &task_block);
             pi_task_wait_on(&task_block);
             pi_task_destroy(&task_block);
     }
