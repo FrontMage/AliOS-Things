@@ -10,6 +10,10 @@
     void *mutex_object;\
     kmutex_t mutex_static;
 
+#define IMPLEM_SEM_OBJECT_TYPE \
+    void *sem_object;\
+    ksem_t sem_static;
+
 #define UART_DRIVER_DATA_IMPLEM_SPECIFC \
     kmutex_t uart_mutex_rx;\
     kmutex_t uart_mutex_tx;
@@ -19,5 +23,11 @@
 #define pi_default_free(x,y) pmsis_fc_tcdm_malloc_free(x,y)
 
 #define DEFAULT_MALLOC_INC  __INC_TO_STRING(rtos/malloc/pmsis_fc_tcdm_malloc.h)
+
+// define task priorities
+#define PMSIS_TASK_MAX_PRIORITY 0
+#define PMSIS_TASK_OS_PRIORITY 1
+#define PMSIS_TASK_USER_PRIORITY 32
+#define PMSIS_TASK_EVENT_KERNEL_PRIORITY (PMSIS_TASK_USER_PRIORITY-1)
 
 #endif
