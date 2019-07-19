@@ -7,6 +7,7 @@
 #include <aos/kernel.h>
 
 #include "rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
+#include "rtos/os_frontend_api/pmsis_task.h"
 #include "pmsis_cluster/cluster_sync/fc_to_cl_delegate.h"
 #include "pmsis_cluster/cluster_team/cl_team.h"
 
@@ -16,6 +17,10 @@ char cluster_string[] = "Cluster says: hello there\n\0";
 volatile uint8_t string_ready = 0;
 volatile uint8_t cl_count[8] = {0};
 
+void cluster_callback(void *arg)
+{
+    printf("Cluster callback is executing\n");
+}
 
 void cluster_slave_work(void *arg)
 {
@@ -40,13 +45,16 @@ int application_start(int argc, char *argv[])
     conf->id = 0;
 
     pi_open_from_conf(cluster_dev, conf);
+    printf("Cluster is open\n");
 #if 1
     struct pi_cluster_task *task = aos_malloc(sizeof(struct pi_cluster_task));
     memset(task, 0, sizeof(struct pi_cluster_task));
     task->entry = cluster_master_entry;
     task->arg = NULL;
 
-    pi_cluster_send_task_to_cl(cluster_dev, task);
+    pi_task_t callback_task;
+    pi_task_callback(&callback_task, cluster_callback, NULL);
+    pi_cluster_send_task_to_cl_async(cluster_dev, task, &callback_task);
 #endif
 #endif
     while(1) {
