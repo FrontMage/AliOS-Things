@@ -1,5 +1,5 @@
 #include "pmsis.h"
-#include "pmsis_driver/uart_internal.h"
+#include "pmsis_driver/uart/uart_internal.h"
 #include <aos/hal/uart.h>
 #include <errno.h>
 #include <stdio.h>
@@ -21,10 +21,10 @@ int32_t hal_uart_init(uart_dev_t *uart)
         
         uart->priv = data;
         data->uart_id = uart->port;
-        data->uart_fifo_head = NULL;
-        data->uart_fifo_tail = NULL;
-        data->uart_fifo_head_rx = NULL;
-        data->uart_fifo_tail_rx = NULL;
+        data->uart_fifo_head[0] = NULL;
+        data->uart_fifo_tail[0] = NULL;
+        data->uart_fifo_head[1] = NULL;
+        data->uart_fifo_tail[1] = NULL;
 
         struct pi_uart_conf conf;
         pi_uart_conf_init(&conf);
