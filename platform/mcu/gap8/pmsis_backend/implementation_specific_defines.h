@@ -6,6 +6,9 @@
 
 #define __INC_TO_STRING(x) #x
 
+#define pmsis_l2_malloc aos_malloc
+#define pmsis_l2_malloc_free(x,y) aos_free(x)
+
 #define IMPLEM_MUTEX_OBJECT_TYPE \
     void *mutex_object;\
     kmutex_t mutex_static;
