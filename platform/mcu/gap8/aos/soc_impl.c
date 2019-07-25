@@ -71,7 +71,7 @@ int printf(const char *fmt, ...)
     return 0;
 }
 
-#if 1
+#if 0
 __attribute__ ((export))
 int vprintf(const char *format, va_list ap)
 {
