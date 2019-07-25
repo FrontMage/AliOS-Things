@@ -89,6 +89,12 @@ if AOS_APP_HELLOWORLD_CLUSTER
         default "helloworld_cluster"
 endif
 
+source "app/example/hyperbus_test/Config.in"
+if AOS_APP_HYBERBUS_TEST
+    config AOS_BUILD_APP
+        default "hyperbus_test"
+endif
+
 source "app/example/http2app/Config.in"
 if AOS_APP_HTTP2APP
     config AOS_BUILD_APP
