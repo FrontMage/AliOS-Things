@@ -145,22 +145,25 @@ uint32_t system_core_clock_get(void)
 {
     return SystemCoreClock;
 }
-
+#include <stdio.h>
+#include <stdlib.h>
+#include "drivers/gap_debug.h"
 /** Mostly useful for non regression testing **/
 void platform_exit(int code)
 {
     if (__native_is_fc()) 
     {
+        printf("native exit\n");
         /* Flush the pending messages to the debug tools
            Notify debug tools about the termination */
         //debug_flush_printf(debug_get_debug_struct());
-        //debug_exit(debug_get_debug_struct(), code);
-
         /* Write return value to APB device */
         SOC_CTRL->CORE_STATUS = SOC_CTRL_CORE_STATUS_EOC(1) | code;
+        DEBUG_Exit(DEBUG_GetDebugStruct(), code);
+        exit(-1);
     }
 
     /* In case the platform does not support exit or this core is not allowed to exit the platform ... */
-    eu_event_mask_clear(0xffffffff);
-    eu_event_wait();
+    hal_eu_evt_mask_clr(0xffffffff);
+    hal_eu_evt_wait();
 }

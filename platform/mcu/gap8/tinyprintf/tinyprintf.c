@@ -518,4 +518,5 @@ int sprintf(char *str, const char *format, ...)
   va_end(ap);
   return retval;
 }
+
 #endif

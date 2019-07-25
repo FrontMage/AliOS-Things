@@ -6,6 +6,96 @@
 #include <assert.h>
 //#include <stdio.h>	
 #include "soc_impl.h"
+
+
+//#define PRINTF_USE_UART
+
+#include "tinyprintf.h"
+#include "gap_debug.h"
+#define PRINTF_BUFF_SIZE 16
+
+uint32_t g_printf_buff_cur_size = 0;
+char g_printf_buff[PRINTF_BUFF_SIZE];
+
+void tfp_putc(void *data, char c)
+{
+#ifdef PRINTF_USE_UART
+    g_printf_buff[g_printf_buff_cur_size] = c;
+    g_printf_buff_cur_size++;
+    if((c=='\n') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))
+    {
+        hal_uart_send(&uart_0, g_printf_buff, g_printf_buff_cur_size, -1);
+
+        g_printf_buff_cur_size = 0;
+    }
+#else
+    // Iter until we can push the character.
+    while (DEBUG_PutcharNoPoll(DEBUG_GetDebugStruct(), c))
+    {
+    }
+
+    // If the buffer has been flushed to the bridge, we now need to send him
+    // a notification
+    if (DEBUG_IsEmpty(DEBUG_GetDebugStruct()))
+    {
+        BRIDGE_PrintfFlush();
+    }
+#endif
+}
+
+static kmutex_t g_printf_mutex;
+static int printf_is_init = 0;
+
+// bridge to the tinyprintf
+__attribute__ ((export))
+int printf(const char *fmt, ...)
+{
+    if(!printf_is_init)
+    {
+        krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
+        krhino_mutex_unlock(&g_printf_mutex);
+#ifndef PRINTF_USE_UART
+        BRIDGE_Init();
+#endif
+        printf_is_init= 1;
+    }
+    krhino_mutex_lock(&g_printf_mutex, RHINO_WAIT_FOREVER);
+    va_list va;
+    va_start(va, fmt);
+    /* Only lock the printf if the cluster is up to avoid mixing FC and cluster output */
+    // ideally should lock here
+    tfp_format(NULL, tfp_putc, fmt, va);
+    // ideally should unlock here
+    va_end(va);
+    krhino_mutex_unlock(&g_printf_mutex);
+    return 0;
+}
+
+#if 1
+__attribute__ ((export))
+int vprintf(const char *format, va_list ap)
+{
+    return 0;
+}
+#endif
+
+__attribute__ ((export))
+int puts(const char *str)
+{
+    char c;
+    do {
+        c = *str;
+        if (c == 0) {
+            tfp_putc(NULL, '\n');
+            break;
+        }
+        tfp_putc(NULL, c);
+        str++;
+    } while(1);
+    return 0;
+}
+
+
 #if 0
 #include "fsl_device_registers.h"
 
@@ -111,84 +201,4 @@ k_mm_region_t g_mm_region[] =
 #else
 #error "Tool chain not supported!"
 #endif
-
-//#define PRINTF_USE_UART
-
-#include "tinyprintf.h"
-#include "gap_debug.h"
-#define PRINTF_BUFF_SIZE 16
-
-uint32_t g_printf_buff_cur_size = 0;
-char g_printf_buff[PRINTF_BUFF_SIZE];
-
-void tfp_putc(void *data, char c)
-{
-#ifdef PRINTF_USE_UART
-    g_printf_buff[g_printf_buff_cur_size] = c;
-    g_printf_buff_cur_size++;
-    if((c=='\n') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))
-    {
-        hal_uart_send(&uart_0, g_printf_buff, g_printf_buff_cur_size, -1);
-
-        g_printf_buff_cur_size = 0;
-    }
-#else
-    // Iter until we can push the character.
-    while (DEBUG_PutcharNoPoll(DEBUG_GetDebugStruct(), c))
-    {
-    }
-
-    // If the buffer has been flushed to the bridge, we now need to send him
-    // a notification
-    if (DEBUG_IsEmpty(DEBUG_GetDebugStruct()))
-    {
-        BRIDGE_PrintfFlush();
-    }
-#endif
-}
-
-static kmutex_t g_printf_mutex;
-static int printf_is_init = 0;
-
-// bridge to the tinyprintf
-__attribute__ ((export))
-int printf(const char *fmt, ...)
-{
-    if(!printf_is_init)
-    {
-        krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
-        krhino_mutex_unlock(&g_printf_mutex);
-#ifndef PRINTF_USE_UART
-        BRIDGE_Init();
-#endif
-        printf_is_init= 1;
-    }
-    krhino_mutex_lock(&g_printf_mutex, RHINO_WAIT_FOREVER);
-    va_list va;
-    va_start(va, fmt);
-    /* Only lock the printf if the cluster is up to avoid mixing FC and cluster output */
-    // ideally should lock here
-    tfp_format(NULL, tfp_putc, fmt, va);
-    // ideally should unlock here
-    va_end(va);
-    krhino_mutex_unlock(&g_printf_mutex);
-    return 0;
-}
-
-__attribute__ ((export))
-int puts(const char *str)
-{
-    char c;
-    do {
-        c = *str;
-        if (c == 0) {
-            tfp_putc(NULL, '\n');
-            break;
-        }
-        tfp_putc(NULL, c);
-        str++;
-    } while(1);
-    return 0;
-}
-
 int g_region_num = sizeof(g_mm_region)/sizeof(k_mm_region_t);

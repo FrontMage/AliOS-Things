@@ -171,6 +171,10 @@ void tfp_format(void *putp, putcf putf, const char *fmt, va_list va);
 /* # endif */
 /* #endif */
 
+
+int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+
+int snprintf(char *str, size_t size, const char *format, ...);
 #if TINYPRINTF_DEFINE_TFP_PRINTF
 void init_printf(void *putp, putcf putf);
 void tfp_printf(char *fmt, ...) _TFP_SPECIFY_PRINTF_FMT(1, 2);
