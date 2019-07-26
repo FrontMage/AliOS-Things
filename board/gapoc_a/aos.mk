@@ -26,7 +26,7 @@ $(NAME)_SOURCES     += ./clock_config.c
 $(NAME)_SOURCES     += ./pin_mux.c
 
 # include pmsis stuff
-include ./platform/mcu/gap8/PMSIS/pmsis.mk
+include ./platform/mcu/gap8/pmsis.mk
 # configure for soc and board
 GLOBAL_CFLAGS   += -D__GAP8__ -D__GAPOC_A__
 GLOBAL_ASMFLAGS += -D__GAP8__ -D__GAPOC_A__

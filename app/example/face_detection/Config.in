@@ -1,0 +1,9 @@
+config AOS_APP_FACE_DETECTION_DEMO
+    bool "gap_face_detection"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Face Detection Demo
+
+if AOS_APP_FACE_DETECTION_DEMO
+# Configurations for app face detection
+endif
