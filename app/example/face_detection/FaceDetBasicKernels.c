@@ -11,6 +11,8 @@
 #include <math.h>
 #include "FaceDetBasicKernels.h"
 #include "setup.h"
+#include "pmsis.h"
+#include "pmsis_cluster/dma/cl_dma.h"
 
 static inline unsigned int __attribute__((always_inline)) ChunkSize(unsigned int X)
 
@@ -269,7 +271,7 @@ static void spawn_eval_weak_classifier(eval_weak_classifier_Arg_T* Arg){
 }
 
 //COPY a cascade stage to L1
-void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* cascade_l1, rt_dma_copy_t* Dma_Evt){
+void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* cascade_l1, cl_dma_copy_t* Dma_Evt){
 
     unsigned int addr = (unsigned int) cascade_l1;
     //cascade_l1 = cascade_l1(single_cascade_t*) addr;
@@ -281,12 +283,12 @@ void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* c
 
     cascade_l1->thresholds     = (short*)addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);
     addr+=sizeof(short)*cascade_l1->stage_size;
-    rt_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, RT_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    rt_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
     rt_dma_wait(Dma_Evt);
 
     cascade_l1->alpha1       = (short*) addr;//(short*)rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);
     addr+=sizeof(short)*cascade_l1->stage_size;
-    rt_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, RT_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    rt_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
     rt_dma_wait(Dma_Evt);
 
     cascade_l1->alpha2         = (short*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);

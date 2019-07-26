@@ -232,7 +232,7 @@ void FaceDetectionConfiguration(unsigned int L1Memory)
     SetSymbolDynamics();
 	SetKernelOpts(KER_OPT_NONE, KER_OPT_BUFFER_PROMOTE);
 
-    SetUsedFilesNames(0, 1, "FaceDetBasicKernels.h");
+    SetUsedFilesNames(0, 2, "FaceDetBasicKernels.h","pmsis_tiling.h");
     SetGeneratedFilesNames("FaceDetKernelsInit.c", "FaceDetKernelsInit.h", "FaceDetKernels.c", "FaceDetKernels.h");
 
     SetL1MemorySize(L1Memory);

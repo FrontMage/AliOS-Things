@@ -1,6 +1,8 @@
 GLOBAL_INCLUDES += ./PMSIS/
 GLOBAL_INCLUDES += ./PMSIS/pmsis_api/include/
+GLOBAL_INCLUDES += ./PMSIS/pmsis_api/include/chips/gap8/
 GLOBAL_INCLUDES += ./PMSIS/cores/TARGET_RISCV_32/
+GLOBAL_INCLUDES += ./pmsis_bsp/include/
 
 #drivers
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/uart/uart.c
