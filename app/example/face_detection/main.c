@@ -41,10 +41,10 @@ static struct pi_device device;
 static uint64_t fb;
 #endif
 
-RT_L2_DATA unsigned char *ImageOut;
-RT_L2_DATA unsigned int *ImageIntegral;
-RT_L2_DATA unsigned int *SquaredImageIntegral;
-RT_L2_DATA char str_to_lcd[100];
+L2_MEM unsigned char *ImageOut;
+L2_MEM unsigned int *ImageIntegral;
+L2_MEM unsigned int *SquaredImageIntegral;
+L2_MEM char str_to_lcd[100];
 
 
 
@@ -136,7 +136,8 @@ static int open_camera(struct pi_device *device)
   return -1;
 }
 
-int main()
+//int main()
+int application_start(int argc, char *argv[])
 {
   //printf("Entering main controller...\n");
 

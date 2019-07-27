@@ -21,7 +21,7 @@ static inline unsigned int __attribute__((always_inline)) ChunkSize(unsigned int
 	unsigned int Log2Core;
 	unsigned int Chunk;
 
-	NCore = rt_nb_pe();
+	NCore = gap8_ncore();
 	Log2Core = gap8_fl1(NCore);
 	Chunk = (X>>Log2Core) + ((X&(NCore-1))!=0);
 	return Chunk;
@@ -39,7 +39,7 @@ void KerResizeBilinear(KerResizeBilinear_ArgT *Arg)
         unsigned int HTileOut            = Arg->HTileOut;
         unsigned int FirstLineIndex      = Arg->FirstLineIndex;
 
-        unsigned int CoreId = rt_core_id();
+        unsigned int CoreId = gap8_coreid();
         unsigned int ChunkCell = ChunkSize(Wout);
         unsigned int First = CoreId*ChunkCell, Last  = Min(Wout, First+ChunkCell);
 
@@ -70,7 +70,7 @@ void KerResizeBilinear(KerResizeBilinear_ArgT *Arg)
                 }
                 hCoeff += HStep;
         }
-        gap8_waitbarrier(0);gap8_waitbarrier(0);
+        cl_team_barrier();
 }
 
 
@@ -78,12 +78,12 @@ void KerIntegralImagePrime(KerPrimeImage_ArgT *KerArg)
 {
         unsigned int W = KerArg->W;
         unsigned int *Buffer = KerArg->KerBuffer;
-        unsigned int Col,CoreId = rt_core_id();
+        unsigned int Col,CoreId = gap8_coreid();
 
         unsigned int ChunkBlock = ChunkSize(W);
         unsigned int First = CoreId*ChunkBlock;
         unsigned int Last  = (First+ChunkBlock > W) ? (W) : (First+ChunkBlock);
-        
+
         for (Col=First; Col<Last; Col++){
                 Buffer[Col] = 0;
         }
@@ -99,7 +99,7 @@ void KerIntegralImageProcess(KerProcessImage_ArgT *KerArg)
         unsigned int* outIntImg = KerArg->IntegralImage;
         unsigned int* buff = KerArg->KerBuffer;
         unsigned int Col,Line;
-        unsigned int CoreId = rt_core_id();
+        unsigned int CoreId = gap8_coreid();
 
         unsigned int ChunkBlock = ChunkSize(W);
         unsigned int FirstCol = CoreId*ChunkBlock;
@@ -114,15 +114,15 @@ void KerIntegralImageProcess(KerProcessImage_ArgT *KerArg)
                 for (Line=0; Line<H-1; Line++){
                         outIntImg[Col + ((Line+1)*W)] = outIntImg[Col+(Line)*W] + inImg[Col+(Line+1)*W];
                 }
-                        
+
         }
-        rt_team_barrier();
+        cl_team_barrier();
         //Saving to Buff intermediate results
         for (Col=FirstCol; Col<LastCol; Col++){
                 buff[Col] = outIntImg[Col+((H-1)*W)];
         }
-                
-        rt_team_barrier();
+
+        cl_team_barrier();
         for (Line=FirstLine; Line<LastLine; Line++){
                 for (Col=0; Col<W-1; Col++){
                         outIntImg[Col+1 +(Line*W)] = outIntImg[Col+(Line)*W] + outIntImg[Col+1+(Line)*W];
@@ -140,7 +140,7 @@ void KerSquaredIntegralImageProcess(KerProcessImage_ArgT *KerArg)
         unsigned int* outIntImg = KerArg->IntegralImage;
         unsigned int* buff = KerArg->KerBuffer;
         unsigned int Col,Line;
-        unsigned int CoreId = rt_core_id();
+        unsigned int CoreId = gap8_coreid();
 
         unsigned int ChunkBlock = ChunkSize(W);
         unsigned int FirstCol = CoreId*ChunkBlock;
@@ -155,15 +155,15 @@ void KerSquaredIntegralImageProcess(KerProcessImage_ArgT *KerArg)
                 for (Line=0; Line<H-1; Line++){
                         outIntImg[Col + ((Line+1)*W)] = outIntImg[Col+(Line)*W] + (inImg[Col+(Line+1)*W]*inImg[Col+(Line+1)*W]);
                 }
-                        
+
         }
-        rt_team_barrier();
+        cl_team_barrier();
         //Saving to Buff intermediate results
         for (Col=FirstCol; Col<LastCol; Col++){
                 buff[Col] = outIntImg[Col+((H-1)*W)];
         }
-                
-        rt_team_barrier();
+
+        cl_team_barrier();
         for (Line=FirstLine; Line<LastLine; Line++){
                 for (Col=0; Col<W-1; Col++){
                         outIntImg[Col+1 +(Line*W)] = outIntImg[Col+(Line)*W] + outIntImg[Col+1+(Line)*W];
@@ -210,7 +210,7 @@ static unsigned int SquareRootRounded(unsigned int a_nInput)
 
 
 static __attribute__((always_inline)) inline int integral_image_lookup(unsigned int* __restrict__ integralImage, int x, int y, int w, int h, int win_w){
-        
+
         //volatile int pos = (h+y)*win_w + w+x;
         //volatile int pos1 = (h+y)*win_w + w+x;
         //volatile int pos2 = (h+y)*win_w + w+x;
@@ -218,17 +218,17 @@ static __attribute__((always_inline)) inline int integral_image_lookup(unsigned 
         //printf("%x\n",&(integralImage[0]));
         //unsigned int res = 0;//integralImage[0];
         unsigned int res = (integralImage[(h+y)*win_w + w+x] + integralImage[(y*win_w) + x] - integralImage[(y)*win_w + w+x] -integralImage[(h+y)*win_w + x]);
-        
+
         //#define DEBUG 1
         //printf("II values:%d %d %d %d: %d\n", integralImage[(y)*win_w + x],integralImage[(h+y)*win_w + w+x], integralImage[(y)*win_w + w+x],integralImage[(h+y)*win_w + x], res);
-        
+
         return res;
 }
 
 static int eval_weak_classifier(unsigned int* __restrict__ integralImage,int img_w, single_cascade_t* __restrict__ weaks, int std,int t_idx, int w_idx, int r_idx,int off_x, int off_y){
 
         int sumw=0;
-    
+
 
         /* The node threshold is multiplied by the standard deviation of the sub window */
         int t = (int)weaks->thresholds[t_idx] * std;
@@ -254,19 +254,19 @@ static void spawn_eval_weak_classifier(eval_weak_classifier_Arg_T* Arg){
 
     single_cascade_t *single_cascade=Arg->cascade_stage;
 
-    unsigned int CoreId = rt_core_id(); 
+    unsigned int CoreId = gap8_coreid();
     unsigned int ChunkBlock = ChunkSize(single_cascade->stage_size);
     unsigned int FirstCol = CoreId*ChunkBlock;
     unsigned int LastCol  = (FirstCol+ChunkBlock > (single_cascade->stage_size)) ? (single_cascade->stage_size) : (FirstCol+ChunkBlock);
 
     int w_idx, r_idx;
     Arg->stage_sum[CoreId] = 0;
-               
+
     for (unsigned int t_idx=FirstCol; t_idx<LastCol; t_idx++) {
         w_idx = single_cascade->rect_num[t_idx];
         r_idx = single_cascade->rect_num[t_idx] * 4;
         // Send the shifted window to a haar filter
-        Arg->stage_sum[CoreId] += eval_weak_classifier(Arg->integralImage,Arg->img_w,single_cascade, Arg->std, t_idx, w_idx, r_idx, Arg->off_x, Arg->off_y);                   
+        Arg->stage_sum[CoreId] += eval_weak_classifier(Arg->integralImage,Arg->img_w,single_cascade, Arg->std, t_idx, w_idx, r_idx, Arg->off_x, Arg->off_y);
     }
 }
 
@@ -275,7 +275,7 @@ void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* c
 
     unsigned int addr = (unsigned int) cascade_l1;
     //cascade_l1 = cascade_l1(single_cascade_t*) addr;
-    
+
     addr+= sizeof(single_cascade_t);
 
     cascade_l1->stage_size = cascade_l2->stage_size;
@@ -283,40 +283,40 @@ void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* c
 
     cascade_l1->thresholds     = (short*)addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);
     addr+=sizeof(short)*cascade_l1->stage_size;
-    rt_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    rt_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    cl_dma_wait(Dma_Evt);
 
     cascade_l1->alpha1       = (short*) addr;//(short*)rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);
     addr+=sizeof(short)*cascade_l1->stage_size;
-    rt_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    rt_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    cl_dma_wait(Dma_Evt);
 
     cascade_l1->alpha2         = (short*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);
     addr+=sizeof(short)*cascade_l1->stage_size;
-    rt_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, RT_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    rt_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    cl_dma_wait(Dma_Evt);
 
     cascade_l1->rect_num       = (unsigned  short*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(unsigned short)*((cascade_l2->stage_size)+1));
     addr+= sizeof(unsigned short)*((cascade_l1->stage_size)+1);
-    rt_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), RT_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    rt_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    cl_dma_wait(Dma_Evt);
 
     cascade_l1->weights    = (signed char*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(signed char)*(cascade_l2->rectangles_size/4));
     addr+=sizeof(signed char)*(cascade_l1->rectangles_size << 2);
-    rt_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), RT_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    rt_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    cl_dma_wait(Dma_Evt);
 
     cascade_l1->rectangles = (char*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(char)*cascade_l2->rectangles_size);
     addr+=sizeof(signed char)*(cascade_l2->rectangles_size<<2);
-    rt_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, RT_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    rt_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    cl_dma_wait(Dma_Evt);
 
 }
 
 
 static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, unsigned int* __restrict__ sqaredIntegralImage, cascade_t * __restrict__ cascade, int win_w, int win_h, int img_w,int off_x, int off_y){
-        
-        rt_dma_copy_t Dma_Evt;
+
+        cl_dma_copy_t Dma_Evt;
         int buffer=0;
         int n = (win_w * win_h);
         int i_s = integral_image_lookup (integralImage,      off_x,off_y,win_w,win_h,img_w);
@@ -332,15 +332,15 @@ static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, 
         #endif
 
         int std = i_sq*n-(i_s*i_s);
-        
+
         std = SquareRootRounded(std);
-        
+
         int stage_sum[8];
         int stages_score=0;
         eval_weak_classifier_Arg_T Arg;
 
         Arg.integralImage = integralImage;
-        
+
         Arg.img_w = img_w;
         Arg.stage_sum = stage_sum;
         Arg.std   = std;
@@ -354,9 +354,9 @@ static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, 
                 //printf("Here %d\n",i);
                 if(i<CASCADE_STAGES_L1)
                     Arg.cascade_stage=(cascade->stages[i]);
-                
+
                 if(i>=CASCADE_STAGES_L1){
-                    rt_dma_wait(&Dma_Evt);
+                    cl_dma_wait(&Dma_Evt);
                     //printf("Here 1 %d\n",i);
                     Arg.cascade_stage = (cascade->buffers_l1[buffer%2]);
                     //If it is not last
@@ -364,7 +364,7 @@ static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, 
                         async_cascade_stage_to_l1((cascade->stages[i+1]), (cascade->buffers_l1[(++buffer)%2]), &Dma_Evt);
                     //printf("Here 2 %d\n",i);
                 }
-                rt_team_fork(gap8_ncore(), (void *) spawn_eval_weak_classifier, (void *) &Arg);
+                cl_team_fork(gap8_ncore(), (void *) spawn_eval_weak_classifier, (void *) &Arg);
                 stage_sum[0]+= stage_sum[1] + stage_sum[2] + stage_sum[3] + stage_sum[4] + stage_sum[5] + stage_sum[6] + stage_sum[7];
                 //Move this operation offline
                 stages_score+=stage_sum[0]-cascade->thresholds[i];
@@ -398,7 +398,7 @@ void KerEvaluateCascade(
             CascadeReponse[Line*(W-WinW+1) + (Col)]=0;
         }
     }
-            
+
     return;
 }
 

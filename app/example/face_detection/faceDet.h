@@ -1,3 +1,6 @@
+#ifndef __FACE_DET_H__
+#define __FACE_DET_H__
+
 #include "pmsis.h"
 #include "pmsis_types.h"
 #include "FaceDetKernels.h"
@@ -33,16 +36,7 @@ typedef struct ArgCluster {
 	unsigned int cycles;
 } ArgCluster_T;
 
-
-typedef struct {
-  unsigned int	L2_Addr;
-  unsigned int 	Size;
-  unsigned int	imgReady;
-  unsigned int	camReady;
-} ImgDescriptor;
-
-ImgDescriptor ImageOutHeader;
-
-
 void faceDet_cluster_init(ArgCluster_T *ArgC);
 void faceDet_cluster_main(ArgCluster_T *ArgC);
+
+#endif

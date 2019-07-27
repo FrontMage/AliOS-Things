@@ -165,30 +165,30 @@ static single_cascade_t* sync_copy_cascade_stage_to_l1(single_cascade_t* cascade
 
 
 	cascade_l1->thresholds     = (short*)__l1_malloc_private(sizeof(short)*cascade_l2->stage_size);
-	__cl_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, RT_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
 	cl_dma_wait(&DmaR_Evt1);
 
 
 	cascade_l1->alpha1         = (short*)__l1_malloc_private( sizeof(short)*cascade_l2->stage_size);
-	__cl_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, RT_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
 	cl_dma_wait(&DmaR_Evt1);
 
 	cascade_l1->alpha2         = (short*)__l1_malloc_private( sizeof(short)*cascade_l2->stage_size);
-	__cl_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, RT_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
 	cl_dma_wait(&DmaR_Evt1);
 
 	cascade_l1->rect_num       = (unsigned  short*)__l1_malloc_private( sizeof(unsigned short)*((cascade_l2->stage_size)+1));
-	__cl_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), RT_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
 	cl_dma_wait(&DmaR_Evt1);
 
 
 	cascade_l1->weights    = (signed char*)__l1_malloc_private( sizeof(signed char)*(cascade_l2->rectangles_size/4));
-	__cl_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), RT_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
 	cl_dma_wait(&DmaR_Evt1);
 
 
 	cascade_l1->rectangles = (char*)__l1_malloc_private( sizeof(char)*cascade_l2->rectangles_size);
-	__cl_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, RT_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
 	cl_dma_wait(&DmaR_Evt1);
 
 	if(cascade_l1->rectangles==0)
@@ -320,7 +320,7 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 	int Win=ArgC->Win, Hin=ArgC->Hin;
 	int Wout, Hout;
 
-	unsigned int i, MaxCore = rt_nb_pe(),Ti;
+	unsigned int i, MaxCore = gap8_ncore(),Ti;
 
 	//create structure for output
 	cascade_reponse_t* reponses = ArgC->reponses;
@@ -331,8 +331,9 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 
 	int result;
 
-    gap8_resethwtimer();
-    Ti = gap8_readhwtimer();
+    // TODO: Perf api haven't been implemented yet.
+    //gap8_resethwtimer();
+    Ti = 0; //gap8_readhwtimer();
 
 
 	//Init image windows
@@ -414,7 +415,8 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 
 	non_max_suppress(reponses,reponse_idx);
 
-    ArgC->cycles = gap8_readhwtimer() - Ti;
+    // TODO: reset when perf api done
+    ArgC->cycles = 0; //gap8_readhwtimer() - Ti;
     //printf("Test Face Detection CNN Cluster cycles: %d\n", Ti);
 
 

@@ -11,6 +11,7 @@
 #define __IIBASICKERNELS_H__
 
 #include "Gap8.h"
+#include "pmsis_tiling.h"
 #include "StdTypes.h"
 #include "cascade.h"
 
