@@ -6,6 +6,7 @@
 
 #define __INC_TO_STRING(x) #x
 
+#define __L2_MALLOC_NATIVE__ 1
 #define pmsis_l2_malloc aos_malloc
 #define pmsis_l2_malloc_free(x,y) aos_free(x)
 
