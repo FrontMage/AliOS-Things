@@ -32,3 +32,20 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/os/pmsis_driver_core.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_synchronisation/fc_to_cl_delegate.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_synchronisation/cl_to_fc_delegate.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_team/cl_team.c
+
+#BSP
+$(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapoc_a.c
+$(NAME)_SOURCES     += ./pmsis_bsp/camera/camera.c
+$(NAME)_SOURCES     += ./pmsis_bsp/camera/mt9v034/mt9v034.c
+$(NAME)_SOURCES     += ./pmsis_bsp/flash/flash.c
+$(NAME)_SOURCES     += ./pmsis_bsp/fs/read_fs/read_fs.c
+$(NAME)_SOURCES     += ./pmsis_bsp/flash/hyperflash/hyperflash.c
+$(NAME)_SOURCES     += ./pmsis_bsp/transport/transport.c
+$(NAME)_SOURCES     += ./pmsis_bsp/display/display.c
+$(NAME)_SOURCES     += ./pmsis_bsp/display/ili9341/ili9341.c
+$(NAME)_SOURCES     += ./pmsis_bsp/transport/nina_w10/nina_w10.c
+#$(NAME)_SOURCES     += ./pmsis_bsp/ram/hyperram/hyperram.c
+#$(NAME)_SOURCES     += ./pmsis_bsp/ram/ram.c
+$(NAME)_SOURCES     += ./pmsis_bsp/ram/alloc_extern.c
+$(NAME)_SOURCES     += ./pmsis_bsp/ble/nina_b112/nina_b112.c
+
