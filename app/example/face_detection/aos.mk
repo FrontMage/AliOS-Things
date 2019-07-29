@@ -18,7 +18,7 @@ MODEL_SRC = $(APP_PATH)/FaceDetGenerator.c $(APP_PATH)/FaceDetModel.c
 MODEL_GEN = FaceDetKernels FaceDetKernelsInit
 MODEL_GEN_C = $(addsuffix .c, $(MODEL_GEN))
 MODEL_GEN_CLEAN = $(MODEL_GEN_C) $(addsuffix .h, $(MODEL_GEN))
-APP_CFLAGS += -w
+APP_CFLAGS += -w -D__PMSIS__
 
 PMSIS_BSP_ROOT = $(GAP8_PATH)/pmsis_bsp/
 

@@ -43,9 +43,9 @@ $(NAME)_SOURCES     += ./pmsis_bsp/flash/hyperflash/hyperflash.c
 $(NAME)_SOURCES     += ./pmsis_bsp/transport/transport.c
 $(NAME)_SOURCES     += ./pmsis_bsp/display/display.c
 $(NAME)_SOURCES     += ./pmsis_bsp/display/ili9341/ili9341.c
-$(NAME)_SOURCES     += ./pmsis_bsp/transport/nina_w10/nina_w10.c
-#$(NAME)_SOURCES     += ./pmsis_bsp/ram/hyperram/hyperram.c
-#$(NAME)_SOURCES     += ./pmsis_bsp/ram/ram.c
+#$(NAME)_SOURCES     += ./pmsis_bsp/transport/nina_w10/nina_w10.c
+$(NAME)_SOURCES     += ./pmsis_bsp/ram/hyperram/hyperram.c
+$(NAME)_SOURCES     += ./pmsis_bsp/ram/ram.c
 $(NAME)_SOURCES     += ./pmsis_bsp/ram/alloc_extern.c
 $(NAME)_SOURCES     += ./pmsis_bsp/ble/nina_b112/nina_b112.c
 

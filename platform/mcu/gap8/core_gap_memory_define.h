@@ -68,4 +68,6 @@
 
 #define FC_L1_MEM          GAP_FC_DATA
 
+#define PI_L2              GAP_L2_DATA
+
 #endif
