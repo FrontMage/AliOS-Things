@@ -40,6 +40,7 @@ $(NAME)_SOURCES := gcc/startup_gap8.S                          \
                    drivers/aos_uart.c                          \
                    drivers/gap_bridge.c                        \
                    pmsis_backend/pmsis_backend_native_task_api.c \
+                   pmsis_backend/pmsis_backend_time.c \
                    system_gap8.c
 
 GLOBAL_LDS_FILES += platform/mcu/gap8/gcc/gap8.ld
