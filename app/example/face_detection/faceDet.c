@@ -1,6 +1,9 @@
 #include "faceDet.h"
 #include "face_cascade.h"
 
+#undef DEBUG_PRINTF
+#define DEBUG_PRINTF(...) ((void ) 0)
+
 uint8_t * face_det_l1_memory;
 uint32_t  l1_offset = 0;
 
@@ -10,7 +13,7 @@ static uint8_t* __l1_malloc_private(uint32_t size)
     l1_offset += size;
     if (l1_offset > FACE_DETECT_L1_MEMORY_POOL_SIZE)
     {
-        printf("Problem of allocate L1, overflowed\n");
+        DEBUG_PRINTF("Problem of allocate L1, overflowed\n");
         return 0;
     }
     return (face_det_l1_memory + _offset);
@@ -22,7 +25,7 @@ static cascade_t *getFaceCascade(){
 
 	face_cascade = (cascade_t*) __l1_malloc_private(sizeof(cascade_t));
 	if(face_cascade==0){
-		printf("Error allocatin model thresholds...");
+		DEBUG_PRINTF("Error allocatin model thresholds...");
 		return 0;
 	}
 	single_cascade_t  **model_stages = (single_cascade_t**) __l1_malloc_private(sizeof(single_cascade_t*)*CASCADE_TOTAL_STAGES);
@@ -30,7 +33,7 @@ static cascade_t *getFaceCascade(){
 	face_cascade->stages_num = CASCADE_TOTAL_STAGES;
 	face_cascade->thresholds = (signed short *) __l1_malloc_private( sizeof(signed short )*face_cascade->stages_num);
 	if(face_cascade->thresholds==0){
-		printf("Error allocatin model thresholds...");
+		DEBUG_PRINTF("Error allocatin model thresholds...");
 		return 0;
 	}
 
@@ -144,7 +147,7 @@ static int biggest_cascade_stage(cascade_t *cascade){
 
 		if(cur_layer>biggest_stage_size)
 			biggest_stage_size=cur_layer;
-		//printf ("Stage size: %d\n",cur_layer);
+		//DEBUG_PRINTF ("Stage size: %d\n",cur_layer);
 	}
 
 	return biggest_stage_size;
@@ -192,7 +195,7 @@ static single_cascade_t* sync_copy_cascade_stage_to_l1(single_cascade_t* cascade
 	cl_dma_wait(&DmaR_Evt1);
 
 	if(cascade_l1->rectangles==0)
-		printf("Allocation Error...\n");
+		DEBUG_PRINTF("Allocation Error...\n");
 
 	return cascade_l1;
 }
@@ -257,30 +260,30 @@ static void non_max_suppress(cascade_reponse_t* reponses, int reponse_idx){
 
 void faceDet_cluster_init(ArgCluster_T *ArgC){
 
-	//printf ("Cluster Init start\n");
+	//DEBUG_PRINTF ("Cluster Init start\n");
 
     face_det_l1_memory = (char *) pmsis_l1_malloc(FACE_DETECT_L1_MEMORY_POOL_SIZE);
     if (!face_det_l1_memory) {
-		printf("Failed to allocate L1 memory pool\n");
+		DEBUG_PRINTF("Failed to allocate L1 memory pool\n");
         return ;
 	}
 
 	FaceDet_L1_Memory = (char *) __l1_malloc_private(_FaceDet_L1_Memory_SIZE);
 	if (FaceDet_L1_Memory == 0) {
-		printf("Failed to allocate %d bytes for L1_memory\n", _FaceDet_L1_Memory_SIZE); return ;
+		DEBUG_PRINTF("Failed to allocate %d bytes for L1_memory\n", _FaceDet_L1_Memory_SIZE); return ;
 	}
 
 	ArgC->output_map = pmsis_l2_malloc(sizeof(unsigned int)*(ArgC->Hout-24+1)*(ArgC->Wout-24+1));
 
 	if(ArgC->output_map==0){
-		printf("Error Allocating output buffer...");
+		DEBUG_PRINTF("Error Allocating output buffer...");
 		return;
 	}
 	//Get Cascade Model
 	ArgC->model = getFaceCascade();
 
 	int max_cascade_size = biggest_cascade_stage(ArgC->model);
-	//printf("Max cascade size:%d\n",max_cascade_size);
+	//DEBUG_PRINTF("Max cascade size:%d\n",max_cascade_size);
 
 	for(int i=0;i<CASCADE_STAGES_L1;i++)
 		ArgC->model->stages[i] = sync_copy_cascade_stage_to_l1((ArgC->model->stages[i]));
@@ -293,11 +296,11 @@ void faceDet_cluster_init(ArgCluster_T *ArgC){
 
 
 	if(ArgC->model->buffers_l1[0]==0 ){
-		printf("Error allocating cascade buffer 0...\n");
+		DEBUG_PRINTF("Error allocating cascade buffer 0...\n");
 	}
 	if(
 	ArgC->model->buffers_l1[1] == 0){
-		printf("Error allocating cascade buffer 1...\n");
+		DEBUG_PRINTF("Error allocating cascade buffer 1...\n");
 	}
 
 	ArgC->reponses = (cascade_reponse_t*) pmsis_l2_malloc(sizeof(cascade_reponse_t)*MAX_NUM_OUT_WINS);
@@ -315,7 +318,7 @@ void faceDet_cluster_deinit(ArgCluster_T *ArgC)
 
 void faceDet_cluster_main(ArgCluster_T *ArgC)
 {
-	//printf ("Cluster master start\n");
+	DEBUG_PRINTF ("Cluster master start\n");
 
 	int Win=ArgC->Win, Hin=ArgC->Hin;
 	int Wout, Hout;
@@ -358,7 +361,7 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 				reponses[reponse_idx].h = (24*Hin)/Hout;
 				reponses[reponse_idx].score   = result;
 				reponse_idx++;
-				//	printf("Face Found in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
+					//DEBUG_PRINTF("Face Found in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
 			}
 	}
 #endif
@@ -383,7 +386,7 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 				reponses[reponse_idx].h 	= (24*Hin)/Hout;
 				reponses[reponse_idx].score = result;
 				reponse_idx++;
-				//	printf("Face Found in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
+					//DEBUG_PRINTF("Face Found in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
 			}
 	}
 #endif
@@ -407,7 +410,7 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 				reponses[reponse_idx].h 	= (24*Hin)/Hout;
 				reponses[reponse_idx].score = result;
 				reponse_idx++;
-				//	printf("Face Found in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
+					//DEBUG_PRINTF("Face Found in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
 			}
 	}
 
@@ -417,13 +420,13 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 
     // TODO: reset when perf api done
     ArgC->cycles = 0; //gap8_readhwtimer() - Ti;
-    //printf("Test Face Detection CNN Cluster cycles: %d\n", Ti);
+    //DEBUG_PRINTF("Test Face Detection CNN Cluster cycles: %d\n", Ti);
 
 
 	ArgC->num_reponse=reponse_idx;
 	for(int i=0;i<reponse_idx;i++)
 		if(reponses[i].x!=-1){
-			//printf("X: %d Y: %d W: %d H: %d\n",reponses[i].x,reponses[i].y,reponses[i].w,reponses[i].h);
+			DEBUG_PRINTF("X: %d Y: %d W: %d H: %d\n",reponses[i].x,reponses[i].y,reponses[i].w,reponses[i].h);
 			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x, reponses[i].y, reponses[i].w, reponses[i].h, 0);
 			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-1, reponses[i].y-1, reponses[i].w+2, reponses[i].h+2, 0);
 			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-2, reponses[i].y-2, reponses[i].w+4, reponses[i].h+4, 0);

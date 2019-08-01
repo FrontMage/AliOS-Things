@@ -33,6 +33,9 @@
 #define LCD_WIDTH    320
 #define LCD_HEIGHT   240
 
+#define DEBUG_PRINTF(...)
+//#define DEBUG_PRINTF printf
+
 static unsigned char *imgBuff0;
 static struct pi_device ili;
 static pi_buffer_t buffer;
@@ -52,6 +55,7 @@ ArgCluster_T ClusterCall;
 
 static int open_display(struct pi_device *device)
 {
+#ifdef USE_DISPLAY
   struct ili9341_conf ili_conf;
 
   ili9341_conf_init(&ili_conf);
@@ -61,6 +65,7 @@ static int open_display(struct pi_device *device)
   if (display_open(device))
     return -1;
 
+#endif
   return 0;
 }
 
@@ -70,6 +75,7 @@ static int open_camera_mt9v034(struct pi_device *device)
 
   mt9v034_conf_init(&cam_conf);
   cam_conf.format = CAMERA_QVGA;
+  DEBUG_PRINTF("camera init\n");
 
   pi_open_from_conf(device, &cam_conf);
   if (camera_open(device))
@@ -80,14 +86,18 @@ static int open_camera_mt9v034(struct pi_device *device)
 
 static int open_camera(struct pi_device *device)
 {
+#ifdef USE_CAMERA
   return open_camera_mt9v034(device);
   return -1;
+#else
+  return 0;
+#endif
 }
 
 //int main()
 int application_start(int argc, char *argv[])
 {
-  //printf("Entering main controller...\n");
+  DEBUG_PRINTF("Entering main controller...\n");
 
   unsigned int W = CAM_WIDTH, H = CAM_HEIGHT;
   unsigned int Wout = 64, Hout = 48;
@@ -95,7 +105,7 @@ int application_start(int argc, char *argv[])
 
   imgBuff0 = (unsigned char *)pmsis_l2_malloc((CAM_WIDTH*CAM_HEIGHT)*sizeof(unsigned char));
   if (imgBuff0 == NULL) {
-      printf("Failed to allocate Memory for Image \n");
+      DEBUG_PRINTF("Failed to allocate Memory for Image \n");
       return 1;
   }
 
@@ -105,25 +115,29 @@ int application_start(int argc, char *argv[])
   SquaredImageIntegral = (unsigned int *)  pmsis_l2_malloc((Wout*Hout)*sizeof(unsigned int));
 
   if (ImageOut==0) {
-    printf("Failed to allocate Memory for Image (%d bytes)\n", ImgSize*sizeof(unsigned char));
+    DEBUG_PRINTF("Failed to allocate Memory for Image (%d bytes)\n", ImgSize*sizeof(unsigned char));
     return 1;
   }
   if (ImageIntegral==0 || SquaredImageIntegral==0) {
-    printf("Failed to allocate Memory for one or both Integral Images (%d bytes)\n", ImgSize*sizeof(unsigned int));
+    DEBUG_PRINTF("Failed to allocate Memory for one or both Integral Images (%d bytes)\n", ImgSize*sizeof(unsigned int));
     return 1;
   }
+  DEBUG_PRINTF("malloc done\n");
 
+  board_init();
   if (open_display(&ili))
   {
-    printf("Failed to open display\n");
+    DEBUG_PRINTF("Failed to open display\n");
     return -1;
   }
+  DEBUG_PRINTF("display done\n");
 
   if (open_camera(&device))
   {
-    printf("Failed to open camera\n");
+    DEBUG_PRINTF("Failed to open camera\n");
     return -1;
   }
+  DEBUG_PRINTF("Camera open success\n");
 
   buffer.data = imgBuff0;
   pi_buffer_init(&buffer, PI_BUFFER_TYPE_L2, imgBuff0);
@@ -138,20 +152,14 @@ int application_start(int argc, char *argv[])
   ClusterCall.ImageIntegral        = ImageIntegral;
   ClusterCall.SquaredImageIntegral = SquaredImageIntegral;
 
-  conf.id = 0;
-  conf.device_type = 0;
-
-
   //Why il faut faire le deux
+  pi_cluster_conf_init(&conf);
   pi_open_from_conf(&cluster_dev, (void*)&conf);
-  pi_cluster_open(&cluster_dev);
-
 
   task = pmsis_l2_malloc(sizeof(struct pi_cluster_task));
   memset(task, 0, sizeof(struct pi_cluster_task));
   task->entry = faceDet_cluster_init;
   task->arg = &ClusterCall;
-
 
   pi_cluster_send_task_to_cl(&cluster_dev, task);
 
@@ -159,19 +167,25 @@ int application_start(int argc, char *argv[])
   task->arg = &ClusterCall;
 
 
+#ifdef USE_DISPLAY
   //Setting Screen background to white
   writeFillRect(&ili, 0,0,320,240,0xFFFF);
   setCursor(0,0);
   writeText(&ili,"        Greenwaves \n       Technologies",2);
+#endif
+  DEBUG_PRINTF("main loop start\n");
+
   while(1)
   {
+#ifdef USE_CAMERA
     camera_control(&device, CAMERA_CMD_START, 0);
     camera_capture(&device, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
     camera_control(&device, CAMERA_CMD_STOP, 0);
+#endif
 
     pi_cluster_send_task_to_cl(&cluster_dev, task);
 
-
+#ifdef USE_DISPLAY
   sprintf(str_to_lcd,"1 Image/Sec: \n%d uWatt @ 1.2V   \n%d uWatt @ 1.0V   %c", (int)((float)(1/(50000000.f/ClusterCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterCall.cycles)) * 16800.f),'\0');
   //sprintf(out_perf_string,"%d  \n%d  %c", (int)((float)(1/(50000000.f/cycles)) * 28000.f),(int)((float)(1/(50000000.f/cycles)) * 16800.f),'\0');
 
@@ -179,6 +193,7 @@ int application_start(int argc, char *argv[])
   writeText(&ili,str_to_lcd,2);
   buffer.data = ImageOut;
   display_write(&ili, &buffer, 80, 40, 160, 120);
+#endif
   }
 
   return 0;

@@ -45,4 +45,4 @@ GenTile:
 
 # Run the code generator
 model: GenTile
-	$(APP_PATH)/GenTile -p -o $(APP_PATH)
+	#$(APP_PATH)/GenTile -p -o $(APP_PATH)
