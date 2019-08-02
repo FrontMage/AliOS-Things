@@ -50,6 +50,6 @@ include ./platform/mcu/gap8/autotiler.mk
 GLOBAL_CFLAGS   += -D__GAP8__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -DCONFIG_GAPOC_A
 GLOBAL_ASMFLAGS += -D__GAP8__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -DCONFIG_GAPOC_A
 
-GLOBAL_CFLAGS   += -Os -march=rv32imcxgap8
-GLOBAL_ASMFLAGS += -Os -march=rv32imcxgap8
-GLOBAL_LDFLAGS  += -Os -march=rv32imcxgap8
+GLOBAL_CFLAGS   += -Os -march=rv32imcxgap8 -mPE=8 -mFC=1
+GLOBAL_ASMFLAGS += -Os -march=rv32imcxgap8 -mPE=8 -mFC=1
+GLOBAL_LDFLAGS  += -Os -march=rv32imcxgap8 -mPE=8 -mFC=1
