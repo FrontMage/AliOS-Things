@@ -155,6 +155,7 @@ int application_start(int argc, char *argv[])
   //Why il faut faire le deux
   pi_cluster_conf_init(&conf);
   pi_open_from_conf(&cluster_dev, (void*)&conf);
+  pi_cluster_open(&cluster_dev);
 
   task = pmsis_l2_malloc(sizeof(struct pi_cluster_task));
   memset(task, 0, sizeof(struct pi_cluster_task));
