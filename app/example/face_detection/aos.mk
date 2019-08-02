@@ -28,7 +28,7 @@ $(NAME)_SUMMARY := this a face detection application for gap8
 $(NAME)_SOURCES := main.c faceDet.c FaceDetBasicKernels.c ImageDraw.c $(MODEL_GEN_C)
 
 GLOBAL_DEFINES += AOS_NO_WIFI
-GLOBAL_CFLAGS += $(APP_CFLAGS)
+GLOBAL_CFLAGS += $(APP_CFLAGS) -DUSE_CAMERA
 
 GLOBAL_INCLUDES += ./
 GLOBAL_INCLUDES += $(TILER_INC)

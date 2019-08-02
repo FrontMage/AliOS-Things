@@ -33,8 +33,8 @@
 #define LCD_WIDTH    320
 #define LCD_HEIGHT   240
 
-#define DEBUG_PRINTF(...)
-//#define DEBUG_PRINTF printf
+//#define DEBUG_PRINTF(...)
+#define DEBUG_PRINTF printf
 
 static unsigned char *imgBuff0;
 static struct pi_device ili;
@@ -178,11 +178,13 @@ int application_start(int argc, char *argv[])
 
   while(1)
   {
+    DEBUG_PRINTF("going to capture\n");
 #ifdef USE_CAMERA
     camera_control(&device, CAMERA_CMD_START, 0);
     camera_capture(&device, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
     camera_control(&device, CAMERA_CMD_STOP, 0);
 #endif
+    DEBUG_PRINTF("capture is done\n");
 
     pi_cluster_send_task_to_cl(&cluster_dev, task);
 
