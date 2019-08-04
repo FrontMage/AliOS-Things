@@ -96,6 +96,7 @@ static int open_camera_mt9v034(struct pi_device *device)
   pi_open_from_conf(device, &cam_conf);
   if (camera_open(device))
     return -1;
+  printf("camera opened\n");
 
   uint16_t val = MT9V034_BLACK_LEVEL_AUTO;
   camera_reg_set(device, MT9V034_BLACK_LEVEL_CTRL, (uint8_t *) &val);
@@ -155,12 +156,15 @@ int application_start(int argc, char *argv[])
   pi_buffer_set_format(&buffer, CAM_WIDTH, CAM_HEIGHT, 1, PI_BUFFER_FORMAT_GRAY);
 
   printf("Camera start.\n");
-  for(int i=0; i<50; i++){
+  int i=0;
+  while (i<200)
+  {
       camera_control(&device, CAMERA_CMD_START, 0);
       camera_capture(&device, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
       camera_control(&device, CAMERA_CMD_STOP, 0);
+      i++;
   }
-  printf("Camera stop.\n");
+  printf("Camera stop, loop %d times\n", i);
 
   return 0;
 }
