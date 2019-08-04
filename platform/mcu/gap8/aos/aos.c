@@ -14,6 +14,7 @@
 #include <aos/hal/uart.h>
 #include "board.h"
 #include "cores/TARGET_RISCV_32/pmsis_gcc.h"
+#include "rtos/event_kernel/event_kernel.h"
 
 #define AOS_START_STACK 512
 
@@ -50,6 +51,11 @@ static void sys_init(void)
     system_setup_systick(RHINO_CONFIG_TICKS_PER_SECOND);
     // client application start
     __enable_irq();
+
+    struct pmsis_event_kernel_wrap *wrap;
+    pmsis_event_kernel_init(&wrap, pmsis_event_kernel_main);
+    pmsis_event_set_default_scheduler(wrap);
+
     application_start(0, NULL);
 }
 

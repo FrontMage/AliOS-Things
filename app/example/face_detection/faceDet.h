@@ -6,6 +6,7 @@
 #include "FaceDetKernels.h"
 #include "stdio.h"
 #include "setup.h"
+#include "rtos/malloc/pmsis_l1_malloc.h"
 
 #define FACE_DETECT_L1_MEMORY_POOL_SIZE  (53*1024)
 

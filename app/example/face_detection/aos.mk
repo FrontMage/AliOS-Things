@@ -18,7 +18,8 @@ MODEL_SRC = $(APP_PATH)/FaceDetGenerator.c $(APP_PATH)/FaceDetModel.c
 MODEL_GEN = FaceDetKernels FaceDetKernelsInit
 MODEL_GEN_C = $(addsuffix .c, $(MODEL_GEN))
 MODEL_GEN_CLEAN = $(MODEL_GEN_C) $(addsuffix .h, $(MODEL_GEN))
-APP_CFLAGS += -w -D__PMSIS__
+APP_CFLAGS += -g -D__PMSIS__
+APP_CFLAGS += -Wno-unused-but-set-variable -Wno-unused-variable
 
 PMSIS_BSP_ROOT = $(GAP8_PATH)/pmsis_bsp/
 
@@ -28,7 +29,7 @@ $(NAME)_SUMMARY := this a face detection application for gap8
 $(NAME)_SOURCES := main.c faceDet.c FaceDetBasicKernels.c ImageDraw.c $(MODEL_GEN_C)
 
 GLOBAL_DEFINES += AOS_NO_WIFI
-GLOBAL_CFLAGS += $(APP_CFLAGS) -DUSE_CAMERA
+GLOBAL_CFLAGS += $(APP_CFLAGS) -DUSE_CAMERA  #-DHIMAX
 
 GLOBAL_INCLUDES += ./
 GLOBAL_INCLUDES += $(TILER_INC)

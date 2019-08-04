@@ -1,0 +1,9 @@
+config AOS_APP_GAP_CAMERA
+    bool "gap_camera"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Camera Demo
+
+if AOS_APP_GAP_CAMERA
+# Configurations for app face detection
+endif

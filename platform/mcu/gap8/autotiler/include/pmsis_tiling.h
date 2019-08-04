@@ -2,8 +2,9 @@
 #define __PMSIS_TILING__
 
 #include "pmsis.h"
+#include "drivers/hyperbus.h"
 #include "pmsis_cluster/dma/cl_dma.h"
-#include "pmsis_api/include/drivers/hyperbus.h"
+#include "pmsis_cluster/cluster_team/cl_team.h"
 #include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
 
 extern struct pi_device *hyperram;

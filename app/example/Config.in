@@ -282,5 +282,11 @@ if AOS_APP_FACE_DETECTION_DEMO
         default "face_detection"
 endif
 
+source "app/example/gap_camera/Config.in"
+if AOS_APP_GAP_CAMERA
+    config AOS_BUILD_APP
+        default "gap_camera"
+endif
+
 endchoice
 endif

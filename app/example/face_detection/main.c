@@ -17,8 +17,10 @@
 #include "pmsis_cluster/cluster_team/cl_team.h"
 
 /* PMSIS BSP includes */
+#include "bsp/gapoc_a.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/camera/mt9v034.h"
+#include "bsp/camera/himax.h"
 #include "stdio.h"
 
 #include "ImageDraw.h"
@@ -27,8 +29,13 @@
 
 #include "faceDet.h"
 
+#ifdef HIMAX
+#define CAM_WIDTH    324
+#define CAM_HEIGHT   244
+#else
 #define CAM_WIDTH    320
 #define CAM_HEIGHT   240
+#endif
 
 #define LCD_WIDTH    320
 #define LCD_HEIGHT   240
@@ -39,7 +46,7 @@
 static unsigned char *imgBuff0;
 static struct pi_device ili;
 static pi_buffer_t buffer;
-static struct pi_device device;
+static struct pi_device cam;
 
 L2_MEM unsigned char *ImageOut;
 L2_MEM unsigned int *ImageIntegral;
@@ -69,13 +76,27 @@ static int open_display(struct pi_device *device)
   return 0;
 }
 
+static int open_camera_himax(struct pi_device *device)
+{
+  struct himax_conf cam_conf;
+
+  himax_conf_init(&cam_conf);
+
+  cam_conf.format = CAMERA_QVGA;
+
+  pi_open_from_conf(device, &cam_conf);
+  if (camera_open(device))
+    return -1;
+
+  return 0;
+}
+
 static int open_camera_mt9v034(struct pi_device *device)
 {
   struct mt9v034_conf cam_conf;
 
   mt9v034_conf_init(&cam_conf);
   cam_conf.format = CAMERA_QVGA;
-  DEBUG_PRINTF("camera init\n");
 
   pi_open_from_conf(device, &cam_conf);
   if (camera_open(device))
@@ -87,7 +108,11 @@ static int open_camera_mt9v034(struct pi_device *device)
 static int open_camera(struct pi_device *device)
 {
 #ifdef USE_CAMERA
+#ifdef HIMAX
+  return open_camera_himax(device);
+#else
   return open_camera_mt9v034(device);
+#endif
   return -1;
 #else
   return 0;
@@ -125,6 +150,7 @@ int application_start(int argc, char *argv[])
   DEBUG_PRINTF("malloc done\n");
 
   board_init();
+
   if (open_display(&ili))
   {
     DEBUG_PRINTF("Failed to open display\n");
@@ -132,15 +158,25 @@ int application_start(int argc, char *argv[])
   }
   DEBUG_PRINTF("display done\n");
 
-  if (open_camera(&device))
+  if (open_camera(&cam))
   {
     DEBUG_PRINTF("Failed to open camera\n");
     return -1;
   }
   DEBUG_PRINTF("Camera open success\n");
 
+#ifdef HIMAX
+  buffer.data = imgBuff0+CAM_WIDTH*2+2;
+  buffer.stride = 4;
+
+  // WIth Himax, propertly configure the buffer to skip boarder pixels
+  pi_buffer_init(&buffer, PI_BUFFER_TYPE_L2, imgBuff0+CAM_WIDTH*2+2);
+  pi_buffer_set_stride(&buffer, 4);
+#else
   buffer.data = imgBuff0;
   pi_buffer_init(&buffer, PI_BUFFER_TYPE_L2, imgBuff0);
+#endif
+
   pi_buffer_set_format(&buffer, CAM_WIDTH, CAM_HEIGHT, 1, PI_BUFFER_FORMAT_GRAY);
 
   ClusterCall.ImageIn              = imgBuff0;
@@ -178,15 +214,15 @@ int application_start(int argc, char *argv[])
 
   while(1)
   {
-    DEBUG_PRINTF("going to capture\n");
 #ifdef USE_CAMERA
-    camera_control(&device, CAMERA_CMD_START, 0);
-    camera_capture(&device, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
-    camera_control(&device, CAMERA_CMD_STOP, 0);
+    camera_control(&cam, CAMERA_CMD_START, 0);
+    camera_capture(&cam, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
+    camera_control(&cam, CAMERA_CMD_STOP, 0);
 #endif
-    DEBUG_PRINTF("capture is done\n");
+    DEBUG_PRINTF("image get\n");
 
     pi_cluster_send_task_to_cl(&cluster_dev, task);
+    DEBUG_PRINTF("end of face detection\n");
 
 #ifdef USE_DISPLAY
   sprintf(str_to_lcd,"1 Image/Sec: \n%d uWatt @ 1.2V   \n%d uWatt @ 1.0V   %c", (int)((float)(1/(50000000.f/ClusterCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterCall.cycles)) * 16800.f),'\0');
