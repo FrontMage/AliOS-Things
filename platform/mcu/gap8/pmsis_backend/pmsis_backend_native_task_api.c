@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <k_api.h>
 #include <aos/kernel.h>
+#include "k_mutex.h"
 
 void __os_native_mutex_lock(void *mutex)
 {
@@ -15,6 +16,7 @@ void __os_native_mutex_unlock(void *mutex)
 
 void __os_native_sem_take(void *sem)
 {
+    hal_compiler_barrier();
     krhino_sem_take((ksem_t *)sem, AOS_WAIT_FOREVER);
 }
 
