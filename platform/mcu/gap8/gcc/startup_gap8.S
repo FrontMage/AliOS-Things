@@ -57,17 +57,19 @@
 	.extern __data_start__
 	.extern __bss_start__
 	.extern __bss_end__
-        .extern __fc_bss_start__
+    .extern __fc_bss_start__
   	.extern __fc_bss_end__
 
 	.extern cl_cluster_exec_loop
 	.extern system_init
 	.extern main
-        .extern exit
+    .extern exit
 	.extern ill_ins_handler
 	.extern ecall_handler
 	.extern pendSV_handler
 	.extern systick_handler
+	.extern fc_soc_event_handle_it
+    .extern cl_notify_fc_event_handler_it
 /******************************************************************************/
 
 
@@ -132,6 +134,10 @@ _jump2main: /* Jump to main */
 	.section .vectors_M, "ax"
 	.option norvc;
 
+	/* cluster notify fc Handler. */
+    .org 0x10
+    j cl_notify_fc_event_handler_it
+
 	/* PendSV Handler. */
 	.org 0x1c
 	j pendSV_handler
@@ -140,6 +146,10 @@ _jump2main: /* Jump to main */
 	.org 0x28
 	j systick_handler
 
+    /* FC soc event handler */
+    .org 0x6c
+    j fc_soc_event_handle_it
+    
 	/* Reset Handler. */
 	.org 0x80
 	j reset_handler

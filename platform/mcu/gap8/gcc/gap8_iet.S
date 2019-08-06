@@ -332,6 +332,46 @@ end_handler:
 .endfunc
 
 /*******************************************************************************
+    FC soc event handler
+********************************************************************************/
+.type fc_soc_event_handle_it, %function
+DECLARE fc_soc_event_handle_it
+    save_minimal_context
+    lw tp, g_active_task
+    sw sp, 0*0(tp)
+    la sp, __irq_stack_start__
+
+    jal ra, krhino_intrpt_enter
+    jal ra, fc_soc_event_handler
+    jal ra, krhino_intrpt_exit
+
+    /* Did the interrupt request a context switch? */
+    lb a4, g_task_switch_required
+    beqz a4, exit_without_switch
+    j switch_before_exit
+.endfunc
+
+/*******************************************************************************
+    Cluster notify event handler
+********************************************************************************/
+.type cl_notify_fc_event_handler_it, %function
+DECLARE cl_notify_fc_event_handler_it
+    save_minimal_context
+    lw tp, g_active_task
+    sw sp, 0*0(tp)
+    la sp, __irq_stack_start__
+
+    jal ra, krhino_intrpt_enter
+    jal ra, cl_notify_fc_event_handler
+    jal ra, krhino_intrpt_exit
+
+    /* Did the interrupt request a context switch? */
+    lb a4, g_task_switch_required
+    beqz a4, exit_without_switch
+    j switch_before_exit
+.endfunc
+
+/*******************************************************************************
 	ECALL HANDLER
 *******************************************************************************/
 	.section .text, "ax"

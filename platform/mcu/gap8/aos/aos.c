@@ -14,6 +14,7 @@
 #include <aos/hal/uart.h>
 #include "board.h"
 #include "cores/TARGET_RISCV_32/pmsis_gcc.h"
+#include "pmsis.h"
 #include "rtos/event_kernel/event_kernel.h"
 
 #define AOS_START_STACK 512
@@ -47,15 +48,24 @@ static void sys_init(void)
     //aos_loop_init();
 #endif
 #endif
+    
+    // prepare to catch soc events + pmu init and core clock update 
+    // (need to be in that order)
+    pi_fc_event_handler_init(FC_SOC_EVENT_IRQN);
+    pi_pmu_init();
+    SystemCoreClockUpdate();
 
+    // prepare systicks
     system_setup_systick(RHINO_CONFIG_TICKS_PER_SECOND);
-    // client application start
-    __enable_irq();
 
+    // prepare default event kernel/workqueue for pmsis drivers
     struct pmsis_event_kernel_wrap *wrap;
     pmsis_event_kernel_init(&wrap, pmsis_event_kernel_main);
     pmsis_event_set_default_scheduler(wrap);
+    // just make sure irqs are enabled
+    __enable_irq();
 
+    // client application start
     application_start(0, NULL);
 }
 

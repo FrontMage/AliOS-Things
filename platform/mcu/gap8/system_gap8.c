@@ -99,22 +99,12 @@ void system_init(void)
     SOCEU->FC_MASK_MSB = 0xFFFFFFFF;
     SOCEU->FC_MASK_LSB = 0xFFFFFFFF;
 
-    pi_fc_event_handler_init(FC_SOC_EVENT_IRQN);
-
-    /* PMU Init */
-    
     // For cluster mostly: need to come after fc event handler init
-    //SystemCoreClockUpdate();
 
     /* FC Icache Enable*/
     SCBC->ICACHE_ENABLE = 0xFFFFFFFF;
 
-
-    /* Activate interrupt handler for soc event */
-    NVIC_EnableIRQ(FC_SOC_EVENT_IRQN);
-
     __enable_irq();
-    pi_pmu_init();
 
     /* Initialize our fc tcdm malloc functions */
     pmsis_fc_tcdm_malloc_init((void*)&__heapfcram_start,(uint32_t)&__heapfcram_size);
