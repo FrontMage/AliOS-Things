@@ -34,4 +34,9 @@
 #define PMSIS_TASK_USER_PRIORITY AOS_DEFAULT_APP_PRI
 #define PMSIS_TASK_EVENT_KERNEL_PRIORITY (PMSIS_TASK_USER_PRIORITY-1)
 
+#define PI_TASK_IMPLEM\
+    uint32_t data[6];\
+    struct pi_task *next;\
+    int destroy;
+
 #endif
