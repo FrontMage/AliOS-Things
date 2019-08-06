@@ -7,7 +7,7 @@
 
 NAME := gap_face_detection
 
-APP_PATH = $(PWD)/app/example/face_detection
+APP_PATH = $(PWD)/app/example/gap_face_detection
 GAP8_PATH = $(PWD)/platform/mcu/gap8
 TILER_PATH = $(GAP8_PATH)/autotiler
 TILER_LIB = $(TILER_PATH)/lib/libtile.a
