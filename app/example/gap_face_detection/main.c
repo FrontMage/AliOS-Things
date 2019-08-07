@@ -219,7 +219,6 @@ int application_start(int argc, char *argv[])
     camera_capture(&cam, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
     camera_control(&cam, CAMERA_CMD_STOP, 0);
 #endif
-    DEBUG_PRINTF("image get\n");
 
     pi_cluster_send_task_to_cl(&cluster_dev, task);
     DEBUG_PRINTF("end of face detection\n");

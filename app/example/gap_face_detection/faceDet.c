@@ -426,7 +426,8 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 	ArgC->num_reponse=reponse_idx;
 	for(int i=0;i<reponse_idx;i++)
 		if(reponses[i].x!=-1){
-			DEBUG_PRINTF("X: %d Y: %d W: %d H: %d\n",reponses[i].x,reponses[i].y,reponses[i].w,reponses[i].h);
+			printf("Found a face: ");
+			printf("X: %d Y: %d W: %d H: %d\n",reponses[i].x,reponses[i].y,reponses[i].w,reponses[i].h);
 			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x, reponses[i].y, reponses[i].w, reponses[i].h, 0);
 			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-1, reponses[i].y-1, reponses[i].w+2, reponses[i].h+2, 0);
 			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-2, reponses[i].y-2, reponses[i].w+4, reponses[i].h+4, 0);
