@@ -28,6 +28,7 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_hal/fll/fll_gap8.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/malloc/pmsis_l1_malloc.c
 # FC memory malloc
 $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/malloc/pmsis_fc_tcdm_malloc.c
+$(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/malloc/pmsis_l2_malloc.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/malloc/malloc_internal.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/malloc/malloc_external.c
 
@@ -51,7 +52,7 @@ $(NAME)_SOURCES     += ./pmsis_bsp/fs/read_fs/read_fs.c
 $(NAME)_SOURCES     += ./pmsis_bsp/flash/hyperflash/hyperflash.c
 $(NAME)_SOURCES     += ./pmsis_bsp/transport/transport.c
 $(NAME)_SOURCES     += ./pmsis_bsp/display/display.c
-#$(NAME)_SOURCES     += ./pmsis_bsp/display/ili9341/ili9341.c
+$(NAME)_SOURCES     += ./pmsis_bsp/display/ili9341/ili9341.c
 #$(NAME)_SOURCES     += ./pmsis_bsp/transport/nina_w10/nina_w10.c
 $(NAME)_SOURCES     += ./pmsis_bsp/ram/hyperram/hyperram.c
 $(NAME)_SOURCES     += ./pmsis_bsp/ram/ram.c
