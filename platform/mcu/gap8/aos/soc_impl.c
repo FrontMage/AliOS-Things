@@ -13,6 +13,8 @@
 #include "tinyprintf.h"
 #include "gap_debug.h"
 #define PRINTF_BUFF_SIZE 16
+#include <aos/hal/uart.h>
+extern uart_dev_t uart_0;
 
 uint32_t g_printf_buff_cur_size = 0;
 char g_printf_buff[PRINTF_BUFF_SIZE];
@@ -50,6 +52,7 @@ static int printf_is_init = 0;
 __attribute__ ((export))
 int printf(const char *fmt, ...)
 {
+    return 0;
     if(!printf_is_init)
     {
         krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
@@ -82,6 +85,7 @@ int vprintf(const char *format, va_list ap)
 __attribute__ ((export))
 int puts(const char *str)
 {
+    return 0;
     char c;
     do {
         c = *str;
@@ -176,9 +180,6 @@ static void soc_print_stack()
     return;
 }
 
-#include <aos/hal/uart.h>
-extern uart_dev_t uart_0;
-
 void soc_err_proc(kstat_t err)
 {
     (void)err;
@@ -190,12 +191,12 @@ krhino_err_proc_t g_err_proc = soc_err_proc;
 
 #if defined (__GNUC__)
 
-extern char __heapl2ram_start;
-extern char __heapl2ram_size;
+extern char __heapfcram_start;
+extern char __heapfcram_size;
 
 k_mm_region_t g_mm_region[] =
 {
-    {(uint8_t*)&__heapl2ram_start, (uint32_t)&__heapl2ram_size},
+    {(uint8_t*)&__heapfcram_start, (uint32_t)&__heapfcram_size},
 };
 
 #else

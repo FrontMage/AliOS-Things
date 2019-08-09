@@ -63,6 +63,7 @@
 #include <stdint.h>
 #include "system_gap8.h"
 #include "pmsis_driver/pmu/pmsis_pmu.h"
+#include "pmsis_hal/fll/pmsis_fll.h"
 #include "pmsis.h"
 #include DEFAULT_MALLOC_INC
 //#include "drivers/gap_common.h"
@@ -72,8 +73,8 @@
    -- Core clock
    ---------------------------------------------------------------------------- */
 
-extern char __heapfcram_start;
-extern char __heapfcram_size;
+extern char __heapl2ram_start;
+extern char __heapl2ram_size;
 
 uint32_t SystemCoreClock = DEFAULT_SYSTEM_CLOCK;
 
@@ -107,7 +108,7 @@ void system_init(void)
     __enable_irq();
 
     /* Initialize our fc tcdm malloc functions */
-    pmsis_fc_tcdm_malloc_init((void*)&__heapfcram_start,(uint32_t)&__heapfcram_size);
+    pmsis_l2_malloc_init((void*)&__heapl2ram_start,(uint32_t)&__heapl2ram_size);
 }
 
 void system_setup_systick(uint32_t tick_rate_hz)
@@ -133,7 +134,7 @@ void system_setup_systick(uint32_t tick_rate_hz)
 
 uint32_t system_core_clock_get(void)
 {
-    return SystemCoreClock;
+    return 50000000;
 }
 #include <stdio.h>
 #include <stdlib.h>

@@ -6,9 +6,9 @@
 
 #define __INC_TO_STRING(x) #x
 
-#define __L2_MALLOC_NATIVE__ 1
-#define pmsis_l2_malloc aos_malloc
-#define pmsis_l2_malloc_free(x,y) aos_free(x)
+//#define __L2_MALLOC_NATIVE__ 1
+//#define pmsis_l2_malloc aos_malloc
+//#define pmsis_l2_malloc_free(x,y) aos_free(x)
 
 #define IMPLEM_MUTEX_OBJECT_TYPE \
     void *mutex_object;\
@@ -23,10 +23,10 @@
     kmutex_t uart_mutex_tx;
 
 // default malloc for driver structs etc (might not be compatible with udma!)
-#define pi_default_malloc(x) pmsis_fc_tcdm_malloc(x)
-#define pi_default_free(x,y) pmsis_fc_tcdm_malloc_free(x,y)
+#define pi_default_malloc(x) pmsis_l2_malloc(x)
+#define pi_default_free(x,y) pmsis_l2_malloc_free(x,y)
 
-#define DEFAULT_MALLOC_INC  __INC_TO_STRING(rtos/malloc/pmsis_fc_tcdm_malloc.h)
+#define DEFAULT_MALLOC_INC  __INC_TO_STRING(rtos/malloc/pmsis_l2_malloc.h)
 
 // define task priorities
 #define PMSIS_TASK_MAX_PRIORITY 0
