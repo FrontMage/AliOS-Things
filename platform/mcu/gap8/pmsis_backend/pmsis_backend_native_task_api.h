@@ -77,13 +77,13 @@ static inline int __os_native_api_mutex_deinit(pmsis_mutex_t *mutex)
 static inline int __os_native_api_sem_init(pi_sem_t *sem)
 {
     // this allocates sem for us
-    krhino_sem_create(&(sem->sem_static),"pmsis_sem",0);
+    int ret = krhino_sem_create(&(sem->sem_static),"pmsis_sem",0);
     sem->sem_object = &(sem->sem_static);
     DBG_PRINTF("sem->sem_static ptr: %p\n",&sem->sem_static);
     DBG_PRINTF("[%s] sem_object=%p\n",__func__,sem->sem_object);
     sem->give = __os_native_sem_give;
     sem->take = __os_native_sem_take;
-    return 0;
+    return ret;
 }
 
 static inline int __os_native_api_sem_deinit(pi_sem_t *sem)
