@@ -17,8 +17,8 @@ extern struct pi_device *hyperram;
 
 #define __cl_hyper_copy_wait        pi_cl_hyper_read_wait
 
-#define CL_HYPER_EXT2LOC RX_CHANNEL
-#define CL_HYPER_LOC2EXT TX_CHANNEL
+#define CL_HYPER_EXT2LOC 1//RX_CHANNEL
+#define CL_HYPER_LOC2EXT 0//TX_CHANNEL
 
 static inline void __cl_dma_memcpy(uint32_t ext, uint32_t loc, uint16_t size, cl_dma_dir_e dir, uint8_t merge, cl_dma_copy_t *copy)
 {

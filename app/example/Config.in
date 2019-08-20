@@ -288,5 +288,11 @@ if AOS_APP_GAP_CAMERA
         default "gap_camera"
 endif
 
+source "app/example/gap_cifar10/Config.in"
+if AOS_APP_GAP_CIFAR10
+    config AOS_BUILD_APP
+        default "gap_cifar10"
+endif
+
 endchoice
 endif

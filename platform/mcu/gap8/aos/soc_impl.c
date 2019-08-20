@@ -52,7 +52,7 @@ static int printf_is_init = 0;
 __attribute__ ((export))
 int printf(const char *fmt, ...)
 {
-    return 0;
+    //return 0;
     if(!printf_is_init)
     {
         krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
@@ -78,14 +78,14 @@ int printf(const char *fmt, ...)
 __attribute__ ((export))
 int vprintf(const char *format, va_list ap)
 {
-    return 0;
+    //return 0;
 }
 #endif
 
 __attribute__ ((export))
 int puts(const char *str)
 {
-    return 0;
+    //return 0;
     char c;
     do {
         c = *str;
