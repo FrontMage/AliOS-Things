@@ -142,16 +142,16 @@ uint32_t system_core_clock_get(void)
 /** Mostly useful for non regression testing **/
 void platform_exit(int code)
 {
-    if (__native_is_fc()) 
+    if (__native_is_fc())
     {
-        printf("native exit\n");
-        /* Flush the pending messages to the debug tools
-           Notify debug tools about the termination */
-        //debug_flush_printf(debug_get_debug_struct());
-        /* Write return value to APB device */
-        SOC_CTRL->CORE_STATUS = SOC_CTRL_CORE_STATUS_EOC(1) | code;
+        // Flush bridge and co
+        BRIDGE_PrintfFlush();
         DEBUG_Exit(DEBUG_GetDebugStruct(), code);
-        exit(-1);
+        BRIDGE_SendNotif();
+
+        /* Write return value to APB device */
+        DEBUG_Exit(DEBUG_GetDebugStruct(), code);
+        SOC_CTRL->CORE_STATUS = SOC_CTRL_CORE_STATUS_EOC(1) | code;
     }
 
     /* In case the platform does not support exit or this core is not allowed to exit the platform ... */
