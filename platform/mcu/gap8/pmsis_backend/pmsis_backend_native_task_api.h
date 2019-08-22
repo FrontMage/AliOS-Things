@@ -95,4 +95,10 @@ static inline void __os_native_exit(int err)
 {
     platform_exit(err);
 }
+
+static inline int __os_native_kickoff(void *arg)
+{
+    return 0;
+}
+
 #endif
