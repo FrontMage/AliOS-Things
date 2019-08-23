@@ -6,9 +6,16 @@
 
 #define __INC_TO_STRING(x) #x
 
-//#define __L2_MALLOC_NATIVE__ 1
-//#define pmsis_l2_malloc aos_malloc
-//#define pmsis_l2_malloc_free(x,y) aos_free(x)
+#define __L2_MALLOC_NATIVE__ 0
+#if (__L2_MALLOC_NATIVE__ == 1)
+#define pmsis_l2_malloc aos_malloc
+#define pmsis_l2_malloc_free(x,y) aos_free(x)
+#endif
+#define __FC_TCDM_MALLOC_NATIVE__ 1
+#if (__FC_TCDM_MALLOC_NATIVE__ == 1)
+#define pmsis_fc_tcdm_malloc aos_malloc
+#define pmsis_fc_tcdm_malloc_free(x,y) aos_free(x)
+
 
 #define IMPLEM_MUTEX_OBJECT_TYPE \
     void *mutex_object;\
@@ -26,7 +33,11 @@
 #define pi_default_malloc(x) pmsis_l2_malloc(x)
 #define pi_default_free(x,y) pmsis_l2_malloc_free(x,y)
 
+// default malloc for data buffers etc (has to be compatible with udma!)
+#define pi_data_malloc(x) pmsis_l2_malloc(x)
+#define pi_data_free(x,y) pmsis_l2_malloc_free(x,y)
 #define DEFAULT_MALLOC_INC  __INC_TO_STRING(rtos/malloc/pmsis_l2_malloc.h)
+#define DATA_MALLOC_INC  __INC_TO_STRING(rtos/malloc/pmsis_l2_malloc.h)
 
 // define task priorities
 #define PMSIS_TASK_MAX_PRIORITY 0
@@ -35,7 +46,7 @@
 #define PMSIS_TASK_EVENT_KERNEL_PRIORITY (PMSIS_TASK_USER_PRIORITY-1)
 
 #define PI_TASK_IMPLEM\
-    uint32_t data[6];\
+    uintptr_t data[6];\
     struct pi_task *next;\
     int destroy;
 
