@@ -4,7 +4,8 @@
 
 #include <k_api.h>
 #include <assert.h>
-//#include <stdio.h>	
+//#include <stdio.h>
+#include "pmsis.h"
 #include "soc_impl.h"
 
 
@@ -21,7 +22,7 @@ char g_printf_buff[PRINTF_BUFF_SIZE];
 
 void tfp_putc(void *data, char c)
 {
-#ifdef PRINTF_USE_UART
+#if defined(PRINTF_USE_UART)
     g_printf_buff[g_printf_buff_cur_size] = c;
     g_printf_buff_cur_size++;
     if((c=='\n') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))
@@ -30,6 +31,8 @@ void tfp_putc(void *data, char c)
 
         g_printf_buff_cur_size = 0;
     }
+#elif defined(PRINTF_GVSOC)
+    FC_STDOUT->PUTC[0] = c;
 #else
     // Iter until we can push the character.
     while (DEBUG_PutcharNoPoll(DEBUG_GetDebugStruct(), c))
@@ -52,7 +55,10 @@ static int printf_is_init = 0;
 __attribute__ ((export))
 int printf(const char *fmt, ...)
 {
-    //return 0;
+    if(!pi_is_fc())
+    {
+        return 0;
+    }
     if(!printf_is_init)
     {
         krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
