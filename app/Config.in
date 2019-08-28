@@ -3,6 +3,12 @@ config AOS_APP_LOCALAPP
 
 if AOS_APP_LOCALAPP
 
+source "app/spim_send_1cs/Config.in"
+if AOS_APP_SPIM_SEND_1CS
+     config AOS_BUILD_APP
+         default "spim_send_1cs"
+endif
+
 ### Sample for user's application:
 ### The app's Config.in must be there before "source" it
 #
