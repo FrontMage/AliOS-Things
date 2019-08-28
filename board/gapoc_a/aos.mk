@@ -24,6 +24,7 @@ GLOBAL_INCLUDES += ../../platform/mcu/gap8/drivers/
 $(NAME)_SOURCES     := ./board.c
 $(NAME)_SOURCES     += ./clock_config.c
 $(NAME)_SOURCES     += ./pin_mux.c
+$(NAME)_SOURCES     += ./k_config.c
 
 # include pmsis stuff
 include ./platform/mcu/gap8/pmsis.mk
