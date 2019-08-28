@@ -1,8 +1,9 @@
-#include "pmsis_backend/pmsis_backend_native_task_api.h"
 #include <stdio.h>
 #include <k_api.h>
 #include <aos/kernel.h>
 #include "k_mutex.h"
+#include "pmsis.h"
+#include "pmsis_backend/pmsis_backend_native_task_api.h"
 
 void __os_native_mutex_lock(void *mutex)
 {

@@ -34,7 +34,7 @@
 
 #include "pmsis_hal/soc_eu/pmsis_soc_eu.h"
 #include "drivers/gap_bridge.h"
-#include "pmsis_it.h"
+#include "pmsis_driver/pmsis_it.h"
 
 debug_struct_t HAL_DEBUG_STRUCT_NAME = GAP_DEBUG_STRUCT_INIT;
 

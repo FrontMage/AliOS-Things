@@ -15,7 +15,7 @@
 #include "board.h"
 #include "cores/TARGET_RISCV_32/pmsis_gcc.h"
 #include "pmsis.h"
-#include "rtos/event_kernel/event_kernel.h"
+#include "pmsis/rtos/event_kernel/event_kernel.h"
 
 #define AOS_START_STACK 512
 

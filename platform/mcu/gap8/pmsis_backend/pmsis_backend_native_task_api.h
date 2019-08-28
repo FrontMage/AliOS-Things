@@ -98,6 +98,9 @@ static inline void __os_native_exit(int err)
 
 static inline int __os_native_kickoff(void *arg)
 {
+    void (*func)(void);
+    func = arg;
+    func();
     return 0;
 }
 

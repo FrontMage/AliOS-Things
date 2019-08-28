@@ -4,3 +4,6 @@
 [submodule "platform/mcu/gap8/pmsis_bsp"]
 	path = platform/mcu/gap8/pmsis_bsp
 	url = https://github.com/GreenWaves-Technologies/pmsis_bsp.git
+[submodule "platform/mcu/gap8/pmsis_api"]
+	path = platform/mcu/gap8/pmsis_api
+	url = git@github.com:GreenWaves-Technologies/pmsis_api.git

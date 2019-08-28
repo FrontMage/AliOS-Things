@@ -1,6 +1,6 @@
 GLOBAL_INCLUDES += ./PMSIS/
-GLOBAL_INCLUDES += ./PMSIS/pmsis_api/include/
-GLOBAL_INCLUDES += ./PMSIS/pmsis_api/include/chips/gap8/
+GLOBAL_INCLUDES += ./pmsis_api/include/
+GLOBAL_INCLUDES += ./pmsis_api/include/chips/gap8/
 GLOBAL_INCLUDES += ./PMSIS/cores/TARGET_RISCV_32/
 GLOBAL_INCLUDES += ./pmsis_bsp/include/
 
@@ -36,7 +36,7 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/malloc/malloc_external.c
 # task abstraction and small event kernel
 $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/os/pmsis_task.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/event_kernel/event_kernel.c
-$(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/os/pmsis_driver_core.c
+$(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/os/pmsis_device.c
 
 #Cluster
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_synchronisation/fc_to_cl_delegate.c
@@ -45,6 +45,7 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_team/cl_team.c
 
 #BSP
 $(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapoc_a.c
+#$(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapuino.c
 $(NAME)_SOURCES     += ./pmsis_bsp/camera/camera.c
 $(NAME)_SOURCES     += ./pmsis_bsp/camera/mt9v034/mt9v034.c
 $(NAME)_SOURCES     += ./pmsis_bsp/camera/himax/himax.c

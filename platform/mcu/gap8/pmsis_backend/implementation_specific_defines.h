@@ -11,11 +11,12 @@
 #define pmsis_l2_malloc aos_malloc
 #define pmsis_l2_malloc_free(x,y) aos_free(x)
 #endif
-#define __FC_TCDM_MALLOC_NATIVE__ 1
+
+#define __FC_MALLOC_NATIVE__ 1
 #if (__FC_TCDM_MALLOC_NATIVE__ == 1)
 #define pmsis_fc_tcdm_malloc aos_malloc
 #define pmsis_fc_tcdm_malloc_free(x,y) aos_free(x)
-
+#endif
 
 #define IMPLEM_MUTEX_OBJECT_TYPE \
     void *mutex_object;\
@@ -36,8 +37,8 @@
 // default malloc for data buffers etc (has to be compatible with udma!)
 #define pi_data_malloc(x) pmsis_l2_malloc(x)
 #define pi_data_free(x,y) pmsis_l2_malloc_free(x,y)
-#define DEFAULT_MALLOC_INC  __INC_TO_STRING(rtos/malloc/pmsis_l2_malloc.h)
-#define DATA_MALLOC_INC  __INC_TO_STRING(rtos/malloc/pmsis_l2_malloc.h)
+#define DEFAULT_MALLOC_INC  __INC_TO_STRING(pmsis/rtos/malloc/pmsis_l2_malloc.h)
+#define DATA_MALLOC_INC  __INC_TO_STRING(pmsis/rtos/malloc/pmsis_l2_malloc.h)
 
 // define task priorities
 #define PMSIS_TASK_MAX_PRIORITY 0
@@ -45,9 +46,13 @@
 #define PMSIS_TASK_USER_PRIORITY AOS_DEFAULT_APP_PRI
 #define PMSIS_TASK_EVENT_KERNEL_PRIORITY (PMSIS_TASK_USER_PRIORITY-1)
 
+// 6 is sized for the max right now: spi driver
+#define PI_TASK_IMPLEM_NB_DATA 6
+
 #define PI_TASK_IMPLEM\
-    uintptr_t data[6];\
-    struct pi_task *next;\
     int destroy;
+
+// define the app entry point signature
+#define PMSIS_APP_MAIN int application_start(int argc, char *argv[])
 
 #endif
