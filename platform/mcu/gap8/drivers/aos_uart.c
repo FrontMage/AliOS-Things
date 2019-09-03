@@ -104,14 +104,12 @@ int32_t hal_uart_init(uart_dev_t *uart)
 
 int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_t timeout)
 {
-    krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex_tx, HAL_WAIT_FOREVER);
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
         void *l2_buff = krhino_mm_alloc(size);
         if(!l2_buff)
         {
-            krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_tx);
             return EIO;
         }
         memcpy(l2_buff, data, size);
@@ -130,14 +128,11 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
             pi_task_wait_on(&task_block);
             pi_task_destroy(&task_block);
     }
-    
-    krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_tx);
     return 0;
 }
 
 int32_t hal_uart_recv(uart_dev_t *uart, void *data, uint32_t expect_size, uint32_t timeout)
 {
-    krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx, HAL_WAIT_FOREVER);
     pi_task_t task_block;
     pi_task_block(&task_block);
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
@@ -146,7 +141,6 @@ int32_t hal_uart_recv(uart_dev_t *uart, void *data, uint32_t expect_size, uint32
         void *l2_buff = krhino_mm_alloc(expect_size);;
         if(!l2_buff)
         {
-            krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
             return EIO;
         }
         __pi_uart_read(uart->priv, l2_buff, expect_size, &task_block);
@@ -161,7 +155,6 @@ int32_t hal_uart_recv(uart_dev_t *uart, void *data, uint32_t expect_size, uint32
     }
 
     pi_task_destroy(&task_block);
-    krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
     return 0;
 }
 

@@ -22,6 +22,9 @@
 
 #define HAL_WAIT_FOREVER 0xFFFFFFFFU
 
+
+uint8_t receive_bytes[22];
+
 int application_start(int argc, char *argv[])
 {
     printf("uart sample application started...\n");
@@ -36,7 +39,6 @@ int application_start(int argc, char *argv[])
     uart.config = uart_config;
     hal_uart_init(&uart);
 
-    uint8_t receive_bytes[22];
     int32_t ret = -1;
     uint32_t i, recv_size = 0;
     while (1)
