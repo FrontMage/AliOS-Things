@@ -9,6 +9,18 @@ if AOS_APP_SPIM_SEND_1CS
          default "spim_send_1cs"
 endif
 
+source "app/spim_send_2cs/Config.in"
+if AOS_APP_SPIM_SEND_2CS
+     config AOS_BUILD_APP
+         default "spim_send_2cs"
+endif
+
+source "app/spim_send_2cs_2dev/Config.in"
+if AOS_APP_SPIM_SEND_2CS_2DEV
+     config AOS_BUILD_APP
+         default "spim_send_2cs_2dev"
+endif
+
 ### Sample for user's application:
 ### The app's Config.in must be there before "source" it
 #
