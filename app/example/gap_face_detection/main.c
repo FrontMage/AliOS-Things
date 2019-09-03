@@ -4,17 +4,17 @@
 /****************************************************************************/
 /* PMSIS includes */
 #include "pmsis.h"
-#include "pmsis_types.h"
+#include "pmsis/pmsis_types.h"
 
-#include "rtos/pmsis_os.h"
-#include "rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
+#include "pmsis/rtos/pmsis_os.h"
+#include "pmsis/device.h"
 
-#include "pmsis_api/include/drivers/hyperbus.h"
+#include "pmsis/drivers/hyperbus.h"
 #include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
 
-#include "rtos/os_frontend_api/pmsis_task.h"
-#include "pmsis_cluster/cluster_sync/fc_to_cl_delegate.h"
-#include "pmsis_cluster/cluster_team/cl_team.h"
+#include "pmsis/rtos/os_frontend_api/pmsis_task.h"
+#include "pmsis/cluster/cluster_sync/fc_to_cl_delegate.h"
+#include "pmsis/cluster/cluster_team/cl_team.h"
 
 /* PMSIS BSP includes */
 #include "bsp/gapoc_a.h"
@@ -207,7 +207,7 @@ int application_start(int argc, char *argv[])
 #ifdef USE_DISPLAY
   //Setting Screen background to white
   writeFillRect(&ili, 0,0,320,240,0xFFFF);
-  setCursor(0,0);
+  setCursor(&ili,0,0);
   writeText(&ili,"        Greenwaves \n       Technologies",2);
 #endif
   DEBUG_PRINTF("main loop start\n");
@@ -227,7 +227,7 @@ int application_start(int argc, char *argv[])
   sprintf(str_to_lcd,"1 Image/Sec: \n%d uWatt @ 1.2V   \n%d uWatt @ 1.0V   %c", (int)((float)(1/(50000000.f/ClusterCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterCall.cycles)) * 16800.f),'\0');
   //sprintf(out_perf_string,"%d  \n%d  %c", (int)((float)(1/(50000000.f/cycles)) * 28000.f),(int)((float)(1/(50000000.f/cycles)) * 16800.f),'\0');
 
-  setCursor(0,190);
+  setCursor(&ili,0,190);
   writeText(&ili,str_to_lcd,2);
   buffer.data = ImageOut;
   display_write(&ili, &buffer, 80, 40, 160, 120);

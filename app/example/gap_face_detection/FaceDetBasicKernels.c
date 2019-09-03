@@ -12,8 +12,8 @@
 #include "FaceDetBasicKernels.h"
 #include "setup.h"
 #include "pmsis.h"
-#include "pmsis_cluster/dma/cl_dma.h"
-#include "pmsis_cluster/cluster_team/cl_team.h"
+#include "pmsis/cluster/dma/cl_dma.h"
+#include "pmsis/cluster/cluster_team/cl_team.h"
 
 static inline unsigned int __attribute__((always_inline)) ChunkSize(unsigned int X)
 
