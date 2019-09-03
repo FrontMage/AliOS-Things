@@ -1,0 +1,14 @@
+NAME := spim_send_2cs_2dev
+
+$(NAME)_MBINS_TYPE := app
+$(NAME)_VERSION := 1.0.0
+$(NAME)_SUMMARY := spim_send_2cs_2dev
+$(NAME)_SOURCES := test.c
+
+$(NAME)_COMPONENTS += osal_aos
+
+GLOBAL_CFLAGS += -DPRINTF_GVSOC -DASYNC_CS_AUTO #-DSYNC_CS_KEEP #-DSYNC_CS_AUTO=0
+
+GLOBAL_DEFINES += AOS_NO_WIFI
+
+GLOBAL_INCLUDES += ./

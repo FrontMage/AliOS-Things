@@ -1,0 +1,9 @@
+config AOS_APP_SPIM_SEND_2CS_2DEV
+    bool "spim_send_2cs_dev"
+    select AOS_COMP_OSAL_AOS
+    help
+        spim send with 1 chip select
+
+if AOS_APP_SPIM_SEND_2CS_2DEV
+# Configurations for gap pmsis spim send test
+endif
