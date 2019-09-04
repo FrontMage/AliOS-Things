@@ -21,6 +21,12 @@ if AOS_APP_SPIM_SEND_2CS_2DEV
          default "spim_send_2cs_2dev"
 endif
 
+source "app/spim_full_duplex/Config.in"
+if AOS_APP_SPIM_FULL_DUPLEX
+     config AOS_BUILD_APP
+         default "spim_full_duplex"
+endif
+
 ### Sample for user's application:
 ### The app's Config.in must be there before "source" it
 #

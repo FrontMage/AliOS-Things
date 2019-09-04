@@ -1,0 +1,9 @@
+config AOS_APP_SPIM_FULL_DUPLEX
+    bool "spim_full_duplex"
+    select AOS_COMP_OSAL_AOS
+    help
+        spim send with 1 chip select
+
+if AOS_APP_SPIM_FULL_DUPLEX
+# Configurations for gap pmsis spim full duplex test
+endif
