@@ -27,6 +27,12 @@ if AOS_APP_SPIM_FULL_DUPLEX
          default "spim_full_duplex"
 endif
 
+source "app/uart_pmsis/Config.in"
+if AOS_APP_UART_PMSIS
+     config AOS_BUILD_APP
+         default "uart_pmsis"
+endif
+
 ### Sample for user's application:
 ### The app's Config.in must be there before "source" it
 #

@@ -1,0 +1,8 @@
+config AOS_APP_UART_PMSIS
+    bool "uart_pmsis"
+    help
+        this is a uart sample form hal uart.h
+
+if AOS_APP_UART_PMSIS
+# Configurations for app uart
+endif
