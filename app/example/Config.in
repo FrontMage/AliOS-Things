@@ -300,5 +300,11 @@ if AOS_APP_GAP_CIFAR10
         default "gap_cifar10"
 endif
 
+source "app/example/gap_face_reid/Config.in"
+if AOS_APP_GAP_FACE_REID
+    config AOS_BUILD_APP
+        default "gap_face_reid"
+endif
+
 endchoice
 endif
