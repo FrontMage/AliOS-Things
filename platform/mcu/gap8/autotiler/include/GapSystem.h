@@ -129,11 +129,8 @@ static inline void rt_hyperram_close(rt_hyperram_t *handle, rt_event_t *event)
 
 //All this stuff should not stay here!!!!!!!!!!!!!!!
 
-#if defined __FREERTOS__
+#if defined PMSIS_DRIVERS
 #include "pmsis.h"
-#include "pmsis/drivers/hyperbus.h"
-#include "pmsis/cluster/dma/cl_dma.h"
-#include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
 
 extern struct pi_device *hyperram;
 
@@ -185,11 +182,11 @@ static inline void __cl_dma_memcpy_2d(uint32_t ext, uint32_t loc, uint16_t size,
 // #define rt_alloc_align(Space, Size)	malloc((Size))
 // #define rt_free(Space, Pointer, Size)	free((Pointer))
 
-#if  defined __FREERTOS__
+#if  defined PMSIS_DRIVERS
 //This is used anywhere, better leave undefined
-//#define gap_setupbarrier(BarN, CoreM)   
+//#define gap_setupbarrier(BarN, CoreM)
 #define gap_setupbarrier(BarN, CoreM)
-#define gap_waitbarrier(BarN)           cl_team_barrier() 
+#define gap_waitbarrier(BarN)           cl_team_barrier()
 
 #elif defined  __PULP_OS__
 //This is used anywhere, better leave undefined
@@ -237,7 +234,7 @@ static int Private_gap_dma_memcpy(rt_pointerT ext, rt_pointerT loc, unsigned sho
 	}
 
         for (i=0; i<size; i++) To[i] = From[i];
-        return 1; 
+        return 1;
 }
 
 static int Private_gap_dma_memcpy_2d(rt_pointerT ext, rt_pointerT loc, unsigned short size, unsigned int stride, unsigned short length, int ext2loc, int L3)

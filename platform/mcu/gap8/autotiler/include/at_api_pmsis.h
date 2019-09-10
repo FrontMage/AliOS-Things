@@ -31,7 +31,7 @@
 #define AT_COREID()        __builtin_pulp_CoreId()
 #define AT_CLUSTERID()     __builtin_pulp_ClusterId()
 #define AT_NCORE()         __builtin_pulp_CoreCount()
- 
+
 
 
 /*
@@ -70,7 +70,7 @@ typedef char *AT_HYPERRAM_INT_ADDR_TYPE;
 
 #define AT_HYPERRAM_EXT2LOC 0
 #define AT_HYPERRAM_LOC2EXT 1
- 
+
 #define AT_HYPERRAM_CONF_INIT(dev,type,name) \
   hyperram_conf_init(dev)
 
@@ -104,7 +104,7 @@ typedef cl_ram_req_t           AT_HYPERFLASH_EVENT;
 
 #define AT_HYPERFLASH_EXT2LOC 0
 #define AT_HYPERFLASH_LOC2EXT 1
- 
+
 #define AT_HYPERFLASH_CONF_INIT(dev,type,name) \
   hyperflash_conf_init(dev)
 
@@ -133,7 +133,7 @@ typedef cl_ram_req_t           AT_HYPERFLASH_EVENT;
 
 typedef struct fs_conf AT_HYPERFLASH_FS_CONF_T;
 
-typedef struct 
+typedef struct
 {
   struct pi_device fs;
   struct pi_device hyperflash;
@@ -183,7 +183,7 @@ static inline void __at_hyperflash_fs_close(AT_HYPERFLASH_FS_T *file)
 
 #define AT_HYPERFLASH_FS_EXT2LOC 0
 #define AT_HYPERFLASH_FS_LOC2EXT 1
- 
+
 #define AT_HYPERFLASH_FS_CONF_INIT(dev,type,name) \
   fs_conf_init(dev)
 
@@ -241,7 +241,7 @@ typedef char *AT_L2_INT_ADDR_TYPE;
  * Team
  */
 
-typedef void (*AT_FORK_FUN_TYPE)(void *); 
+typedef void (*AT_FORK_FUN_TYPE)(void *);
 typedef void *AT_FORK_ARG_TYPE;
 
 #define AT_FORK(nb_cores,entry,arg) cl_team_fork((nb_cores),(AT_FORK_FUN_TYPE)(entry),(AT_FORK_ARG_TYPE)(arg))
