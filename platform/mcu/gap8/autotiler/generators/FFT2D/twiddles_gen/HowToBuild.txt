@@ -1,7 +1,7 @@
 Compiling My Model:
 -------------------
 
-gcc -o GenFFT2D -I../GenTiling -I../../FFT_Lib -I../StdTypes FFT2DGenerator.c ../GenTiling/LibTile.a
+gcc -o GenFFT2D -I../../Autotiler -o GenFFT2D -I../GenTiling -I../../FFT_Lib FFT2DGenerator.c FFT2DGenTest.c ../../Autotiler/LibTile.a
 
 
 Libraries:

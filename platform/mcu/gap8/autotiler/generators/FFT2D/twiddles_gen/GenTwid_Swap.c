@@ -15,7 +15,7 @@
 
 #define FFT_TWIDDLE_DYN 15
 
-#define gap8_fl1(x)                     (31 - __builtin_clz((x)))
+#define gap_fl1(x)                     (31 - __builtin_clz((x)))
 #define FIX2FP(Val, Precision)          ((float) (Val) / (float) (1<<(Precision)))
 #define FP2FIXR(Val, Precision)         ((int)((Val)*((1 << (Precision))-1) + 0.5))
 #define FP2FIX(Val, Precision)          ((int)((Val)*((1 << (Precision))-1)))
@@ -57,7 +57,7 @@ void SetupR4SwapTable (short int *SwapTable, int Ni)
 
 {
         int iL, iM, i, j;
-        int Log4N  = gap8_fl1(Ni)>>1;
+        int Log4N  = gap_fl1(Ni)>>1;
 
         iL = Ni / 4; iM = 1;
         SwapTable[0] = 0;
@@ -76,7 +76,7 @@ void SetupR2SwapTable (short int *SwapTable, int Ni)
 
 {
         int i, j, iL, iM;
-        int Log2N  = gap8_fl1(Ni);
+        int Log2N  = gap_fl1(Ni);
 
         iL = Ni / 2;
         iM = 1;
@@ -141,7 +141,7 @@ void GenerateTwiddles(FILE *FiDef, FILE *FiInc, int DimMin, int DimMax)
 {
 	int Dim;
 
-	fprintf(FiDef, "#include \"Gap8.h\"\n");
+	fprintf(FiDef, "#include \"Gap.h\"\n");
 
 	for (Dim=(1<<DimMin); Dim<(1<<DimMax); Dim = Dim<<1) {
 		short int *Twid = (signed short *) malloc(sizeof(short int)*2*Dim);
@@ -157,7 +157,7 @@ void GenerateSwapTables(FILE *FiDef, FILE *FiInc, int DimMin, int DimMax)
 {
 	int Dim;
 
-	fprintf(FiDef, "#include \"Gap8.h\"\n");
+	fprintf(FiDef, "#include \"Gap.h\"\n");
 
 	for (Dim=(1<<DimMin); Dim<(1<<DimMax); Dim = Dim<<1) {
 		short int *R4SwapTable = (signed short *) malloc(sizeof(short int)*Dim);
