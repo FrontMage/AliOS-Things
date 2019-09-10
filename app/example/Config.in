@@ -107,6 +107,12 @@ if AOS_APP_GAP_LORA
         default "gap_lora"
 endif
 
+source "app/example/gap_ble/Config.in"
+if AOS_APP_GAP_BLE
+    config AOS_BUILD_APP
+        default "gap_ble"
+endif
+
 source "app/example/helloworld_multi_th/Config.in"
 if AOS_APP_HELLOWORLD_MULTI_TH
     config AOS_BUILD_APP

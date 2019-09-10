@@ -37,11 +37,11 @@
 #include "aos/kernel.h"
 #include "aos/hal/uart.h"
 
-#include "chips/gap8/drivers/pin_names.h"
-#include "chips/gap8/drivers/pin_config.h"
+#include "pmsis_driver/pin_names.h"
+#include "pmsis_driver/pin_config.h"
 
 #include "pmsis.h"
-#include "pmsis_driver/uart_internal.h"
+#include "pmsis_driver/uart/uart_internal.h"
 
 #include "lora_config.h"
 

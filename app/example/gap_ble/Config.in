@@ -1,0 +1,8 @@
+config AOS_APP_GAP_BLE
+    bool "gap_ble"
+    help
+        this is a uart ble sample on gapoc
+
+if AOS_APP_GAP_BLE
+# Configurations for app gap ble
+endif
