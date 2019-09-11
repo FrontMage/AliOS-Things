@@ -16,7 +16,7 @@
 #define HAVE_CAMERA
 
 
-#if defined(_FOR_GAPOC_)
+#if defined(GAPOC)
 #define CAMERA_WIDTH    (((640/2)/4)*4)
 #define CAMERA_HEIGHT   (((480/2)/4)*4)
 #else

@@ -294,9 +294,7 @@ void body(void *parameters)
         camera_control(&camera, CAMERA_CMD_STOP, 0);
         #endif  /* HAVE_CAMERA */
 
-        printf("Before cluster\n");
         pi_cluster_send_task_to_cl(&cluster_dev, pi_cluster_task(&cluster_task, (void (*)(void *))detection_cluster_main, &ClusterDetectionCall));
-        printf("Cluster done\n");
 
         //Printing cycles to screen
         #if defined(HAVE_DISPLAY)
