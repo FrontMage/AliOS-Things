@@ -4,16 +4,17 @@
 //Cascade stride
 #define MAX_NUM_OUT_WINS 15
 
+#define VERBOSE 1
+
 #if (VERBOSE != 0)
 #define PRINTF printf
 #else
 #define PRINTF(...)
 #endif
 
-//#define HAVE_DISPLAY
+#define HAVE_DISPLAY
 #define HAVE_CAMERA
 
-#define VERBOSE 1
 
 #if defined(_FOR_GAPOC_)
 #define CAMERA_WIDTH    (((640/2)/4)*4)

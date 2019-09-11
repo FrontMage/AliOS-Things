@@ -43,6 +43,7 @@
 
 #if defined(HAVE_DISPLAY)
 void setCursor(struct pi_device *device,signed short x, signed short y);
+void writeFillRect(struct pi_device *device, unsigned short x, unsigned short y, unsigned short w, unsigned short h, unsigned short color);
 void writeText(struct pi_device *device,char* str,int fontsize);
 #endif  /* HAVE_DISPLAY */
 
@@ -63,7 +64,7 @@ static void my_copy(short* in, unsigned char* out, int Wout, int Hout)
 
 static int open_display(struct pi_device *device)
 {
-#if HAVE_DISPLAY
+    #if defined(HAVE_DISPLAY)
     struct ili9341_conf ili_conf;
 
     ili9341_conf_init(&ili_conf);
@@ -72,7 +73,7 @@ static int open_display(struct pi_device *device)
 
     if (display_open(device))
         return -1;
-#endif
+    #endif  /* HAVE_DISPLAY */
     return 0;
 }
 
@@ -228,9 +229,9 @@ void body(void *parameters)
 
     #if defined(HAVE_DISPLAY)
     //Setting Screen background to white
-    writeFillRect(display, 0, 0, 240, 320, 0xFFFF);
-    setCursor(display, 0, 250);
-    writeText(display,"        Greenwaves \n       Technologies",2);
+    writeFillRect(&display, 0, 0, 240, 320, 0xFFFF);
+    setCursor(&display, 0, 250);
+    writeText(&display,"        Greenwaves \n       Technologies", 2);
     #endif  /* HAVE_DISPLAY */
 
     #if defined(HAVE_CAMERA)
@@ -293,13 +294,15 @@ void body(void *parameters)
         camera_control(&camera, CAMERA_CMD_STOP, 0);
         #endif  /* HAVE_CAMERA */
 
+        printf("Before cluster\n");
         pi_cluster_send_task_to_cl(&cluster_dev, pi_cluster_task(&cluster_task, (void (*)(void *))detection_cluster_main, &ClusterDetectionCall));
+        printf("Cluster done\n");
 
         //Printing cycles to screen
         #if defined(HAVE_DISPLAY)
         sprintf(string_buffer, "%d  \n%d  ", (int)((float)(1/(50000000.f/ClusterDetectionCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterDetectionCall.cycles)) * 16800.f));
-        setCursor(display, 0, 250+2*8);
-        writeText(display, string_buffer, 2);
+        setCursor(&display, 0, 250+2*8);
+        writeText(&display, string_buffer, 2);
 
         RenderBuffer.data = ImageRender;
         display_write(&display, &RenderBuffer, LCD_OFF_X, LCD_OFF_Y, CAMERA_WIDTH/2,CAMERA_HEIGHT/2);
