@@ -306,5 +306,17 @@ if AOS_APP_GAP_FACE_REID
         default "gap_face_reid"
 endif
 
+source "app/example/gap_fs/Config.in"
+if AOS_APP_GAP_FS
+    config AOS_BUILD_APP
+        default "gap_fs"
+endif
+
+source "app/example/gap_fs_to_l3_copy/Config.in"
+if AOS_APP_GAP_FS_TO_L3_COPY
+    config AOS_BUILD_APP
+        default "gap_fs_to_l3_copy"
+endif
+
 endchoice
 endif

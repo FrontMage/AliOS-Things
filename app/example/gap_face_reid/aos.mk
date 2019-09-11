@@ -20,6 +20,9 @@ CNN_KER_PATH = $(TILER_GENERATOR_PATH)/CNN
 APP_CFLAGS += -g -D__PMSIS__ -Os -DGAPOC=1
 APP_CFLAGS += -Wno-unused-but-set-variable -Wno-unused-variable
 
+USE_PMSIS=1
+USE_AUTOTILER=1
+
 
 ########################################
 #

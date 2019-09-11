@@ -1,0 +1,9 @@
+config AOS_APP_GAP_FS
+    bool "gap_fs"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Fs Test
+
+if AOS_APP_GAP_FS
+# Configurations for app face detection
+endif
