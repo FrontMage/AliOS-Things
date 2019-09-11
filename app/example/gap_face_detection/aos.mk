@@ -13,9 +13,11 @@ TILER_PATH = $(GAP8_PATH)/autotiler
 TILER_LIB = $(TILER_PATH)/lib/libtile.a
 TILER_INC = $(TILER_PATH)/include
 
+USE_PMSIS=1
+USE_AUTOTILER=1
 
 MODEL_SRC = $(APP_PATH)/FaceDetGenerator.c $(APP_PATH)/FaceDetModel.c
-MODEL_GEN = FaceDetKernels FaceDetKernelsInit
+MODEL_GEN = FaceDetKernels
 MODEL_GEN_C = $(addsuffix .c, $(MODEL_GEN))
 MODEL_GEN_CLEAN = $(MODEL_GEN_C) $(addsuffix .h, $(MODEL_GEN))
 APP_CFLAGS += -g -D__PMSIS__ -Os
@@ -33,7 +35,6 @@ GLOBAL_CFLAGS += $(APP_CFLAGS) -DUSE_CAMERA -DUSE_DISPLAY #-DHIMAX
 
 GLOBAL_INCLUDES += ./
 GLOBAL_INCLUDES += $(TILER_INC)
-GLOBAL_INCLUDES += $(PMSIS_BSP_ROOT)/include
 
 $(info #### TILER_INC $(TILER_INC))
 $(info #### GLOBAL_INCLUDES $(GLOBAL_INCLUDES))
@@ -46,4 +47,4 @@ GenTile:
 
 # Run the code generator
 model: GenTile
-	$(APP_PATH)/GenTile -p -o $(APP_PATH)
+	$(APP_PATH)/GenTile -o $(APP_PATH)

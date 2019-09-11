@@ -1,5 +1,6 @@
 #include "faceDet.h"
 #include "face_cascade.h"
+#include "ImageDraw.h"
 
 #undef DEBUG_PRINTF
 #define DEBUG_PRINTF(...) ((void ) 0)
@@ -323,7 +324,7 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 	int Win=ArgC->Win, Hin=ArgC->Hin;
 	int Wout, Hout;
 
-	unsigned int i, MaxCore = gap8_ncore(),Ti;
+	unsigned int i, MaxCore = gap_ncore(),Ti;
 
 	//create structure for output
 	cascade_reponse_t* reponses = ArgC->reponses;
@@ -344,10 +345,10 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 		reponses[i].x=-1;
 
 #ifdef ENABLE_LAYER_1
-	ResizeImage_1(ArgC->ImageIn,ArgC->ImageOut,NULL);
-	ProcessIntegralImage_1(ArgC->ImageOut,ArgC->ImageIntegral,NULL);
-	ProcessSquaredIntegralImage_1(ArgC->ImageOut,ArgC->SquaredImageIntegral,NULL);
-	ProcessCascade_1(ArgC->ImageIntegral,ArgC->SquaredImageIntegral,ArgC->model, ArgC->output_map, NULL);
+	ResizeImage_1(ArgC->ImageIn,ArgC->ImageOut);
+	ProcessIntegralImage_1(ArgC->ImageOut,ArgC->ImageIntegral);
+	ProcessSquaredIntegralImage_1(ArgC->ImageOut,ArgC->SquaredImageIntegral);
+	ProcessCascade_1(ArgC->ImageIntegral,ArgC->SquaredImageIntegral,ArgC->model, ArgC->output_map);
 
 	for(int i=0;i<Hout-24+1;i+=DETECT_STRIDE)
 		for(int j=0;j<Wout-24+1;j+=DETECT_STRIDE){
@@ -369,10 +370,10 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 	Wout /= 1.25, Hout /= 1.25;
 
 #ifdef ENABLE_LAYER_2
-	ResizeImage_2(ArgC->ImageIn,ArgC->ImageOut,NULL);
-	ProcessIntegralImage_2(ArgC->ImageOut,ArgC->ImageIntegral,NULL);
-	ProcessSquaredIntegralImage_2(ArgC->ImageOut,ArgC->SquaredImageIntegral,NULL);
-	ProcessCascade_2(ArgC->ImageIntegral,ArgC->SquaredImageIntegral,ArgC->model, ArgC->output_map, NULL);
+	ResizeImage_2(ArgC->ImageIn,ArgC->ImageOut);
+	ProcessIntegralImage_2(ArgC->ImageOut,ArgC->ImageIntegral);
+	ProcessSquaredIntegralImage_2(ArgC->ImageOut,ArgC->SquaredImageIntegral);
+	ProcessCascade_2(ArgC->ImageIntegral,ArgC->SquaredImageIntegral,ArgC->model, ArgC->output_map);
 
 	for(int i=0;i<Hout-24+1;i+=DETECT_STRIDE)
 		for(int j=0;j<Wout-24+1;j+=DETECT_STRIDE){
@@ -394,10 +395,10 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 	Wout /= 1.25, Hout /= 1.25;
 
 #ifdef ENABLE_LAYER_3
-	ResizeImage_3(ArgC->ImageIn,ArgC->ImageOut,NULL);
-	ProcessIntegralImage_3(ArgC->ImageOut,ArgC->ImageIntegral,NULL);
-	ProcessSquaredIntegralImage_3(ArgC->ImageOut,ArgC->SquaredImageIntegral,NULL);
-	ProcessCascade_3(ArgC->ImageIntegral,ArgC->SquaredImageIntegral,ArgC->model, ArgC->output_map, NULL);
+	ResizeImage_3(ArgC->ImageIn,ArgC->ImageOut);
+	ProcessIntegralImage_3(ArgC->ImageOut,ArgC->ImageIntegral);
+	ProcessSquaredIntegralImage_3(ArgC->ImageOut,ArgC->SquaredImageIntegral);
+	ProcessCascade_3(ArgC->ImageIntegral,ArgC->SquaredImageIntegral,ArgC->model, ArgC->output_map);
 	for(int i=0;i<Hout-24+1;i+=DETECT_STRIDE)
 		for(int j=0;j<Wout-24+1;j+=DETECT_STRIDE){
 
@@ -436,7 +437,7 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 			//real_detections++;
 		}
 
-	final_resize(ArgC->ImageIn,ArgC->ImageOut,NULL);
+	final_resize(ArgC->ImageIn,ArgC->ImageOut);
 }
 
 

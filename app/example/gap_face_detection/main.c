@@ -4,17 +4,6 @@
 /****************************************************************************/
 /* PMSIS includes */
 #include "pmsis.h"
-#include "pmsis/pmsis_types.h"
-
-#include "pmsis/rtos/pmsis_os.h"
-#include "pmsis/device.h"
-
-#include "pmsis/drivers/hyperbus.h"
-#include "pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.h"
-
-#include "pmsis/rtos/os_frontend_api/pmsis_task.h"
-#include "pmsis/cluster/cluster_sync/fc_to_cl_delegate.h"
-#include "pmsis/cluster/cluster_team/cl_team.h"
 
 /* PMSIS BSP includes */
 #include "bsp/gapoc_a.h"
@@ -58,6 +47,11 @@ struct pi_cluster_task *task;
 struct cluster_driver_conf conf;
 ArgCluster_T ClusterCall;
 
+#if defined(USE_DISPLAY)
+void setCursor(struct pi_device *device,signed short x, signed short y);
+void writeFillRect(struct pi_device *device, unsigned short x, unsigned short y, unsigned short w, unsigned short h, unsigned short color);
+void writeText(struct pi_device *device,char* str,int fontsize);
+#endif  /* USE_DISPLAY */
 
 
 static int open_display(struct pi_device *device)
@@ -206,8 +200,8 @@ int application_start(int argc, char *argv[])
 
 #ifdef USE_DISPLAY
   //Setting Screen background to white
-  writeFillRect(&ili, 0,0,320,240,0xFFFF);
-  setCursor(&ili,0,0);
+  writeFillRect(&ili, 0, 0, 240, 320, 0xFFFF);
+  setCursor(&ili, 0, 0);
   writeText(&ili,"        Greenwaves \n       Technologies",2);
 #endif
   DEBUG_PRINTF("main loop start\n");
@@ -227,8 +221,8 @@ int application_start(int argc, char *argv[])
   sprintf(str_to_lcd,"1 Image/Sec: \n%d uWatt @ 1.2V   \n%d uWatt @ 1.0V   %c", (int)((float)(1/(50000000.f/ClusterCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterCall.cycles)) * 16800.f),'\0');
   //sprintf(out_perf_string,"%d  \n%d  %c", (int)((float)(1/(50000000.f/cycles)) * 28000.f),(int)((float)(1/(50000000.f/cycles)) * 16800.f),'\0');
 
-  setCursor(&ili,0,190);
-  writeText(&ili,str_to_lcd,2);
+  setCursor(&ili, 0, 190);
+  writeText(&ili, str_to_lcd, 2);
   buffer.data = ImageOut;
   display_write(&ili, &buffer, 80, 40, 160, 120);
 #endif

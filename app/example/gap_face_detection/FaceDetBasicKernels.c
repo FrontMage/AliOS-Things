@@ -11,19 +11,18 @@
 #include <math.h>
 #include "FaceDetBasicKernels.h"
 #include "setup.h"
+
 #include "pmsis.h"
-#include "pmsis/cluster/dma/cl_dma.h"
-#include "pmsis/cluster/cluster_team/cl_team.h"
+#include "Gap.h"
 
 static inline unsigned int __attribute__((always_inline)) ChunkSize(unsigned int X)
-
 {
 	unsigned int NCore;
 	unsigned int Log2Core;
 	unsigned int Chunk;
 
-	NCore = gap8_ncore();
-	Log2Core = gap8_fl1(NCore);
+	NCore = gap_ncore();
+	Log2Core = gap_fl1(NCore);
 	Chunk = (X>>Log2Core) + ((X&(NCore-1))!=0);
 	return Chunk;
 }
@@ -40,7 +39,7 @@ void KerResizeBilinear(KerResizeBilinear_ArgT *Arg)
         unsigned int HTileOut            = Arg->HTileOut;
         unsigned int FirstLineIndex      = Arg->FirstLineIndex;
 
-        unsigned int CoreId = gap8_coreid();
+        unsigned int CoreId = gap_coreid();
         unsigned int ChunkCell = ChunkSize(Wout);
         unsigned int First = CoreId*ChunkCell, Last  = Min(Wout, First+ChunkCell);
 
@@ -71,7 +70,7 @@ void KerResizeBilinear(KerResizeBilinear_ArgT *Arg)
                 }
                 hCoeff += HStep;
         }
-        cl_team_barrier();
+        gap_waitbarrier(0);
 }
 
 
@@ -79,7 +78,7 @@ void KerIntegralImagePrime(KerPrimeImage_ArgT *KerArg)
 {
         unsigned int W = KerArg->W;
         unsigned int *Buffer = KerArg->KerBuffer;
-        unsigned int Col,CoreId = gap8_coreid();
+        unsigned int Col,CoreId = gap_coreid();
 
         unsigned int ChunkBlock = ChunkSize(W);
         unsigned int First = CoreId*ChunkBlock;
@@ -100,7 +99,7 @@ void KerIntegralImageProcess(KerProcessImage_ArgT *KerArg)
         unsigned int* outIntImg = KerArg->IntegralImage;
         unsigned int* buff = KerArg->KerBuffer;
         unsigned int Col,Line;
-        unsigned int CoreId = gap8_coreid();
+        unsigned int CoreId = gap_coreid();
 
         unsigned int ChunkBlock = ChunkSize(W);
         unsigned int FirstCol = CoreId*ChunkBlock;
@@ -117,13 +116,13 @@ void KerIntegralImageProcess(KerProcessImage_ArgT *KerArg)
                 }
 
         }
-        cl_team_barrier();
+        gap_waitbarrier(0);
         //Saving to Buff intermediate results
         for (Col=FirstCol; Col<LastCol; Col++){
                 buff[Col] = outIntImg[Col+((H-1)*W)];
         }
 
-        cl_team_barrier();
+        gap_waitbarrier(0);
         for (Line=FirstLine; Line<LastLine; Line++){
                 for (Col=0; Col<W-1; Col++){
                         outIntImg[Col+1 +(Line*W)] = outIntImg[Col+(Line)*W] + outIntImg[Col+1+(Line)*W];
@@ -141,7 +140,7 @@ void KerSquaredIntegralImageProcess(KerProcessImage_ArgT *KerArg)
         unsigned int* outIntImg = KerArg->IntegralImage;
         unsigned int* buff = KerArg->KerBuffer;
         unsigned int Col,Line;
-        unsigned int CoreId = gap8_coreid();
+        unsigned int CoreId = gap_coreid();
 
         unsigned int ChunkBlock = ChunkSize(W);
         unsigned int FirstCol = CoreId*ChunkBlock;
@@ -158,13 +157,13 @@ void KerSquaredIntegralImageProcess(KerProcessImage_ArgT *KerArg)
                 }
 
         }
-        cl_team_barrier();
+        gap_waitbarrier(0);
         //Saving to Buff intermediate results
         for (Col=FirstCol; Col<LastCol; Col++){
                 buff[Col] = outIntImg[Col+((H-1)*W)];
         }
 
-        cl_team_barrier();
+        gap_waitbarrier(0);
         for (Line=FirstLine; Line<LastLine; Line++){
                 for (Col=0; Col<W-1; Col++){
                         outIntImg[Col+1 +(Line*W)] = outIntImg[Col+(Line)*W] + outIntImg[Col+1+(Line)*W];
@@ -210,26 +209,20 @@ static unsigned int SquareRootRounded(unsigned int a_nInput)
 }
 
 
-static __attribute__((always_inline)) inline int integral_image_lookup(unsigned int* __restrict__ integralImage, int x, int y, int w, int h, int win_w){
-
-        //volatile int pos = (h+y)*win_w + w+x;
-        //volatile int pos1 = (h+y)*win_w + w+x;
-        //volatile int pos2 = (h+y)*win_w + w+x;
-        //volatile int pos3 = (h+y)*win_w + w+x;
-        //printf("%x\n",&(integralImage[0]));
-        //unsigned int res = 0;//integralImage[0];
+static int integral_image_lookup(unsigned int* __restrict__ integralImage, int x, int y, int w, int h, int win_w)
+{
         unsigned int res = (integralImage[(h+y)*win_w + w+x] + integralImage[(y*win_w) + x] - integralImage[(y)*win_w + w+x] -integralImage[(h+y)*win_w + x]);
 
         //#define DEBUG 1
-        //printf("II values:%d %d %d %d: %d\n", integralImage[(y)*win_w + x],integralImage[(h+y)*win_w + w+x], integralImage[(y)*win_w + w+x],integralImage[(h+y)*win_w + x], res);
+        //PRINTF("II values:%d %d %d %d: %d\n", integralImage[(y)*win_w + x],integralImage[(h+y)*win_w + w+x], integralImage[(y)*win_w + w+x],integralImage[(h+y)*win_w + x], res);
 
         return res;
 }
 
-static int eval_weak_classifier(unsigned int* __restrict__ integralImage,int img_w, single_cascade_t* __restrict__ weaks, int std,int t_idx, int w_idx, int r_idx,int off_x, int off_y){
+static int eval_weak_classifier(unsigned int* __restrict__ integralImage,int img_w, single_cascade_t* __restrict__ weaks, int std,int t_idx, int w_idx, int r_idx,int off_x, int off_y)
+{
 
         int sumw=0;
-
 
         /* The node threshold is multiplied by the standard deviation of the sub window */
         int t = (int)weaks->thresholds[t_idx] * std;
@@ -251,11 +244,12 @@ static int eval_weak_classifier(unsigned int* __restrict__ integralImage,int img
 }
 
 
-static void spawn_eval_weak_classifier(eval_weak_classifier_Arg_T* Arg){
+static void spawn_eval_weak_classifier(eval_weak_classifier_Arg_T* Arg)
+{
 
     single_cascade_t *single_cascade=Arg->cascade_stage;
 
-    unsigned int CoreId = gap8_coreid();
+    unsigned int CoreId = gap_coreid();
     unsigned int ChunkBlock = ChunkSize(single_cascade->stage_size);
     unsigned int FirstCol = CoreId*ChunkBlock;
     unsigned int LastCol  = (FirstCol+ChunkBlock > (single_cascade->stage_size)) ? (single_cascade->stage_size) : (FirstCol+ChunkBlock);
@@ -314,7 +308,6 @@ void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* c
 
 }
 
-
 static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, unsigned int* __restrict__ sqaredIntegralImage, cascade_t * __restrict__ cascade, int win_w, int win_h, int img_w,int off_x, int off_y){
 
         cl_dma_copy_t Dma_Evt;
@@ -352,23 +345,25 @@ static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, 
         async_cascade_stage_to_l1((cascade->stages[CASCADE_STAGES_L1]), (cascade->buffers_l1[buffer%2]), &Dma_Evt);
 
         for (i=0; i<cascade->stages_num; i++) {
-                //printf("Here %d\n",i);
+                //PRINTF("Here %d\n",i);
                 if(i<CASCADE_STAGES_L1)
                     Arg.cascade_stage=(cascade->stages[i]);
 
                 if(i>=CASCADE_STAGES_L1){
-                    cl_dma_wait(&Dma_Evt);
-                    //printf("Here 1 %d\n",i);
+                    //cl_dma_wait(&Dma_Evt);
+                    //PRINTF("Here 1 %d\n",i);
                     Arg.cascade_stage = (cascade->buffers_l1[buffer%2]);
                     //If it is not last
                 if( i<cascade->stages_num-1)
                         async_cascade_stage_to_l1((cascade->stages[i+1]), (cascade->buffers_l1[(++buffer)%2]), &Dma_Evt);
-                    //printf("Here 2 %d\n",i);
+                    //PRINTF("Here 2 %d\n",i);
                 }
-                cl_team_fork(gap8_ncore(), (void *) spawn_eval_weak_classifier, (void *) &Arg);
+                cl_team_fork(gap_ncore(), (void *) spawn_eval_weak_classifier, (void *) &Arg);
+                //Here we suppose always using 8 cores!
                 stage_sum[0]+= stage_sum[1] + stage_sum[2] + stage_sum[3] + stage_sum[4] + stage_sum[5] + stage_sum[6] + stage_sum[7];
                 //Move this operation offline
                 stages_score+=stage_sum[0]-cascade->thresholds[i];
+                //This Operation can be moved offline!
                 if (stage_sum[0] < (cascade->thresholds[i])) {
                 //if (stage_sum[0] < ((DETECT_THRESHOLD) * cascade->thresholds[i])) {
                         return 0;
@@ -380,14 +375,14 @@ static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, 
 
 
 void KerEvaluateCascade(
-    Wordu32 * __restrict__ IntegralImage,
-    Wordu32 * __restrict__ SquaredIntegralImage,
-    Wordu32 W,
-    Wordu32 H,
+    unsigned int * __restrict__ IntegralImage,
+    unsigned int * __restrict__ SquaredIntegralImage,
+    unsigned int W,
+    unsigned int H,
     void * cascade_model,
-    Wordu8 WinW,
-    Wordu8 WinH,
-    Word32 * __restrict__ CascadeReponse){
+    unsigned char WinW,
+    unsigned char WinH,
+    int * __restrict__ CascadeReponse){
 
     cascade_t *model = (cascade_t*) cascade_model;
 
