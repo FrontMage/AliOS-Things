@@ -18,10 +18,18 @@ void __os_native_mutex_unlock(void *mutex)
 void __os_native_sem_take(void *sem)
 {
     hal_compiler_barrier();
-    krhino_sem_take((ksem_t *)sem, AOS_WAIT_FOREVER);
+    int err = krhino_sem_take((ksem_t *)sem, AOS_WAIT_FOREVER);
+    if(err)
+    {
+        printf("sem_take is failing with code %x\n",err);
+    }
 }
 
 void __os_native_sem_give(void *sem)
 {
-    krhino_sem_give((ksem_t *)sem);
+    int err = krhino_sem_give((ksem_t *)sem);
+    if(err)
+    {
+        printf("sem_give is failing with code %x\n",err);
+    }
 }

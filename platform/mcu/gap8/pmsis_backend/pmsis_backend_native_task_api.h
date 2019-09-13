@@ -39,7 +39,18 @@ static inline void __os_native_api_restore_irq(int irq_enable)
 
 static inline void __os_native_task_suspend(__os_native_task_t *task)
 {
-    krhino_task_del((ktask_t*)task);
+    int err = krhino_task_suspend((ktask_t*)task);
+    if(err)
+    {
+        printf("Suspend returned error: %x\n",err);
+    }
+    // things must be done in that order, can't suspend a deleted task
+    hal_compiler_barrier();
+    err = krhino_task_dyn_del((ktask_t*)task);
+    if(err)
+    {
+        printf("Del returned error: %x\n",err);
+    }
 }
 
 static inline void __os_native_yield(void)
