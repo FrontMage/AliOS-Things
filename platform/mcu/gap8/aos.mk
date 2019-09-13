@@ -44,12 +44,8 @@ $(NAME)_SOURCES := gcc/startup_gap8.S                          \
                    system_gap8.c
 
 GLOBAL_LDS_FILES += platform/mcu/gap8/gcc/gap8.ld
-ifeq ($(USE_PMSIS), 1)
 include ./platform/mcu/gap8/pmsis.mk
-endif
-ifeq ($(USE_AUTOTILER), 1)
 include ./platform/mcu/gap8/autotiler.mk
-endif
 
 GLOBAL_CFLAGS   += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -DCONFIG_GAPOC_A -D__riscv__
 GLOBAL_ASMFLAGS += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -DCONFIG_GAPOC_A -D__riscv__
