@@ -55,10 +55,12 @@ static int printf_is_init = 0;
 __attribute__ ((export))
 int printf(const char *fmt, ...)
 {
+#if !defined(PRINTF_GVSOC)
     if(!pi_is_fc())
     {
         return 0;
     }
+#endif
     if(!printf_is_init)
     {
         krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
@@ -68,7 +70,9 @@ int printf(const char *fmt, ...)
 #endif
         printf_is_init= 1;
     }
+#if !defined(PRINTF_GVSOC)
     krhino_mutex_lock(&g_printf_mutex, RHINO_WAIT_FOREVER);
+#endif
     va_list va;
     va_start(va, fmt);
     /* Only lock the printf if the cluster is up to avoid mixing FC and cluster output */
@@ -76,7 +80,9 @@ int printf(const char *fmt, ...)
     tfp_format(NULL, tfp_putc, fmt, va);
     // ideally should unlock here
     va_end(va);
+#if !defined(PRINTF_GVSOC)
     krhino_mutex_unlock(&g_printf_mutex);
+#endif
     return 0;
 }
 
@@ -91,7 +97,12 @@ int vprintf(const char *format, va_list ap)
 __attribute__ ((export))
 int puts(const char *str)
 {
-    //return 0;
+#if !defined(PRINTF_GVSOC)
+    if(!pi_is_fc())
+    {
+        return 0;
+    }
+#endif
     char c;
     do {
         c = *str;
