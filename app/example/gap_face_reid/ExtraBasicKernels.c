@@ -36,6 +36,10 @@ void KerResizeBilinearShort(KerResizeBilinearShort_ArgT *Arg)
     unsigned int FirstLineIndex      = Arg->FirstLineIndex;
 
     unsigned int CoreId = gap_coreid();
+    if(CoreId == 0)
+    {
+        printf("out:%p Htileout:%i wout:%i\n",Out,HTileOut,Wout);
+    }
     unsigned int ChunkCell = ChunkSize(Wout);
     unsigned int First = CoreId*ChunkCell, Last  = Min(Wout, First+ChunkCell);
 
@@ -61,8 +65,11 @@ void KerResizeBilinearShort(KerResizeBilinearShort_ArgT *Arg)
                     unsigned int P2 = In[(offsetY + 1)*Win + offsetX    ];
                     unsigned int P3 = In[offsetY*Win       + offsetX + 1];
                     unsigned int P4 = In[(offsetY + 1)*Win + offsetX + 1];
-
                     unsigned char tmp = ((P1*hc1 + P2*hc2)*wc1 + (P3*hc1 + P4*hc2)*wc2) >> 14;
+                    if(CoreId == 0)
+                    {
+                        //printf("addr Out:%p y=%i\n",&Out[y*Wout + x],y);
+                    }
                     Out[y*Wout + x] = tmp;
                     wCoeff += WStep;
             }

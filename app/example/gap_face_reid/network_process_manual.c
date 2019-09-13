@@ -1,6 +1,8 @@
 #include "param_layer_struct.h"
 #include "network_process_manual.h"
 #include "dnn_utils.h"
+#include "ExtraKernels.h"
+#include "ExtraBasicKernels.h"
 
 short int* l3_weights[NB_CONV];
 int weights_size[NB_CONV];
@@ -50,13 +52,12 @@ ConvLayerFunctionType ConvLayerArray[NB_CONV] =
 // Expected format: 128x128xshort
 short* network_init()
 {
-    L1_Memory =  pmsis_l1_malloc(_L1_Memory_SIZE);
+    L1_Memory =  pmsis_l1_malloc(_ExtraKernels_L1_Memory_SIZE);
     if(L1_Memory == NULL)
     {
         printf("L1 Working area alloc error\n");
         return NULL;
     }
-
     if(!__networ_init_done)
     {
         L2_Memory =  pmsis_l2_malloc(_L2_Memory_SIZE);
@@ -67,12 +68,15 @@ short* network_init()
         }
         __networ_init_done = 1;
     }
+    printf("ALLOC: L1 memory: %p, L2 memory:%p\n", L1_Memory, L2_Memory);
 
     return memory_pool;
 }
 
 void network_deinit()
 {
+    printf("DEINIT DONE!!!!\n");
+    printf("L1 memory: %p, L2 memory:%p\n", L1_Memory, L2_Memory);
     pmsis_l1_malloc_free(L1_Memory, _L1_Memory_SIZE);
     pmsis_l2_malloc_free(L2_Memory, _L2_Memory_SIZE);
     __networ_init_done = 0;

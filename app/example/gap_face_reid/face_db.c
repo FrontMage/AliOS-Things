@@ -95,6 +95,7 @@ int identify_by_db(short* descriptor, char** name)
 {
     if(identified_people == 0)
     {
+        printf("identified_people ==0\n");
         return -1;
     }
 
@@ -104,7 +105,7 @@ int identify_by_db(short* descriptor, char** name)
     for(int i = 0; i < identified_people; i++)
     {
         unsigned int l2 = l2_distance(PeopleDescriptors[i], descriptor);
-        PRINTF("L2 distance for %d (%s): %u\n", i, PeopleNames[i], l2);
+        printf("L2 distance for %d (%s): %u\n", i, PeopleNames[i], l2);
         if(l2 < min_l2)
         {
             min_l2 = l2;
@@ -112,7 +113,7 @@ int identify_by_db(short* descriptor, char** name)
         }
     }
 
-    PRINTF("Found person with index %d from %d people\n", min_l2_idx, identified_people);
+    printf("Found person with index %d from %d people\n", min_l2_idx, identified_people);
 
     *name = PeopleNames[min_l2_idx];
     return min_l2;

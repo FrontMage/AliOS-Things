@@ -17,7 +17,7 @@ TILER_GENERATOR_PATH = $(TILER_PATH)/generators
 CNN_GEN_PATH = $(TILER_GENERATOR_PATH)/CNN
 CNN_KER_PATH = $(TILER_GENERATOR_PATH)/CNN
 
-APP_CFLAGS += -g -D__PMSIS__ -Os -DGAPOC=1
+APP_CFLAGS += -g -D__PMSIS__ -Os -DGAPOC=1 #-DPRINTF_GVSOC
 APP_CFLAGS += -Wno-unused-but-set-variable -Wno-unused-variable
 
 USE_PMSIS=1
@@ -39,7 +39,7 @@ FACE_DET_INCS += $(FACE_DET_PATH)
 
 # Build the code generator
 FaceDetGenTile:
-	gcc -no-pie -o $(FACE_DET_FULL_PATH)/GenDetectionTile -I$(TILER_INC) $(FACE_DET_MODEL_SRC) $(TILER_LIB) #$(APP_CFLAGS)
+	gcc -no-pie -o $(FACE_DET_FULL_PATH)/GenDetectionTile -I$(TILER_INC) $(FACE_DET_MODEL_SRC) $(TILER_LIB) $(APP_CFLAGS)
 
 # Run the code generator
 face_det_model: FaceDetGenTile

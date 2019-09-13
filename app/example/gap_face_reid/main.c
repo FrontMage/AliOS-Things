@@ -213,7 +213,6 @@ void body(void *parameters)
     PRINTF("FS mounted.\n");
 
     PRINTF("Loading layers to HyperRAM\n");
-    network_load(&fs);
 
     PRINTF("Unmount FS as it's not needed any more\n");
     fs_unmount(&fs);
@@ -229,9 +228,9 @@ void body(void *parameters)
 
     #if defined(HAVE_DISPLAY)
     //Setting Screen background to white
-    writeFillRect(&display, 0, 0, 240, 320, 0xFFFF);
-    setCursor(&display, 0, 250);
-    writeText(&display,"        Greenwaves \n       Technologies", 2);
+    //writeFillRect(&display, 0, 0, 240, 320, 0xFFFF);
+    //setCursor(&display, 0, 250);
+    //writeText(&display,"        Greenwaves \n       Technologies", 2);
     #endif  /* HAVE_DISPLAY */
 
     #if defined(HAVE_CAMERA)
@@ -298,19 +297,19 @@ void body(void *parameters)
 
         //Printing cycles to screen
         #if defined(HAVE_DISPLAY)
-        sprintf(string_buffer, "%d  \n%d  ", (int)((float)(1/(50000000.f/ClusterDetectionCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterDetectionCall.cycles)) * 16800.f));
-        setCursor(&display, 0, 250+2*8);
-        writeText(&display, string_buffer, 2);
+        //sprintf(string_buffer, "%d  \n%d  ", (int)((float)(1/(50000000.f/ClusterDetectionCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterDetectionCall.cycles)) * 16800.f));
+        //setCursor(&display, 0, 250+2*8);
+        //writeText(&display, string_buffer, 2);
 
         RenderBuffer.data = ImageRender;
         display_write(&display, &RenderBuffer, LCD_OFF_X, LCD_OFF_Y, CAMERA_WIDTH/2,CAMERA_HEIGHT/2);
         #endif  /* HAVE_DISPLAY */
 
-        printf("num_reponse: %d\n", ClusterDetectionCall.num_reponse);
+        //printf("num_reponse: %d\n", ClusterDetectionCall.num_reponse);
         if (ClusterDetectionCall.num_reponse)
         {
             PRINTF("Faces detected!\n");
-            //pi_cluster_close(&cluster_dev);
+            pi_cluster_close(&cluster_dev);
             int optimal_detection_id = -1;
             int optimal_score = -1;
             for (int i=0; i<ClusterDetectionCall.num_reponse; i++)
@@ -321,7 +320,12 @@ void body(void *parameters)
                     optimal_score = responses[i].score;
                 }
             }
-            //pi_cluster_open(&cluster_dev);
+            PRINTF("Init cluster...\n");
+            memset(&cluster_dev, 0, sizeof(cluster_dev));
+            pi_cluster_conf_init(&cluster_conf);
+            cluster_conf.id = 0;
+            pi_open_from_conf(&cluster_dev, &cluster_conf);
+            pi_cluster_open(&cluster_dev);
             PRINTF("Score: %X, optimal_detection_id: %d\n", optimal_score, optimal_detection_id);
 
             ClusterDnnCall.roi         = &responses[optimal_detection_id];
@@ -336,25 +340,31 @@ void body(void *parameters)
 
             ExtraKernels_L1_Memory = L1_Memory;
 
+            //ClusterDnnCall.roi->layer_idx = 2;
             pi_cluster_send_task_to_cl(&cluster_dev, pi_cluster_task(&cluster_task, (void (*)(void *))reid_prepare_cluster, &ClusterDnnCall));
             PRINTF("prepare done\n");
 
             my_copy(ClusterDnnCall.scaled_face, ClusterDnnCall.face, 128, 128);
+            printf("my copy done\n");
             int iterations = 128*128 / 1024;
             for (int i=0; i<iterations; i++)
             {
                 ram_write(&HyperRam, preview_hyper+i*1024, ((char*)ClusterDnnCall.face) + i*1024, 1024);
             }
 
+            printf("sending inference\n");
             pi_cluster_send_task_to_cl(&cluster_dev, pi_cluster_task(&cluster_task, (void (*)(void *))reid_inference_cluster, &ClusterDnnCall));
             PRINTF("inference done\n");
 
             int id_l2 = identify_by_db(ClusterDnnCall.output, &person_name);
-            sprintf(string_buffer, "ReID L2: %d\n", id_l2);
-            PRINTF(string_buffer);
+            //sprintf(string_buffer, "ReID L2: %d\n", id_l2);
+            printf("ReID L2: %d\n", id_l2);
 
             /* Release all memory for reid network */
             network_deinit();
+            pi_cluster_close(&cluster_dev);
+            pi_cluster_open(&cluster_dev);
+            pi_cluster_send_task_to_cl(&cluster_dev, pi_cluster_task(&cluster_task, (void (*)(void *))detection_cluster_init, &ClusterDetectionCall));
         }
     }
     PRINTF("Face ReID Demo done!\n");

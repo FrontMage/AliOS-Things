@@ -67,17 +67,17 @@ void reid_prepare_cluster(ArgClusterDnn_T* ArgC)
     {
         PRINTF("Cut face ROI from scale 1\n");
         copy_roi(face_ptr, CAMERA_WIDTH, ArgC->face, 152, 152);
-        // PRINTF("CopyROI done\n");
+         PRINTF("CopyROI done\n");
         ResizeImageForDnn_Scale1(ArgC->face, ArgC->scaled_face);
-        // PRINTF("Resize done\n");
+         PRINTF("Resize done\n");
     }
     else if(ArgC->roi->layer_idx == 2)
     {
         PRINTF("Cut face ROI from scale 2\n");
         copy_roi(face_ptr, CAMERA_WIDTH, ArgC->face, 194, 194);
-        // PRINTF("CopyROI done\n");
+         PRINTF("CopyROI done\n");
         ResizeImageForDnn_Scale2(ArgC->face, ArgC->scaled_face);
-        // PRINTF("Resize done\n");
+         PRINTF("Resize done\n");
     }
     else
     {
