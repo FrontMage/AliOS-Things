@@ -42,6 +42,7 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_rtos/os/pmsis_device.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_synchronisation/fc_to_cl_delegate.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_synchronisation/cl_to_fc_delegate.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_team/cl_team.c
+$(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/cl_malloc.c
 
 #BSP
 $(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapoc_a.c
@@ -60,11 +61,3 @@ $(NAME)_SOURCES     += ./pmsis_bsp/ram/hyperram/hyperram.c
 $(NAME)_SOURCES     += ./pmsis_bsp/ram/ram.c
 $(NAME)_SOURCES     += ./pmsis_bsp/ram/alloc_extern.c
 $(NAME)_SOURCES     += ./pmsis_bsp/ble/nina_b112/nina_b112.c
-
-
-
-
-
-
-
-
