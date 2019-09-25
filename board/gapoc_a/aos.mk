@@ -26,6 +26,7 @@ $(NAME)_SOURCES     += ./clock_config.c
 $(NAME)_SOURCES     += ./pin_mux.c
 $(NAME)_SOURCES     += ./k_config.c
 
+BOARD_NAME=gapoc_a
 # include pmsis stuff
 include ./platform/mcu/gap8/pmsis.mk
 # configure for soc and board

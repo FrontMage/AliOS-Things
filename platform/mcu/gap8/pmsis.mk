@@ -45,8 +45,12 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/cluster_team/cl_team.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/cl_malloc.c
 
 #BSP
+ifeq ($(BOARD_NAME),gapuino8)
+$(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapuino.c
+endif
+ifeq ($(BOARD_NAME),gapoc_a)
 $(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapoc_a.c
-#$(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapuino.c
+endif
 $(NAME)_SOURCES     += ./pmsis_bsp/camera/camera.c
 $(NAME)_SOURCES     += ./pmsis_bsp/camera/mt9v034/mt9v034.c
 $(NAME)_SOURCES     += ./pmsis_bsp/camera/himax/himax.c
