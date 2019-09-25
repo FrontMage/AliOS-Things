@@ -200,8 +200,8 @@ int application_start(int argc, char *argv[])
 
 #ifdef USE_DISPLAY
   //Setting Screen background to white
-  writeFillRect(&ili, 0, 0, 240, 320, 0xFFFF);
-  setCursor(&ili, 0, 0);
+  writeFillRect(&ili, 0, 0, 320, 240, 0xFFFF);
+  setCursor(&ili, 0, 180);
   writeText(&ili,"        Greenwaves \n       Technologies",2);
 #endif
   DEBUG_PRINTF("main loop start\n");
@@ -215,14 +215,15 @@ int application_start(int argc, char *argv[])
 #endif
 
     pi_cluster_send_task_to_cl(&cluster_dev, task);
-    DEBUG_PRINTF("end of face detection\n");
+    //DEBUG_PRINTF("end of face detection\n");
 
 #ifdef USE_DISPLAY
   sprintf(str_to_lcd,"1 Image/Sec: \n%d uWatt @ 1.2V   \n%d uWatt @ 1.0V   %c", (int)((float)(1/(50000000.f/ClusterCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterCall.cycles)) * 16800.f),'\0');
   //sprintf(out_perf_string,"%d  \n%d  %c", (int)((float)(1/(50000000.f/cycles)) * 28000.f),(int)((float)(1/(50000000.f/cycles)) * 16800.f),'\0');
 
-  setCursor(&ili, 0, 190);
-  writeText(&ili, str_to_lcd, 2);
+  //setCursor(&ili, 0, 190);
+  //writeText(&ili, str_to_lcd, 2);
+  // write image
   buffer.data = ImageOut;
   display_write(&ili, &buffer, 80, 40, 160, 120);
 #endif
