@@ -1,0 +1,9 @@
+config AOS_APP_GAP_MNIST
+    bool "gap_mnist"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Mnist Test
+
+if AOS_APP_GAP_MNIST
+# Configurations for app face reidentification
+endif

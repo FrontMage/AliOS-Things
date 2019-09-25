@@ -28,13 +28,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-
+#include "pmsis_hal/gap_eu/pmsis_eu.h"
 #include "pmsis_hal/soc_eu/pmsis_soc_eu.h"
 #include "drivers/gap_bridge.h"
-#include "pmsis_driver/pmsis_it.h"
 
 debug_struct_t HAL_DEBUG_STRUCT_NAME = GAP_DEBUG_STRUCT_INIT;
 
@@ -46,8 +42,6 @@ bridge_req_t request;
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-/* handler wrapper  */
-HANDLER_WRAPPER_LIGHT(BRIDGE_IRQHandler);
 
 /*******************************************************************************
  * Code
@@ -227,7 +221,7 @@ void BRIDGE_BlockWait() {
 
     int event = 0;
     do {
-        event = EU_EVT_MaskWaitAndClr(1 << FC_SW_NOTIFY_BRIDGE_EVENT);
+        event = hal_eu_evt_mask_wait_and_clr(1 << FC_SW_NOTIFY_BRIDGE_EVENT);
     } while (!(event & (1 << FC_SW_NOTIFY_BRIDGE_EVENT)));
 
     EU_CORE_DEMUX->BUFFER_CLEAR = (1 << FC_SW_NOTIFY_BRIDGE_EVENT);
@@ -246,7 +240,7 @@ void BRIDGE_Init()
     bridge->notifyReqValue = 1;
 
     /* Bind software event handle */
-    NVIC_SetVector(FC_SW_NOTIFY_BRIDGE_EVENT, (uint32_t)__handler_wrapper_light_BRIDGE_IRQHandler);
+    //NVIC_SetVector(FC_SW_NOTIFY_BRIDGE_EVENT, (uint32_t)__handler_wrapper_light_BRIDGE_IRQHandler);
     /* Activate interrupt handler for soc event */
     NVIC_EnableIRQ(FC_SW_NOTIFY_BRIDGE_EVENT);
 }

@@ -19,7 +19,7 @@ GLOBAL_LDFLAGS +=
 GLOBAL_INCLUDES += .
 
 GLOBAL_INCLUDES += ../../platform/mcu/gap8/
-GLOBAL_INCLUDES += ../../platform/mcu/gap8/include/
+#GLOBAL_INCLUDES += ../../platform/mcu/gap8/include/
 GLOBAL_INCLUDES += ../../platform/mcu/gap8/drivers/
 
 $(NAME)_SOURCES     := ./board.c

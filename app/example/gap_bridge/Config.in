@@ -1,0 +1,9 @@
+config AOS_APP_GAP_BRIDGE
+    bool "gap_bridge"
+    select AOS_COMP_OSAL_AOS
+    help
+        GAP8 Bridge Test
+
+if AOS_APP_GAP_BRIDGE
+# Configurations for app face reidentification
+endif
