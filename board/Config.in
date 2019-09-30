@@ -290,6 +290,15 @@ if AOS_BOARD_GAPOC_A
     source "platform/arch/risc-v/ri5cy_gap8/Config.in"
 endif
 
+source "board/gvsoc_gap8/Config.in"
+if AOS_BOARD_GVSOC_GAP8
+    config AOS_BUILD_BOARD
+        default "gvsoc_gap8"
+
+    source "platform/mcu/gap8/Config.in"
+    source "platform/arch/risc-v/ri5cy_gap8/Config.in"
+endif
+
 source "board/gd32f307c-eval/Config.in"
 if AOS_BOARD_GD32F307C_EVAL
     config AOS_BUILD_BOARD
