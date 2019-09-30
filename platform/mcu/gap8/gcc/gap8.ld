@@ -335,7 +335,6 @@ SECTIONS
      .stacks (ORIGIN(L1_sram) + LENGTH(L1_sram) - __L1_STACK_SIZE) : AT(ORIGIN(L1_sram) + LENGTH(L1_sram) - __L1_STACK_SIZE)
      {
        . = ALIGN(4);
-       stacks = . + __L1_STACK_SIZE;
      } > L1_sram
 
 

@@ -111,6 +111,7 @@ void system_init(void)
     pmsis_l2_malloc_init((void*)&__heapl2ram_start,(uint32_t)&__heapl2ram_size);
 }
 
+// Use timer low (32 bits), leave one timer open
 void system_setup_systick(uint32_t tick_rate_hz)
 {
     /* Systick timer configuration. */
@@ -134,7 +135,7 @@ void system_setup_systick(uint32_t tick_rate_hz)
 
 uint32_t system_core_clock_get(void)
 {
-    return 50000000;
+    return SystemCoreClock;
 }
 #include <stdio.h>
 #include <stdlib.h>
