@@ -1,17 +1,15 @@
 #include <stdio.h>
 #include <aos/kernel.h>
 
+#include "pmsis.h"
 #include "bsp/display/ili9341.h"
 #include "bsp/camera/himax.h"
 #include "bsp/camera/mt9v034.h"
-#include "rtos/pmsis_os.h"
-#include "rtos/os_frontend_api/pmsis_task.h"
-#include "rtos/pmsis_driver_core_api/pmsis_driver_core_api.h"
-#include "rtos/malloc/pmsis_l2_malloc.h"
-#include "stdio.h"
 
 #define QVGA 1
 //#define QQVGA 1
+
+#define USE_DISPLAY 1
 
 #ifdef QVGA
 #ifdef HIMAX
@@ -159,6 +157,7 @@ int application_start(int argc, char *argv[])
   int i=0;
   while (i<200)
   {
+      printf("going to control\n");
       camera_control(&device, CAMERA_CMD_START, 0);
       camera_capture(&device, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
       camera_control(&device, CAMERA_CMD_STOP, 0);
