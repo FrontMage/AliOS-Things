@@ -66,6 +66,7 @@ static int open_display(struct pi_device *device)
   if (display_open(device))
     return -1;
 
+  display_ioctl(device, ILI_IOCTL_ORIENTATION, ILI_ORIENTATION_270);
 #endif
   return 0;
 }
@@ -202,6 +203,8 @@ int application_start(int argc, char *argv[])
   //Setting Screen background to white
   writeFillRect(&ili, 0, 0, 320, 240, 0xFFFF);
   setCursor(&ili, 0, 180);
+  writeText(&ili,"        Alios-Things",2);
+  setCursor(&ili, 0, 200);
   writeText(&ili,"        Greenwaves \n       Technologies",2);
 #endif
   DEBUG_PRINTF("main loop start\n");
