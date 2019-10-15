@@ -30,7 +30,7 @@ BOARD_NAME=gapoc_a
 # include pmsis stuff
 include ./platform/mcu/gap8/pmsis.mk
 # configure for soc and board
-GLOBAL_CFLAGS   += -D__GAP8__ -D__GAPOC_A__
+GLOBAL_CFLAGS   += -D__GAP8__ -D__GAPOC_A__ -DPRINTF_USE_UART
 GLOBAL_ASMFLAGS += -D__GAP8__ -D__GAPOC_A__
 
 #TEST_COMPONENTS += certificate

@@ -72,6 +72,7 @@ extern "C" {
  ******************************************************************************/
 
 void board_init(void);
+void board_init_debug_console(void);
 
 #if defined(__cplusplus)
 }
