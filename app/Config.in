@@ -3,36 +3,6 @@ config AOS_APP_LOCALAPP
 
 if AOS_APP_LOCALAPP
 
-source "app/spim_send_1cs/Config.in"
-if AOS_APP_SPIM_SEND_1CS
-     config AOS_BUILD_APP
-         default "spim_send_1cs"
-endif
-
-source "app/spim_send_2cs/Config.in"
-if AOS_APP_SPIM_SEND_2CS
-     config AOS_BUILD_APP
-         default "spim_send_2cs"
-endif
-
-source "app/spim_send_2cs_2dev/Config.in"
-if AOS_APP_SPIM_SEND_2CS_2DEV
-     config AOS_BUILD_APP
-         default "spim_send_2cs_2dev"
-endif
-
-source "app/spim_full_duplex/Config.in"
-if AOS_APP_SPIM_FULL_DUPLEX
-     config AOS_BUILD_APP
-         default "spim_full_duplex"
-endif
-
-source "app/uart_pmsis/Config.in"
-if AOS_APP_UART_PMSIS
-     config AOS_BUILD_APP
-         default "uart_pmsis"
-endif
-
 ### Sample for user's application:
 ### The app's Config.in must be there before "source" it
 #
