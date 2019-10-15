@@ -107,12 +107,6 @@ if AOS_APP_GAP_LORA
         default "gap_lora"
 endif
 
-source "app/example/gap_ble/Config.in"
-if AOS_APP_GAP_BLE
-    config AOS_BUILD_APP
-        default "gap_ble"
-endif
-
 source "app/example/helloworld_multi_th/Config.in"
 if AOS_APP_HELLOWORLD_MULTI_TH
     config AOS_BUILD_APP
@@ -288,12 +282,6 @@ if AOS_APP_GAP_FACE_DETECTION
         default "gap_face_detection"
 endif
 
-source "app/example/gap_camera/Config.in"
-if AOS_APP_GAP_CAMERA
-    config AOS_BUILD_APP
-        default "gap_camera"
-endif
-
 source "app/example/gap_cifar10/Config.in"
 if AOS_APP_GAP_CIFAR10
     config AOS_BUILD_APP
@@ -318,16 +306,22 @@ if AOS_APP_GAP_FS_TO_L3_COPY
         default "gap_fs_to_l3_copy"
 endif
 
-source "app/example/gap_bridge/Config.in"
-if AOS_APP_GAP_BRIDGE
-    config AOS_BUILD_APP
-        default "gap_bridge"
-endif
-
 source "app/example/gap_mnist/Config.in"
 if AOS_APP_GAP_MNIST
     config AOS_BUILD_APP
         default "gap_mnist"
+endif
+
+source "app/example/image_dump/Config.in"
+if AOS_APP_IMAGE_DUMP
+    config AOS_BUILD_APP
+        default "image_dump"
+endif
+
+source "app/example/gap_flasher/Config.in"
+if AOS_APP_GAP_FLASHER
+    config AOS_BUILD_APP
+        default "gap_flasher"
 endif
 
 endchoice
