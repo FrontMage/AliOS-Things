@@ -16,7 +16,7 @@
  * Code
  ******************************************************************************/
 /* Initialize debug console. */
-void BOARD_InitDebugConsole(void)
+void board_init_debug_console(void)
 {
     //CLOCK_SetIpSrc(kCLOCK_Lpuart0, kCLOCK_IpSrcFircAsync);
 }

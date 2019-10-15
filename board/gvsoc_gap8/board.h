@@ -23,8 +23,7 @@ extern "C" {
  * API
  ******************************************************************************/
 
-void BOARD_InitDebugConsole(void);
-
+void board_init_debug_console(void);
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */
