@@ -8,7 +8,7 @@
  **     Version:             rev. 2.9, 2017-07-19
  **
  **     Abstract:
- **         Peripheral Access Layer for GAP8
+ **         CPU side bringup functions
  **
  **     Copyright (c) 2015 - 2019 GreenWave Technologies, Inc.
  **     All rights reserved.
@@ -39,13 +39,16 @@
  **     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  **
  **     http:                 http://greenwaves-technologies.com
- **     mail:                 jie.chen@greenwaves-technologies.com
+ **     mail:                 antoine.faravelon@greenwaves-technologies.com
+                              
  **
  **     Revisions:
  **     - rev. 1.0 (2017-10-11)
  **         Initial version.
- **     - rev. 1.1 (2019-05-XX)
+ **     - rev. 1.1 (2019-05-30)
  **         Re adapt for AliOS
+ **     - rev. 1.2 (2019-10-11)
+ **         Various clean ups, and remove all ref to old bridge
  ** ###################################################################
  */
 
@@ -60,14 +63,11 @@
  * (PLL) that is part of the microcontroller device.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include "system_gap8.h"
-#include "pmsis_driver/pmu/pmsis_pmu.h"
-#include "pmsis_hal/fll/pmsis_fll.h"
 #include "pmsis.h"
-#include DEFAULT_MALLOC_INC
-//#include "drivers/gap_common.h"
-//#include "drivers/gap_debug.h"
 
 /* ----------------------------------------------------------------------------
    -- Core clock
@@ -76,7 +76,7 @@
 extern char __heapl2ram_start;
 extern char __heapl2ram_size;
 
-uint32_t SystemCoreClock = DEFAULT_SYSTEM_CLOCK;
+uint32_t system_core_clock = DEFAULT_SYSTEM_CLOCK;
 
 /* ----------------------------------------------------------------------------
    -- SystemInit()
@@ -84,34 +84,34 @@ uint32_t SystemCoreClock = DEFAULT_SYSTEM_CLOCK;
 /* handler wrapper  */
 //Handler_Wrapper_Light(fc_event_handler);
 
-void SystemCoreClockUpdate(void)
+void system_core_clock_update(void)
 {
-    SystemCoreClock = pi_fll_get_frequency(FLL_SOC);
+    system_core_clock = pi_fll_get_frequency(FLL_SOC);
 }
 
 void system_init(void)
 {
-
-    /* Here we bind same Handler in M and U mode vector table, TODO, security problem */
-    /* If we need to protect the access to peripheral IRQ, we need do as SysTick_Handler */
-    /* by using ecall form U mode to M mode */
-
     /* Deactivate all soc events as they are active by default */
     SOCEU->FC_MASK_MSB = 0xFFFFFFFF;
     SOCEU->FC_MASK_LSB = 0xFFFFFFFF;
 
-    // For cluster mostly: need to come after fc event handler init
-
     /* FC Icache Enable*/
     SCBC->ICACHE_ENABLE = 0xFFFFFFFF;
 
+    /* prepare to catch soc events, activate irqs 
+     * then pmu init and core clock update 
+     * (need to be in that order)
+     */
+    pi_fc_event_handler_init(FC_SOC_EVENT_IRQN);
     __enable_irq();
 
-    /* Initialize our fc tcdm malloc functions */
+    pi_pmu_init();
+    system_core_clock_update();
+    /* Initialize our l2 tcdm malloc functions */
     pmsis_l2_malloc_init((void*)&__heapl2ram_start,(uint32_t)&__heapl2ram_size);
 }
 
-// Use timer low (32 bits), leave one timer open
+// Use timer low (32 bits), leaves one timer open
 void system_setup_systick(uint32_t tick_rate_hz)
 {
     /* Systick timer configuration. */
@@ -135,24 +135,18 @@ void system_setup_systick(uint32_t tick_rate_hz)
 
 uint32_t system_core_clock_get(void)
 {
-    return SystemCoreClock;
+    /* might as well get latest frequency (fll stabilization etc) */
+    system_core_clock_update();
+    return system_core_clock;
 }
-#include <stdio.h>
-#include <stdlib.h>
-#include "drivers/gap_debug.h"
+
 /** Mostly useful for non regression testing **/
 void platform_exit(int code)
 {
-    if (__native_is_fc())
+    if (pi_is_fc())
     {
-        // Flush bridge and co
-        BRIDGE_PrintfFlush();
-        DEBUG_Exit(DEBUG_GetDebugStruct(), code);
-        BRIDGE_SendNotif();
-
         /* Write return value to APB device */
-        DEBUG_Exit(DEBUG_GetDebugStruct(), code);
-        SOC_CTRL->CORE_STATUS = SOC_CTRL_CORE_STATUS_EOC(1) | code;
+        soc_ctrl_core_status_set(code);
     }
 
     /* In case the platform does not support exit or this core is not allowed to exit the platform ... */
