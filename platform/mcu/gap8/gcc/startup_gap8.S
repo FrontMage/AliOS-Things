@@ -170,5 +170,5 @@ _jump2main: /* Jump to main */
 	.org 0x90
 	.global __rt_debug_struct_ptr
 __rt_debug_struct_ptr:
-	.word Debug_Struct
+	.word 0x0
 /******************************************************************************/

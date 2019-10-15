@@ -4,28 +4,36 @@
 
 #include <k_api.h>
 #include <assert.h>
-//#include <stdio.h>
+#include <aos/hal/uart.h>
 #include "pmsis.h"
 #include "soc_impl.h"
-
-
-//#define PRINTF_USE_UART
-
 #include "tinyprintf.h"
 #include "gap_debug.h"
 #define PRINTF_BUFF_SIZE 16
-#include <aos/hal/uart.h>
-extern uart_dev_t uart_0;
 
-uint32_t g_printf_buff_cur_size = 0;
-char g_printf_buff[PRINTF_BUFF_SIZE];
+extern uart_dev_t uart_0;
+static char g_printf_buff[PRINTF_BUFF_SIZE];
+static kmutex_t g_printf_mutex;
+static uint32_t g_printf_buff_cur_size = 0;
+static int printf_is_init = 0;
+static void flush_printf_buffer(void);
+
+
+static void flush_printf_buffer(void)
+{
+    if(g_printf_buff_cur_size)
+    {
+        hal_uart_send(&uart_0, g_printf_buff, g_printf_buff_cur_size, -1);
+        g_printf_buff_cur_size = 0;
+    }
+}
 
 void tfp_putc(void *data, char c)
 {
 #if defined(PRINTF_USE_UART)
     g_printf_buff[g_printf_buff_cur_size] = c;
     g_printf_buff_cur_size++;
-    if((c=='\n') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))
+    if((c=='\n') || (c=='\r') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))
     {
         hal_uart_send(&uart_0, g_printf_buff, g_printf_buff_cur_size, -1);
 
@@ -34,22 +42,9 @@ void tfp_putc(void *data, char c)
 #elif defined(PRINTF_GVSOC)
     FC_STDOUT->PUTC[0] = c;
 #else
-    // Iter until we can push the character.
-    while (DEBUG_PutcharNoPoll(DEBUG_GetDebugStruct(), c))
-    {
-    }
-
-    // If the buffer has been flushed to the bridge, we now need to send him
-    // a notification
-    if (DEBUG_IsEmpty(DEBUG_GetDebugStruct()))
-    {
-        BRIDGE_PrintfFlush();
-    }
+#warning "no printf implementation"
 #endif
 }
-
-static kmutex_t g_printf_mutex;
-static int printf_is_init = 0;
 
 // bridge to the tinyprintf
 __attribute__ ((export))
@@ -65,9 +60,6 @@ int printf(const char *fmt, ...)
     {
         krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
         krhino_mutex_unlock(&g_printf_mutex);
-#ifndef PRINTF_USE_UART
-        BRIDGE_Init();
-#endif
         printf_is_init= 1;
     }
 #if !defined(PRINTF_GVSOC)
@@ -80,19 +72,12 @@ int printf(const char *fmt, ...)
     tfp_format(NULL, tfp_putc, fmt, va);
     // ideally should unlock here
     va_end(va);
+    flush_printf_buffer();
 #if !defined(PRINTF_GVSOC)
     krhino_mutex_unlock(&g_printf_mutex);
 #endif
     return 0;
 }
-
-#if 0
-__attribute__ ((export))
-int vprintf(const char *format, va_list ap)
-{
-    //return 0;
-}
-#endif
 
 __attribute__ ((export))
 int puts(const char *str)
@@ -102,6 +87,15 @@ int puts(const char *str)
     {
         return 0;
     }
+#endif
+    if(!printf_is_init)
+    {
+        krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
+        krhino_mutex_unlock(&g_printf_mutex);
+        printf_is_init= 1;
+    }
+#if !defined(PRINTF_GVSOC)
+    krhino_mutex_lock(&g_printf_mutex, RHINO_WAIT_FOREVER);
 #endif
     char c;
     do {
@@ -113,59 +107,12 @@ int puts(const char *str)
         tfp_putc(NULL, c);
         str++;
     } while(1);
+    flush_printf_buffer();
+#if !defined(PRINTF_GVSOC)
+    krhino_mutex_unlock(&g_printf_mutex);
+#endif
     return 0;
 }
-
-
-#if 0
-#include "fsl_device_registers.h"
-
-#if (RHINO_CONFIG_HW_COUNT > 0)
-void soc_hw_timer_init(void)
-{
-}
-
-hr_timer_t soc_hr_hw_cnt_get(void)
-{
-    return 0;
-}
-
-lr_timer_t soc_lr_hw_cnt_get(void)
-{
-    return 0;
-}
-#endif /* RHINO_CONFIG_HW_COUNT */
-
-#if (RHINO_CONFIG_INTRPT_GUARD > 0)
-void soc_intrpt_guard(void)
-{
-}
-#endif
-
-#if (RHINO_CONFIG_INTRPT_STACK_REMAIN_GET > 0)
-size_t soc_intrpt_stack_remain_get(void)
-{
-    return 0;
-}
-#endif
-
-#if (RHINO_CONFIG_INTRPT_STACK_OVF_CHECK > 0)
-void soc_intrpt_stack_ovf_check(void)
-{
-}
-#endif
-
-#if (RHINO_CONFIG_DYNTICKLESS > 0)
-void soc_tick_interrupt_set(tick_t next_ticks,tick_t elapsed_ticks)
-{
-}
-
-tick_t soc_elapsed_ticks_get(void)
-{
-    return 0;
-}
-#endif
-#endif
 
 size_t soc_get_cur_sp()
 {
