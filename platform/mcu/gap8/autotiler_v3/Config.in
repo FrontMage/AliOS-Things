@@ -1,0 +1,8 @@
+config AOS_MCU_GAP8_AUTOTILER
+    bool aos_mcu_gap8_autotiler
+    help
+      gap8 autotiler
+
+if AOS_MCU_GAP8_AUTOTILER
+# Configurations for mcu gap8
+endif

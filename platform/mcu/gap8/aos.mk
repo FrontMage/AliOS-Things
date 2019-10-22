@@ -11,6 +11,7 @@ $(NAME)_SUMMARY    := driver & sdk for platform/mcu gap8
 
 $(NAME)_COMPONENTS += arch_ri5cy_gap8
 $(NAME)_COMPONENTS += rhino
+$(NAME)_COMPONENTS += autotiler_v3
 
 GLOBAL_INCLUDES += aos/                               \
 		   drivers/                                   \
@@ -27,9 +28,9 @@ GLOBAL_LDFLAGS += -Wl,--gc-sections   \
                   --specs=nosys.specs \
                   -usystem_vectors
 
-$(NAME)_CFLAGS += -Wall -Wno-unused-variable -Wno-unused-parameter -Wno-implicit-function-declaration
+$(NAME)_CFLAGS += -Wall -Wno-unused-variable -Wno-unused-parameter
 $(NAME)_CFLAGS += -Wno-type-limits -Wno-sign-compare -Wno-pointer-sign -Wno-uninitialized
-$(NAME)_CFLAGS += -Wno-return-type -Wno-unused-function -Wno-unused-but-set-variable
+$(NAME)_CFLAGS += -Wno-unused-function -Wno-unused-but-set-variable
 $(NAME)_CFLAGS += -Wno-unused-value -Wno-strict-aliasing
 
 $(NAME)_SOURCES := gcc/startup_gap8.S                          \
@@ -45,7 +46,7 @@ $(NAME)_SOURCES := gcc/startup_gap8.S                          \
 
 GLOBAL_LDS_FILES += platform/mcu/gap8/gcc/gap8.ld
 include ./platform/mcu/gap8/pmsis.mk
-include ./platform/mcu/gap8/autotiler.mk
+#include ./platform/mcu/gap8/autotiler_v3.mk
 
 GLOBAL_CFLAGS   += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -DCONFIG_GAPOC_A -D__riscv__
 GLOBAL_ASMFLAGS += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -DCONFIG_GAPOC_A -D__riscv__
