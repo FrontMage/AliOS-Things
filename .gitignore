@@ -47,3 +47,10 @@ projects/autogen/*
 .config
 .config.cmd
 .defconfig
+*.txt
+*.dump
+*.dmp
+*.raw
+.lvimrc
+*.insn
+tags
