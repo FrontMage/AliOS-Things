@@ -324,5 +324,11 @@ if AOS_APP_GAP_FLASHER
         default "gap_flasher"
 endif
 
+source "app/example/gap_fuser/Config.in"
+if AOS_APP_GAP_FUSER
+    config AOS_BUILD_APP
+        default "gap_fuser"
+endif
+
 endchoice
 endif

@@ -9,4 +9,7 @@ $(NAME)_COMPONENTS += osal_aos
 
 GLOBAL_DEFINES += AOS_NO_WIFI
 
+# unecomment to remove all uart refs (and thus all log)
+GLOBAL_CFLAGS += -DGAPOC_NO_UART
+
 GLOBAL_INCLUDES += ./

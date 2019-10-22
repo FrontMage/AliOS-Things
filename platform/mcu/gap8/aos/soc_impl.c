@@ -30,7 +30,7 @@ static void flush_printf_buffer(void)
 
 void tfp_putc(void *data, char c)
 {
-#if defined(PRINTF_USE_UART)
+#if (defined(PRINTF_USE_UART) && !defined(GAPOC_NO_UART))
     g_printf_buff[g_printf_buff_cur_size] = c;
     g_printf_buff_cur_size++;
     if((c=='\n') || (c=='\r') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))

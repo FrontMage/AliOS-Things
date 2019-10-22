@@ -76,6 +76,8 @@ extern "C" {
 #define DEFAULT_SYSTEM_CLOCK           50000000u           /* Default System clock value */
 
 
+void system_setup_systick(uint32_t tick_rate_hz);
+
 /**
  * @brief System clock frequency (core clock)
  *
@@ -85,7 +87,7 @@ extern "C" {
  * query the frequency of the debug timer or configure the trace clock speed
  * SystemCoreClock is initialized with a correct predefined value.
  */
-extern uint32_t SystemCoreClock;
+extern uint32_t system_core_clock;
 
 /**
  * @brief Setup the microcontroller system.
@@ -94,7 +96,7 @@ extern uint32_t SystemCoreClock;
  * microcontroller device. For systems with variable clock speed it also updates
  * the variable SystemCoreClock. SystemInit is called from startup_device file.
  */
-void SystemInit (void);
+void system_init (void);
 
 /**
  * @brief Updates the SystemCoreClock variable.
@@ -103,7 +105,7 @@ void SystemInit (void);
  * execution. SystemCoreClockUpdate() evaluates the clock register settings and calculates
  * the current core clock.
  */
-void SystemCoreClockUpdate (void);
+void system_core_clock_update (void);
 
 /**
  * @brief getter for the system_core_clock variable.

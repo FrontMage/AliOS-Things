@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 NXP
+ * Copyright 2019 Greenwaves Technologies
  * All rights reserved.
  *
  *
@@ -19,6 +19,8 @@
 /* Initialize debug console. */
 void board_init_debug_console(void)
 {
+#if ((defined(PRINTF_USE_UART) || defined(GAPOC_USE_UART))\
+        && !defined(GAPOC_NO_UART))
     // Init B2 gpio pad
     // enable pull (down/up)
     hal_gpio_pin_enable_pull(1, 1);
@@ -49,4 +51,5 @@ void board_init_debug_console(void)
     // TODO: use aos_ API instead of ll hal
     hal_gpio_pin_enable_pull(7,0);
     hal_gpio_pin_enable_pull(24,0);
+#endif
 }

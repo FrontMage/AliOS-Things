@@ -59,7 +59,6 @@ static void platform_init(void)
 
 void hal_reboot(void)
 {
-    event_system_reset();
 }
 
 void __systick_handler(void)

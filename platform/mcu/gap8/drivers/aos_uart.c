@@ -64,7 +64,7 @@ int32_t hal_uart_init(uart_dev_t *uart)
         // FIXME: data width ignored for now, TODO:check RTL
 
         conf.baudrate_bps = uart->config.baud_rate;;
-        conf.src_clock_Hz = SystemCoreClock;
+        conf.src_clock_Hz = system_core_clock_get();
 
         // prepare handler here
         pi_fc_event_handler_set(UDMA_EVENT_UART_RX, uart_handler);
@@ -107,7 +107,7 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
-        void *l2_buff = krhino_mm_alloc(size);
+        void *l2_buff = pmsis_l2_malloc(size);
         if(!l2_buff)
         {
             return EIO;
@@ -118,7 +118,7 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
         __pi_uart_write(uart->priv, l2_buff, size, &task_block);
         pi_task_wait_on(&task_block);
         pi_task_destroy(&task_block);
-        krhino_mm_free(l2_buff);
+        //krhino_mm_free(l2_buff);
     }
     else
     {
