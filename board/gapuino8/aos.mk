@@ -23,12 +23,12 @@ GLOBAL_INCLUDES += ../../platform/mcu/gap8/
 GLOBAL_INCLUDES += ../../platform/mcu/gap8/drivers/
 
 $(NAME)_SOURCES     := ./board.c
-$(NAME)_SOURCES     += ./clock_config.c
-$(NAME)_SOURCES     += ./pin_mux.c
+#$(NAME)_SOURCES     += ./clock_config.c
+#$(NAME)_SOURCES     += ./pin_mux.c
 
 # include pmsis stuff
 BOARD_NAME=gapuino8
-include ./platform/mcu/gap8/pmsis.mk
+#include ./platform/mcu/gap8/pmsis.mk
 # configure for soc and board
 GLOBAL_CFLAGS += -D__GAP8__ -DGAPUINO8 -fdata-sections -ffunction-sections -Os -g
 GLOBAL_LDFLAGS += -Wl,--gc-sections -Os -g

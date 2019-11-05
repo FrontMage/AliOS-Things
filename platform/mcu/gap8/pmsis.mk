@@ -16,7 +16,6 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/cpi/cpi_internal.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/spi/spi.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/spi/spi_internal.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/drivers/delegate/hyperbus/hyperbus_cl_internal.c
-$(NAME)_SOURCES     += ./PMSIS/pmsis_driver/pin_config.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/gpio/gpio.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/pad/pad.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/pmsis_fc_event.c
