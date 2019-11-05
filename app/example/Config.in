@@ -167,6 +167,12 @@ if AOS_APP_MQTTAPP
         default "mqttapp"
 endif
 
+source "app/example/openocd_semihosting/Config.in"
+if AOS_APP_OPENOCD_SEMIHOSTING
+    config AOS_BUILD_APP
+        default "openocd_semihosting"
+endif
+
 source "app/example/otaapp/Config.in"
 if AOS_APP_OTAAPP
     config AOS_BUILD_APP

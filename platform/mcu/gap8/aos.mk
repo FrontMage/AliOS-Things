@@ -17,6 +17,7 @@ GLOBAL_INCLUDES += aos/                               \
 		   drivers/                                   \
 		   gcc/                                       \
 		   hal/                                       \
+		   include/                                   \
            tinyprintf/
 
 
@@ -42,6 +43,7 @@ $(NAME)_SOURCES := gcc/startup_gap8.S                          \
                    drivers/gap_bridge.c                        \
                    pmsis_backend/pmsis_backend_native_task_api.c \
                    pmsis_backend/pmsis_backend_time.c \
+                   src/semihost.c \
                    system_gap8.c
 
 GLOBAL_LDS_FILES += platform/mcu/gap8/gcc/gap8.ld

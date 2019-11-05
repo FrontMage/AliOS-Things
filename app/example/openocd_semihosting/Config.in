@@ -1,0 +1,9 @@
+config AOS_APP_OPENOCD_SEMIHOSTING
+    bool "opencod_semihosting"
+    select AOS_COMP_OSAL_AOS
+    help
+        openocd_semihosting
+
+if AOS_APP_OPENOCD_SEMIHOSTING
+# Configurations for app openocd semihosting
+endif
