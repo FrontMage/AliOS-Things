@@ -20,6 +20,9 @@
     "esp8266": [
         "esp8266.json"
     ],
+    "gapuino8": [
+        "gap8.json"
+    ],
     "m400": [
         "stm32_stlink.json"
     ],

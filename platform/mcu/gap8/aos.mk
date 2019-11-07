@@ -55,3 +55,5 @@ GLOBAL_ASMFLAGS += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ 
 GLOBAL_CFLAGS   += -Os -g -march=rv32imcxgap8 -mPE=8 -mFC=1
 GLOBAL_ASMFLAGS += -Os -g -march=rv32imcxgap8 -mPE=8 -mFC=1
 GLOBAL_LDFLAGS  += -Os -g -march=rv32imcxgap8 -mPE=8 -mFC=1
+
+EXTRA_TARGET_MAKEFILES +=  $($(HOST_MCU_FAMILY)_LOCATION)/gen_image_bin.mk

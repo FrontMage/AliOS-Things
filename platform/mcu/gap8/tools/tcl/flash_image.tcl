@@ -21,18 +21,10 @@
 # | FLASH_SIZE  | (4)  |
 # |_____________|______|
 
-proc jtag_load_binary_and_start {file_name type} {
-	puts "hello"
-	load_image $file_name 0x0 $type
-	# Set PC at reset vector addr
-	mww 0x1B302000 0x1C000080
-	# unhalt the cpu
-	mww 0x1B300000 0x0
-}
-
 # gap flasher ctrl: load a bin ImageName of size ImageSize to flash at addr 0x0+flash_offset
-proc gap_flasher_ctrl {device_struct_ptr_addr ImageName ImageSize flash_offset sector_size} {
+proc gap_flasher_ctrl {ImageName ImageSize flash_offset sector_size} {
 	# set pointers to right addresses
+	set device_struct_ptr_addr 0x1c000190
 	mem2array device_struct_ptr 32 $device_struct_ptr_addr 1
 	set host_rdy 	    [expr $device_struct_ptr(0) + 0 ]
 	set gap_rdy 	    [expr $device_struct_ptr(0) + 4 ]
@@ -64,7 +56,7 @@ proc gap_flasher_ctrl {device_struct_ptr_addr ImageName ImageSize flash_offset s
 		mem2array wait1 32 $gap_rdy 1
 		while { [expr $wait1(0) != 1] } {
 			mem2array wait1 32 $gap_rdy 1
-			puts [expr $wait1(0)]
+			sleep 1
 		}
 		puts "wait on gap_rdy done witg buff ptr $buff_ptr"
 		mww [expr $host_rdy] 0x0
@@ -89,9 +81,18 @@ proc gap_flasher_ctrl {device_struct_ptr_addr ImageName ImageSize flash_offset s
 	mem2array wait1 32 $flash_run 1
 	while { [expr $wait1(0) != 1] } {
 		mem2array wait1 32 $flash_run 1
-		puts [expr $wait1(0)]
+		sleep 1
 	}
 	puts "flasher is done, exiting"
         mww [expr $gap_rdy]   0x0
         mww [expr $host_rdy]  0x0
+}
+
+proc gap_flash_raw {image_name image_size gap_tools_path} {
+	# flash the flasher
+	gap8_jtag_load_binary_and_start ${gap_tools_path}/gap_bins/gap_flasher@gapoc_a.elf elf
+	sleep 2
+	# flash the flash image with the flasher
+	gap_flasher_ctrl $image_name $image_size 0 0x40000
+	sleep 2
 }
