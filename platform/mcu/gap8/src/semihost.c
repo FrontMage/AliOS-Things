@@ -45,5 +45,5 @@ int gap8_semihost_flen(int fd)
 
 void gap8_semihost_exit(int code)
 {
-    return __internal_semihost(SEMIHOSTING_SYS_EXIT, (long) code);
+    __internal_semihost(SEMIHOSTING_SYS_EXIT, (long) code);
 }
