@@ -56,6 +56,8 @@ __FC_STACK_SIZE      = 0x100;
 
 __IRQ_STACK_SIZE     = 0x400;
 
+__heapl2osram_size = 0x10000;
+
 /* We have to align each sector to word boundaries as our current s19->slm
  * conversion scripts are not able to handle non-word aligned sections. */
 
@@ -344,6 +346,11 @@ SECTIONS
 
         . = ALIGN(4);
         *(.heapl2ram)
+
+        . = ALIGN(4);
+        __heapl2osram_start = .;
+
+        __heapl2osram_end = . + __heapl2osram_size;
 
         . = ALIGN(4);
         __heapl2ram_start = .;

@@ -1,0 +1,80 @@
+NAME := gap8_baselibc
+
+# Host architecture is RISC-V
+HOST_ARCH := RISC-V
+
+$(NAME)_MBINS_TYPE := kernel
+$(NAME)_VERSION    := 1.0.0
+$(NAME)_SUMMARY    := Libc extracted from Baselibc, itself extracted from klibc
+
+$(NAME)_CFLAGS +=  -Wno-unused-variable -Wno-unused-variable #-Wno-sign-compare -Wno-pointer-sign
+
+GLOBAL_INCLUDES		+= ./include/
+GLOBAL_INCLUDES		+= ./src/templates
+
+$(NAME)_SOURCES     +=./src/asprintf.c
+$(NAME)_SOURCES     +=./src/atoi.c
+$(NAME)_SOURCES     +=./src/atol.c
+$(NAME)_SOURCES     +=./src/atoll.c
+$(NAME)_SOURCES     +=./src/bsearch.c
+$(NAME)_SOURCES     +=./src/bzero.c
+$(NAME)_SOURCES     +=./src/calloc.c
+$(NAME)_SOURCES     +=./src/fgets.c
+$(NAME)_SOURCES     +=./src/inline.c
+$(NAME)_SOURCES     +=./src/jrand48.c
+$(NAME)_SOURCES     +=./src/lrand48.c
+$(NAME)_SOURCES     +=./src/malloc.c
+$(NAME)_SOURCES     +=./src/memccpy.c
+$(NAME)_SOURCES     +=./src/memchr.c
+$(NAME)_SOURCES     +=./src/memcmp.c
+$(NAME)_SOURCES     +=./src/memcpy.c
+$(NAME)_SOURCES     +=./src/memfile.c
+$(NAME)_SOURCES     +=./src/memmem.c
+$(NAME)_SOURCES     +=./src/memmove.c
+$(NAME)_SOURCES     +=./src/memrchr.c
+$(NAME)_SOURCES     +=./src/memset.c
+$(NAME)_SOURCES     +=./src/memswap.c
+$(NAME)_SOURCES     +=./src/mrand48.c
+$(NAME)_SOURCES     +=./src/nrand48.c
+$(NAME)_SOURCES     +=./src/qsort.c
+$(NAME)_SOURCES     +=./src/realloc.c
+$(NAME)_SOURCES     +=./src/sprintf.c
+$(NAME)_SOURCES     +=./src/srand48.c
+$(NAME)_SOURCES     +=./src/sscanf.c
+$(NAME)_SOURCES     +=./src/strcasecmp.c
+$(NAME)_SOURCES     +=./src/strcat.c
+$(NAME)_SOURCES     +=./src/strchr.c
+$(NAME)_SOURCES     +=./src/strcmp.c
+$(NAME)_SOURCES     +=./src/strcpy.c
+$(NAME)_SOURCES     +=./src/strcspn.c
+$(NAME)_SOURCES     +=./src/strdup.c
+$(NAME)_SOURCES     +=./src/strlcat.c
+$(NAME)_SOURCES     +=./src/strlcpy.c
+$(NAME)_SOURCES     +=./src/strlen.c
+$(NAME)_SOURCES     +=./src/strncasecmp.c
+$(NAME)_SOURCES     +=./src/strncat.c
+$(NAME)_SOURCES     +=./src/strncmp.c
+$(NAME)_SOURCES     +=./src/strncpy.c
+$(NAME)_SOURCES     +=./src/strndup.c
+$(NAME)_SOURCES     +=./src/strnlen.c
+$(NAME)_SOURCES     +=./src/strntoimax.c
+$(NAME)_SOURCES     +=./src/strntoumax.c
+$(NAME)_SOURCES     +=./src/strpbrk.c
+$(NAME)_SOURCES     +=./src/strrchr.c
+$(NAME)_SOURCES     +=./src/strsep.c
+$(NAME)_SOURCES     +=./src/strspn.c
+$(NAME)_SOURCES     +=./src/strstr.c
+$(NAME)_SOURCES     +=./src/strtoimax.c
+$(NAME)_SOURCES     +=./src/strtok.c
+$(NAME)_SOURCES     +=./src/strtok_r.c
+$(NAME)_SOURCES     +=./src/strtol.c
+$(NAME)_SOURCES     +=./src/strtoll.c
+$(NAME)_SOURCES     +=./src/strtoul.c
+$(NAME)_SOURCES     +=./src/strtoull.c
+$(NAME)_SOURCES     +=./src/strtoumax.c
+$(NAME)_SOURCES     +=./src/tinyprintf.c
+$(NAME)_SOURCES     +=./src/vasprintf.c
+$(NAME)_SOURCES     +=./src/vprintf.c
+$(NAME)_SOURCES     +=./src/vsprintf.c
+$(NAME)_SOURCES     +=./src/vsscanf.c
+

@@ -1,6 +1,6 @@
 NAME := gapuino8
 
-JTAG := gap8
+JTAG := gapuino_ftdi
 
 HOST_ARCH           := ri5cy
 HOST_MCU_FAMILY     := mcu_gap8

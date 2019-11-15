@@ -64,7 +64,7 @@ int32_t hal_uart_init(uart_dev_t *uart)
         // FIXME: data width ignored for now, TODO:check RTL
 
         conf.baudrate_bps = uart->config.baud_rate;;
-        conf.src_clock_Hz = system_core_clock_get();
+        conf.src_clock_Hz = system_core_clock;
 
         // prepare handler here
         pi_fc_event_handler_set(UDMA_EVENT_UART_RX, uart_handler);
@@ -185,22 +185,29 @@ int32_t hal_uart_recv_async(uart_dev_t *uart, void *data, uint32_t expect_size, 
 int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size,
                          uint32_t *recv_size, uint32_t timeout)
 {
+    if(uart->priv == NULL)
+    {
+        uart->priv = uart_0.priv;
+        uart->config = uart_0.config;
+        //printf("priv=%p, config=%p, data size=%d\n",uart->priv, uart->config,sizeof(struct uart_driver_data));
+    }
     krhino_mutex_lock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx, HAL_WAIT_FOREVER);
     pi_task_t task_block;
     pi_task_block(&task_block);
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
-        void *l2_buff = krhino_mm_alloc(expect_size);;
+        void *l2_buff = pmsis_l2_malloc(expect_size);;
         if(!l2_buff)
         {
             krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
             return EIO;
         }
-        __pi_uart_read(uart->priv, l2_buff, expect_size, &task_block);
+        //gap8_semihost_write0(write_string);
+        int ret = __pi_uart_read(uart->priv, l2_buff, expect_size, &task_block);
         pi_task_wait_on(&task_block);
         memcpy(data, l2_buff, expect_size);
-        krhino_mm_free(l2_buff);
+        pmsis_l2_malloc_free(l2_buff, expect_size);
     }
     else
     {

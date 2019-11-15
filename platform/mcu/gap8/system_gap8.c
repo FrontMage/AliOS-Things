@@ -141,15 +141,16 @@ uint32_t system_core_clock_get(void)
 }
 
 /** Mostly useful for non regression testing **/
-void platform_exit(int code)
+ __attribute__ ((noreturn)) void platform_exit(int code)
 {
     if (pi_is_fc())
     {
         /* Write return value to APB device */
-        soc_ctrl_core_status_set(code);
+        soc_ctrl_corestatus_set(code);
     }
 
     /* In case the platform does not support exit or this core is not allowed to exit the platform ... */
     hal_eu_evt_mask_clr(0xffffffff);
     hal_eu_evt_wait();
+    while(1);
 }

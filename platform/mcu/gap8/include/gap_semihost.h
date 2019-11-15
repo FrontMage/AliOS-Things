@@ -54,7 +54,7 @@ enum semihosting_operation_numbers {
 #define SEMIHOST_EXIT_SUCCESS 0x20026
 #define SEMIHOST_EXIT_ERROR   0x20023
 
-extern long __syscall_error(long);
+//extern long __syscall_error(long);
 
 /* riscv semihosting standard: 
  * IN: a0 holds syscall number
@@ -79,7 +79,7 @@ __internal_semihost(long n, long _a1)
 		);
 
   if (a0 < 0)
-    return __syscall_error (a0);
+    return a0;
   else
     return a0;
 }

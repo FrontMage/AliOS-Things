@@ -133,10 +133,6 @@ _jump2main: /* Jump to main */
 	.section .vectors_M, "ax"
 	.option norvc;
 
-	/* PendSV Handler. */
-	//.org 0x1c
-	//j pendSV_handler
-
 	/* Systick Handler. */
 	.org 0x28
 	j systick_handler

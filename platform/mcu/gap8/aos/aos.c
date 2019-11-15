@@ -12,6 +12,9 @@
 #include <hal/base.h>
 #include <aos/kernel.h>
 #include <aos/hal/uart.h>
+#include "aos/init.h"
+#include "aos/cli.h"
+#include "aos/yloop.h"
 #include "board.h"
 #include "cores/TARGET_RISCV_32/pmsis_gcc.h"
 #include "pmsis.h"
@@ -24,6 +27,8 @@ extern int vfs_init(void);
 extern int vfs_device_init(void);
 static void platform_init(void);
 extern uart_dev_t uart_0;
+extern aos_loop_t aos_loop_init(void);
+extern void ulog_init(void);
 
 void __systick_handler(void);
 
@@ -44,6 +49,25 @@ static void sys_init(void)
     // depends on event kernel, comes last
     hal_uart_init(&uart_0);
 #endif
+#if 0
+#ifdef AOS_COMP_KV
+    kv_init();
+#endif
+#endif
+
+
+    printf("Hey there!\n");
+
+//#ifdef AOS_COMP_VFS
+    vfs_init();
+//#endif
+    aos_cli_init();
+//#ifdef AOS_LOOP
+    vfs_device_init();
+    aos_loop_init();
+    ulog_init();
+//#endif
+
     // client application start
     application_start(0, NULL);
 }
