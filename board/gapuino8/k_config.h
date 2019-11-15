@@ -80,7 +80,7 @@
 #define RHINO_CONFIG_TIME_SLICE_DEFAULT      10
 #endif
 #ifndef RHINO_CONFIG_PRI_MAX
-#define RHINO_CONFIG_PRI_MAX                 40
+#define RHINO_CONFIG_PRI_MAX                 62
 #endif
 #ifndef RHINO_CONFIG_USER_PRI_MAX
 #define RHINO_CONFIG_USER_PRI_MAX            (RHINO_CONFIG_PRI_MAX - 2)
@@ -145,7 +145,7 @@
 #define RHINO_CONFIG_INTRPT_GUARD            0
 #endif
 
-#define RHINO_CONFIG_MM_TLF_BLK_SIZE         0
+#define RHINO_CONFIG_MM_TLF_BLK_SIZE         8192
 #define RHINO_CONFIG_TASK_STACK_CUR_CHECK    1
 /* kernel dyn alloc conf */
 #ifndef RHINO_CONFIG_KOBJ_DYN_ALLOC
