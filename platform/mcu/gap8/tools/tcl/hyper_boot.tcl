@@ -8,4 +8,4 @@ du_select adv_dbg_unit [expr $ADV_DBG_UNIT_OPTS]
 init
 
 #when we boot from flash, might as well unhalt the core
-mww 0x1B300000 0x0
+resume
