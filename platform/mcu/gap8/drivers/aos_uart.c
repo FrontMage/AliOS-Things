@@ -7,7 +7,7 @@
 #if 1
 uart_dev_t uart_0 = {
     .port = 0,                                                  /* uart port */
-    .config = {115200, DATA_WIDTH_8BIT, NO_PARITY, STOP_BITS_1,
+    .config = {9600, DATA_WIDTH_8BIT, NO_PARITY, STOP_BITS_1,
         FLOW_CONTROL_DISABLED, MODE_TX_RX}, /* uart config */
     .priv = NULL                                                /* priv data */
 };

@@ -335,12 +335,13 @@ krhino_err_proc_t g_err_proc = soc_err_proc;
 __attribute__ ((noreturn)) void exit(int status)
 {
     platform_exit(status);
+    while(1);
 }
 
 void __assert_fail(const char *asserted, const char *file, unsigned int line)
 {
     printf("%s:%s:%d assert failure",asserted,file,line);
-    platform_exit(-1);
+    exit(-1);
 }
 
 #if defined (__GNUC__)

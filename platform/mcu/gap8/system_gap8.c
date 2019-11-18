@@ -145,12 +145,21 @@ uint32_t system_core_clock_get(void)
 {
     if (pi_is_fc())
     {
-        /* Write return value to APB device */
+        /* Write return value to APB device or do semihost exit */
         soc_ctrl_corestatus_set(code);
+        if(code == 0)
+        {
+            gap8_semihost_exit(SEMIHOST_EXIT_SUCCESS);
+        }
+        else
+        {
+            gap8_semihost_exit(SEMIHOST_EXIT_ERROR);
+        }
     }
 
     /* In case the platform does not support exit or this core is not allowed to exit the platform ... */
     hal_eu_evt_mask_clr(0xffffffff);
     hal_eu_evt_wait();
+
     while(1);
 }

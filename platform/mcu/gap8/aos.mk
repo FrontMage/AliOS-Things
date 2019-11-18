@@ -48,8 +48,8 @@ GLOBAL_LDS_FILES += platform/mcu/gap8/gcc/gap8.ld
 include ./platform/mcu/gap8/pmsis.mk
 #include ./platform/mcu/gap8/autotiler_v3.mk
 
-GLOBAL_CFLAGS   += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -DCONFIG_GAPOC_A -D__riscv__
-GLOBAL_ASMFLAGS += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -DCONFIG_GAPOC_A -D__riscv__
+GLOBAL_CFLAGS   += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -D__riscv__
+GLOBAL_ASMFLAGS += -D__GAP8__ -D__PMSIS__ -DPMSIS_DRIVERS -D__USE_TCDM_MALLOC__ -DFEATURE_CLUSTER -fdata-sections -ffunction-sections -D__riscv__
 
 GLOBAL_CFLAGS   += -Os -g -march=rv32imcxgap8 -mPE=8 -mFC=1 -nostdlib -lgcc
 GLOBAL_ASMFLAGS += -Os -g -march=rv32imcxgap8 -mPE=8 -mFC=1 -nostdlib -lgcc

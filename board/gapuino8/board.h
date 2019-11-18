@@ -15,6 +15,8 @@
 /*! @brief The board name */
 #define BOARD_NAME "GAPUINO8"
 
+#include "bsp/bsp.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif /* __cplusplus */

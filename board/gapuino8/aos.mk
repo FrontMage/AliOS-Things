@@ -30,12 +30,12 @@ $(NAME)_SOURCES     := ./board.c
 BOARD_NAME=gapuino8
 #include ./platform/mcu/gap8/pmsis.mk
 # configure for soc and board
-GLOBAL_CFLAGS += -D__GAP8__ -DGAPUINO8 -fdata-sections -ffunction-sections -Os -g
-GLOBAL_LDFLAGS += -Wl,--gc-sections -Os -g
-GLOBAL_ASMFLAGS += -D__GAP8__ -DGAPUINO8
+GLOBAL_CFLAGS += -D__GAP8__ -DGAPUINO8 -fdata-sections -ffunction-sections -Os -g -DCONFIG_GAPUINO
+GLOBAL_LDFLAGS += -Wl,--gc-sections -Os -g -DCONFIG_GAPUINO
+GLOBAL_ASMFLAGS += -D__GAP8__ -DGAPUINO8 -DCONFIG_GAPUINO
 
 GLOBAL_CFLAGS += -DHIMAX -DPRINTF_USE_UART
 
-#TEST_COMPONENTS += certificate
+TEST_COMPONENTS += testcase.kernel.rhino testcase.kernel.basic aos_test
 GLOBAL_CFLAGS += -DTEST_CONFIG_KV_ENABLED=0
 GLOBAL_CFLAGS += -DTEST_CONFIG_YLOOP_ENABLED=0
