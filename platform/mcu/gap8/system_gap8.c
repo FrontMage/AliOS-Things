@@ -68,6 +68,7 @@
 #include <stdint.h>
 #include "system_gap8.h"
 #include "pmsis.h"
+#include "gap_semihost.h"
 
 /* ----------------------------------------------------------------------------
    -- Core clock
