@@ -1,0 +1,9 @@
+config AOS_APP_SPI_FLASH_TEST
+    bool "spi_flash_test"
+    select AOS_COMP_OSAL_AOS
+    help
+        QPI flash test
+
+if AOS_APP_SPI_FLASH_TEST
+# Configurations for app spi flash test
+endif
