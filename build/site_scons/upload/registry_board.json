@@ -23,6 +23,9 @@
     "gapuino8": [
         "gap8.json"
     ],
+    "gap8_qpif_breakout": [
+        "gap8.json"
+    ],
     "m400": [
         "stm32_stlink.json"
     ],

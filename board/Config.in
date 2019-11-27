@@ -281,6 +281,15 @@ if AOS_BOARD_GAPUINO8
     source "platform/arch/risc-v/ri5cy_gap8/Config.in"
 endif
 
+source "board/gap8_qpif_breakout/Config.in"
+if AOS_BOARD_GAP8_QPIF_BREAKOUT
+    config AOS_BUILD_BOARD
+        default "gap8_qpif_breakout"
+
+    source "platform/mcu/gap8/Config.in"
+    source "platform/arch/risc-v/ri5cy_gap8/Config.in"
+endif
+
 source "board/gapoc_a/Config.in"
 if AOS_BOARD_GAPOC_A
     config AOS_BUILD_BOARD
