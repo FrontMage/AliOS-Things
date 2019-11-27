@@ -27,6 +27,8 @@ extern "C" {
 
 void board_init_debug_console(void);
 
+void board_init(void);
+
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus */

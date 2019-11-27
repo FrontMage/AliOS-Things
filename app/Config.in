@@ -3,6 +3,12 @@ config AOS_APP_LOCALAPP
 
 if AOS_APP_LOCALAPP
 
+source "app/spi_flash_test/Config.in"
+if AOS_APP_SPI_FLASH_TEST
+    config AOS_BUILD_APP
+        default "spi_flash_test"
+endif
+
 ### Sample for user's application:
 ### The app's Config.in must be there before "source" it
 #

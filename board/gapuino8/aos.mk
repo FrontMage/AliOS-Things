@@ -17,11 +17,16 @@ GLOBAL_CFLAGS +=
 GLOBAL_LDFLAGS +=
 
 GLOBAL_INCLUDES += .
+GLOBAL_INCLUDES += ./include
 
 GLOBAL_INCLUDES += ../../platform/mcu/gap8/
 GLOBAL_INCLUDES += ../../platform/mcu/gap8/drivers/
 
 $(NAME)_SOURCES     := ./board.c
+$(NAME)_SOURCES     += ./k_config.c
+$(NAME)_SOURCES     += ./hal/board_flash.c
+
+GLOBAL_DEFINES += KV_CONFIG_TOTAL_SIZE=32768 #32kb
 
 $(NAME)_COMPONENTS += yloop vfs
 # include pmsis stuff
@@ -33,5 +38,4 @@ GLOBAL_ASMFLAGS += -D__GAP8__ -DGAPUINO8 -DCONFIG_GAPUINO
 
 GLOBAL_CFLAGS += -DHIMAX -DPRINTF_USE_UART
 
-TEST_COMPONENTS += testcase.kernel.rhino testcase.kernel.basic aos_test
-GLOBAL_CFLAGS += -DTEST_CONFIG_KV_ENABLED=0
+TEST_COMPONENTS += testcase.kernel.rhino testcase.kernel.basic aos_test kv_test
