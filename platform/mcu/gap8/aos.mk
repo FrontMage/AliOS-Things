@@ -39,6 +39,7 @@ $(NAME)_SOURCES := gcc/startup_gap8.S                          \
                    aos/soc_impl.c                              \
                    aos/aos.c                                   \
                    drivers/aos_uart.c                          \
+                   drivers/aos_flash.c                          \
                    pmsis_backend/pmsis_backend_native_task_api.c \
                    pmsis_backend/pmsis_backend_time.c \
                    src/semihost.c \

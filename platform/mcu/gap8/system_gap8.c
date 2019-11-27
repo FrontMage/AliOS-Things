@@ -87,7 +87,7 @@ uint32_t system_core_clock = DEFAULT_SYSTEM_CLOCK;
 
 void system_core_clock_update(void)
 {
-    system_core_clock = pi_fll_get_frequency(FLL_SOC);
+    system_core_clock = 50000000; //pi_fll_get_frequency(FLL_SOC);
 }
 
 void system_init(void)

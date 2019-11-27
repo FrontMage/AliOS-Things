@@ -85,7 +85,6 @@ FILE const i_stderr = {
 };
 #else
 #warning "ALL printfs will be redirected to NULL"
-#endif
 struct File_methods null_methods = {
     .write = write_null,
     .read = read_null,
@@ -103,6 +102,7 @@ FILE const i_stderr = {
     .vmt = &null_methods,
     .fd = 2
 };
+#endif
 #endif
 
 
@@ -167,6 +167,14 @@ size_t write_semihost(FILE* instance, const char *bp, size_t n)
     }
 #endif
     // either we're here or stuck on a breakpoint....
+    return n;
+}
+
+
+size_t read_semihost(FILE* instance, char *bp, size_t n)
+{
+    gap8_semihost_read(0, bp, n);
+    // failure to read n bytes will crash the chip, so if we're here, success
     return n;
 }
 

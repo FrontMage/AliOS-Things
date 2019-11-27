@@ -1,20 +1,22 @@
 #include "pmsis.h"
-#include "pmsis_driver/uart/uart_internal.h"
 #include <aos/hal/uart.h>
 #include <errno.h>
 #include <stdio.h>
+#include "gap_semihost.h"
 
-#if 1
+
+//#define UART_SEMIHOST_EMUL
+
 uart_dev_t uart_0 = {
     .port = 0,                                                  /* uart port */
     .config = {9600, DATA_WIDTH_8BIT, NO_PARITY, STOP_BITS_1,
         FLOW_CONTROL_DISABLED, MODE_TX_RX}, /* uart config */
     .priv = NULL                                                /* priv data */
 };
-#endif
 
 int32_t hal_uart_init(uart_dev_t *uart)
 {
+#if !defined(UART_SEMIHOST_EMUL)
     if(!__global_uart_drv_data[uart->port])
     {
         struct uart_driver_data *data = pi_default_malloc(sizeof(struct uart_driver_data));
@@ -98,12 +100,14 @@ int32_t hal_uart_init(uart_dev_t *uart)
         data->uart_open_nb++;
         uart->priv = (void*) data;
     }
+#endif
     return 0;
 }
 
 
 int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_t timeout)
 {
+#if !defined(UART_SEMIHOST_EMUL)
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
@@ -118,7 +122,7 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
         __pi_uart_write(uart->priv, l2_buff, size, &task_block);
         pi_task_wait_on(&task_block);
         pi_task_destroy(&task_block);
-        //krhino_mm_free(l2_buff);
+        pi_l2_free(l2_buff, size);
     }
     else
     {
@@ -129,24 +133,29 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
             pi_task_destroy(&task_block);
     }
     return 0;
+#else
+    return gap8_semihost_write(1, data, size);
+#endif
 }
 
 int32_t hal_uart_recv(uart_dev_t *uart, void *data, uint32_t expect_size, uint32_t timeout)
 {
+#if !defined(UART_SEMIHOST_EMUL)
     pi_task_t task_block;
     pi_task_block(&task_block);
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
-    if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
+    if (((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
-        void *l2_buff = krhino_mm_alloc(expect_size);;
-        if(!l2_buff)
+        void *l2_buff = pi_l2_malloc(expect_size);
+        ;
+        if (!l2_buff)
         {
             return EIO;
         }
         __pi_uart_read(uart->priv, l2_buff, expect_size, &task_block);
         pi_task_wait_on(&task_block);
         memcpy(data, l2_buff, expect_size);
-        krhino_mm_free(l2_buff);
+        pi_l2_free(l2_buff, expect_size);
     }
     else
     {
@@ -156,35 +165,16 @@ int32_t hal_uart_recv(uart_dev_t *uart, void *data, uint32_t expect_size, uint32
 
     pi_task_destroy(&task_block);
     return 0;
-}
+    #else
 
-// Will only work with l2 buffer!!
-int32_t hal_uart_recv_async(uart_dev_t *uart, void *data, uint32_t expect_size, uint32_t timeout, pi_task_t *task_block)
-{
-    // copy the buffer to L2 if need be -- if app is not made with gap in mind
-    if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
-    {
-        printf("OUPSSSS\n");
-        void *l2_buff = krhino_mm_alloc(expect_size);;
-        if(!l2_buff)
-        {
-            return EIO;
-        }
-        __pi_uart_read(uart->priv, l2_buff, expect_size, task_block);
-        memcpy(data, l2_buff, expect_size);
-        krhino_mm_free(l2_buff);
-    }
-    else
-    {
-        __pi_uart_read(uart->priv, data, expect_size, task_block);
-    }
-
-    return 0;
+    return gap8_semihost_read(0, data, expect_size);
+    #endif
 }
 
 int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size,
                          uint32_t *recv_size, uint32_t timeout)
 {
+#if !defined(UART_SEMIHOST_EMUL)
     if(uart->priv == NULL)
     {
         uart->priv = uart_0.priv;
@@ -207,7 +197,7 @@ int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size,
         int ret = __pi_uart_read(uart->priv, l2_buff, expect_size, &task_block);
         pi_task_wait_on(&task_block);
         memcpy(data, l2_buff, expect_size);
-        pmsis_l2_malloc_free(l2_buff, expect_size);
+        pi_l2_free(l2_buff, expect_size);
     }
     else
     {
@@ -220,6 +210,11 @@ int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size,
     *recv_size = expect_size;
     krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
     return 0;
+#else
+    int ret = gap8_semihost_read(0, data, expect_size);
+    *recv_size = expect_size;
+    return ret;
+#endif
 }
 
 int32_t hal_uart_finalize(uart_dev_t *uart)

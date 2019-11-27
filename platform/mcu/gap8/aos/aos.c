@@ -29,6 +29,7 @@ static void platform_init(void);
 extern uart_dev_t uart_0;
 extern aos_loop_t aos_loop_init(void);
 extern void ulog_init(void);
+extern int32_t kv_init(void);
 
 void __systick_handler(void);
 
@@ -37,7 +38,6 @@ static void sys_init(void)
 {
 
     system_init();
-    platform_init();
     // We are now ready to handle systicks
     system_setup_systick(RHINO_CONFIG_TICKS_PER_SECOND);
     // prepare default event kernel/workqueue for pmsis drivers
@@ -55,9 +55,8 @@ static void sys_init(void)
 #endif
 #endif
 
-
-    printf("Hey there!\n");
-
+    printf("AliOS-Things on GAP8, ready to go!\n");
+    platform_init();
 //#ifdef AOS_COMP_VFS
     vfs_init();
 //#endif
@@ -66,6 +65,7 @@ static void sys_init(void)
     vfs_device_init();
     aos_loop_init();
     ulog_init();
+    //kv_init();
 //#endif
 
     // client application start
@@ -76,6 +76,7 @@ static void platform_init(void)
 {
     // Actually init uart pins where needed
     board_init_debug_console();
+    //board_init();
 }
 
 #define us2tick(us) \
