@@ -73,7 +73,7 @@ extern "C" {
 #endif
 
 /* Define clock source values */
-#define DEFAULT_SYSTEM_CLOCK           50000000u           /* Default System clock value */
+#define DEFAULT_SYSTEM_CLOCK           100000000u           /* Default System clock value */
 
 
 void system_setup_systick(uint32_t tick_rate_hz);
