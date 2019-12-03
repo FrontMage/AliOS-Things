@@ -44,19 +44,35 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/cl_malloc.c
 
 #BSP
 ifeq ($(BOARD_NAME),gapuino8)
-$(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapuino.c
+$(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapuino.c \
+  ./pmsis_bsp/camera/camera.c \
+  ./pmsis_bsp/camera/himax/himax.c \
+  ./pmsis_bsp/display/display.c \
+  ./pmsis_bsp/display/ili9341/ili9341.c \
+  ./pmsis_bsp/flash/flash.c \
+  ./pmsis_bsp/fs/read_fs/read_fs.c \
+  ./pmsis_bsp/fs/host_fs/host_fs.c \
+  ./pmsis_bsp/fs/host_fs/semihost.c \
+  ./pmsis_bsp/fs/fs.c \
+  ./pmsis_bsp/flash/hyperflash/hyperflash.c \
+  ./pmsis_bsp/ram/hyperram/hyperram.c \
+  ./pmsis_bsp/ram/ram.c \
+  ./pmsis_bsp/ram/alloc_extern.c
 else
-$(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapoc_a.c
-$(NAME)_SOURCES     += ./pmsis_bsp/camera/mt9v034/mt9v034.c
-$(NAME)_SOURCES     += ./pmsis_bsp/ble/nina_b112/nina_b112.c
+$(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapoc_a.c \
+  ./pmsis_bsp/camera/camera.c \
+  ./pmsis_bsp/camera/mt9v034/mt9v034.c \
+  ./pmsis_bsp/flash/flash.c \
+  ./pmsis_bsp/fs/read_fs/read_fs.c \
+  ./pmsis_bsp/fs/host_fs/host_fs.c \
+  ./pmsis_bsp/fs/host_fs/semihost.c \
+  ./pmsis_bsp/fs/fs.c \
+  ./pmsis_bsp/flash/hyperflash/hyperflash.c \
+  ./pmsis_bsp/transport/transport.c \
+  ./pmsis_bsp/display/display.c \
+  ./pmsis_bsp/display/ili9341/ili9341.c \
+  ./pmsis_bsp/ram/hyperram/hyperram.c \
+  ./pmsis_bsp/ram/ram.c \
+  ./pmsis_bsp/ram/alloc_extern.c \
+  ./pmsis_bsp/ble/nina_b112/nina_b112.c
 endif
-$(NAME)_SOURCES     += ./pmsis_bsp/camera/camera.c
-$(NAME)_SOURCES     += ./pmsis_bsp/camera/himax/himax.c
-$(NAME)_SOURCES     += ./pmsis_bsp/flash/flash.c
-$(NAME)_SOURCES     += ./pmsis_bsp/fs/read_fs/read_fs.c
-$(NAME)_SOURCES     += ./pmsis_bsp/flash/hyperflash/hyperflash.c
-$(NAME)_SOURCES     += ./pmsis_bsp/display/display.c
-$(NAME)_SOURCES     += ./pmsis_bsp/display/ili9341/ili9341.c
-$(NAME)_SOURCES     += ./pmsis_bsp/ram/hyperram/hyperram.c
-$(NAME)_SOURCES     += ./pmsis_bsp/ram/ram.c
-$(NAME)_SOURCES     += ./pmsis_bsp/ram/alloc_extern.c

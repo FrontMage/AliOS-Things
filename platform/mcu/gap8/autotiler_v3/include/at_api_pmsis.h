@@ -35,33 +35,33 @@
 static inline void gap_fc_starttimer()
 {
   pi_perf_conf(1<<PI_PERF_CYCLES);
-  pi_perf_fc_start();
+  pi_perf_start();
 }
 
 static inline void gap_fc_resethwtimer()
 {
-  pi_perf_fc_reset();
+  pi_perf_reset();
 }
 
 static inline uint32_t gap_fc_readhwtimer()
 {
-  return pi_perf_fc_read(PI_PERF_CYCLES);
+  return pi_perf_read(PI_PERF_CYCLES);
 }
 
 static inline void gap_cl_starttimer()
 {
   pi_perf_conf(1<<PI_PERF_CYCLES);
-  pi_perf_cl_start();
+  pi_perf_start();
 }
 
 static inline void gap_cl_resethwtimer()
 {
-  pi_perf_cl_reset();
+  pi_perf_reset();
 }
 
 static inline uint32_t gap_cl_readhwtimer()
 {
-  return pi_perf_cl_read(PI_PERF_CYCLES);
+  return pi_perf_read(PI_PERF_CYCLES);
 }
 
 

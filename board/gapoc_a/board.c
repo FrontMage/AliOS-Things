@@ -53,3 +53,8 @@ void board_init_debug_console(void)
     hal_gpio_pin_enable_pull(24,0);
 #endif
 }
+
+void board_init(void)
+{
+    return;
+}

@@ -11,14 +11,14 @@ $(NAME)_SUMMARY    := driver & sdk for platform/mcu gap8
 
 $(NAME)_COMPONENTS += arch_ri5cy_gap8
 $(NAME)_COMPONENTS += rhino newlib_stub
-$(NAME)_COMPONENTS += autotiler_v3
+$(NAME)_COMPONENTS += gap8_autotiler
 $(NAME)_COMPONENTS += gap8_baselibc
 
 GLOBAL_INCLUDES += aos/                               \
 		   drivers/                                   \
 		   gcc/                                       \
 		   hal/                                       \
-		   include/                                   
+		   include/
 
 
 GLOBAL_CFLAGS += -Wno-unused-function -fdata-sections -ffunction-sections

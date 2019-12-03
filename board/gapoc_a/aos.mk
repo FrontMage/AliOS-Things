@@ -2,7 +2,7 @@ NAME := gapoc_a
 
 JTAG := jlink_jtag
 
-HOST_ARCH           := RI5CY
+HOST_ARCH           := ri5cy
 HOST_MCU_FAMILY     := mcu_gap8
 BOARD_NAME          := gapoc_a
 
@@ -23,15 +23,14 @@ GLOBAL_INCLUDES += ../../platform/mcu/gap8/
 GLOBAL_INCLUDES += ../../platform/mcu/gap8/drivers/
 
 $(NAME)_SOURCES     := ./board.c
-$(NAME)_SOURCES     += ./clock_config.c
-$(NAME)_SOURCES     += ./pin_mux.c
 $(NAME)_SOURCES     += ./k_config.c
 
-# include pmsis stuff
-include ./platform/mcu/gap8/pmsis.mk
+$(NAME)_COMPONENTS += yloop vfs ulog cli
+
 # configure for soc and board
-GLOBAL_CFLAGS   += -D__GAP8__ -D__GAPOC_A__ -DPRINTF_USE_UART
-GLOBAL_ASMFLAGS += -D__GAP8__ -D__GAPOC_A__
+GLOBAL_CFLAGS   += -D__GAP8__ -D__GAPOC_A__ -DCONFIG_GAPOC_A -DNO_FLASH_PREINIT -DKV_DISABLED
+GLOBAL_ASMFLAGS += -D__GAP8__ -D__GAPOC_A__ -DCONFIG_GAPOC_A -DNO_FLASH_PREINIT -DKV_DISABLED
 
 #TEST_COMPONENTS += certificate
 EXTRA_TARGET_MAKEFILES +=  $($(BOARD_NAME)_LOCATION)/gen_image_bin.mk
+TEST_COMPONENTS += testcase.kernel.rhino testcase.kernel.basic aos_test

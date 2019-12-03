@@ -368,7 +368,7 @@ SECTIONS
     {
         [ .stabstr ]
     }
-    
+
 
     PROVIDE( _heap = heapl2_ram );
 

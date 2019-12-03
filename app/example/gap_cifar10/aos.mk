@@ -6,18 +6,8 @@
 
 NAME := gap_cifar10
 
-APP_PATH = $(PWD)/app/example/gap_cifar10
-GAP8_PATH = $(PWD)/platform/mcu/gap8
-TILER_PATH = $(GAP8_PATH)/autotiler
-TILER_INC = $(TILER_PATH)/include
-TILER_LIB = $(TILER_PATH)/lib/libtile.a
-TILER_GENERATOR_PATH = $(TILER_PATH)/generators
-
-CIFAR_GEN_PATH = $(TILER_GENERATOR_PATH)/CNN
-CIFAR_KER_PATH = $(TILER_GENERATOR_PATH)/CNN
-
 APP_SRCS += Cifar10.c Cifar10Kernels.c
-APP_INC += $(TILER_INC) $(CIFAR_KER_PATH)
+#APP_INC += $(CIFAR_KER_PATH)
 
 APP_CFLAGS += -D__PMSIS__ -mno-memcpy -fno-tree-loop-distribute-patterns  -fdata-sections -ffunction-sections
 # The generated code outputs a maybe-uninitialized error which is rather difficult to suppress
@@ -41,14 +31,28 @@ GLOBAL_INCLUDES += ./
 $(info #### TILER_INC $(TILER_INC))
 $(info #### GLOBAL_INCLUDES $(GLOBAL_INCLUDES))
 
+
+
+#####################################################
+#      Autotiler PreBuild
+#####################################################
+
+APP_PATH_ABS = $(PWD)/app/example/gap_cifar10
+GAP8_PATH_ABS = $(PWD)/platform/mcu/gap8
+TILER_PATH_ABS = $(GAP8_PATH_ABS)/autotiler_v3
+TILER_INC_ABS = $(TILER_PATH_ABS)/include
+TILER_LIB_ABS = $(TILER_PATH_ABS)/lib/libtile.a
+TILER_GENERATOR_PATH_ABS = $(TILER_PATH_ABS)/generators
+
+CIFAR_GEN_PATH_ABS = $(TILER_GENERATOR_PATH_ABS)/CNN
+
 AOS_PRE_BUILD_TARGETS += model
 
 # Build the code generator
 GenTile:
-	gcc -o $(APP_PATH)/GenCifar10 -I$(TILER_INC) -I$(CIFAR_GEN_PATH) $(APP_PATH)/Cifar10Model.c $(CIFAR_GEN_PATH)/CNN_Generators.c $(TILER_LIB)
+	gcc -o $(APP_PATH_ABS)/GenCifar10 -I$(TILER_INC_ABS) -I$(CIFAR_GEN_PATH_ABS) $(APP_PATH_ABS)/Cifar10Model.c $(CIFAR_GEN_PATH_ABS)/CNN_Generators.c $(TILER_LIB_ABS) # Run the code generator
 
-# Run the code generator
 Cifar10Kernels.c: GenTile
-	$(APP_PATH)/GenCifar10 -o $(APP_PATH)
+	$(APP_PATH_ABS)/GenCifar10 -o $(APP_PATH_ABS)
 
 model: Cifar10Kernels.c
