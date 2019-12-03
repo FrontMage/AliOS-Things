@@ -6,7 +6,7 @@
 /* Logic partition on flash devices */
 aos_logical_partition_t hal_partitions[HAL_PARTITION_MAX];
 
-void gapuino8_flash_partition_init(pi_device_t *flash_dev)
+void gap8_breakout_flash_partition_init(pi_device_t *flash_dev)
 {
     for(int i = 0; i < HAL_PARTITION_MAX; i++)
     {

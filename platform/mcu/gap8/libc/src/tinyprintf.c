@@ -61,6 +61,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <stdio.h>
+#include <k_api.h>
+static kmutex_t g_printf_mutex;
+static int printf_is_init = 0;
 
 struct param {
     int width; /**< field width */
@@ -355,10 +358,18 @@ int fprintf(FILE *f, const char *fmt, ...)
 
 int printf(const char *fmt, ...)
 {
+    if(!printf_is_init)
+    {
+        krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
+        krhino_mutex_unlock(&g_printf_mutex);
+        printf_is_init= 1;
+    }
+    krhino_mutex_lock(&g_printf_mutex, RHINO_WAIT_FOREVER);
     va_list va;
     va_start(va, fmt);
     int rv = vfprintf(stdout, fmt, va);
     va_end(va);
+    krhino_mutex_unlock(&g_printf_mutex);
     return rv;
 }
 

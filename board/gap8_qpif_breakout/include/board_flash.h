@@ -4,7 +4,9 @@
 #include "pmsis.h"
 #include "aos_flash.h"
 
-#define FLASH_BUS FLASH_BUS_HYPERBUS
+#define FLASH_BUS_HYPERBUS 0
+#define FLASH_BUS_QSPI 1
+#define FLASH_BUS FLASH_BUS_QSPI
 
-void gapuino8_flash_partition_init(pi_device_t *flash_dev);
+void gap8_breakout_flash_partition_init(pi_device_t *flash_dev);
 #endif
