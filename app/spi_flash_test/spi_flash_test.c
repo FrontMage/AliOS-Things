@@ -8,74 +8,6 @@
 #include "gap_semihost.h"
 #include <aos/kernel.h>
 
-#if 0
-void __pi_spi_receive_async_with_ucode(struct spim_cs_data *cs_data, void *data, size_t len,
-        pi_spi_flags_e flags, int use_ucode, int ucode_size,
-        void *ucode, pi_task_t *task)
-{
-    struct spim_driver_data *drv_data = SPIM_CS_DATA_GET_DRV_DATA(cs_data);
-    int qspi    = ((flags >> 2) & 0x3) == PI_SPI_LINES_QUAD;
-    int cs_mode = (flags >> 0) & 0x3;
-
-    int device_id = drv_data->device_id;
-    DBG_PRINTF("%s:%d: core clock:%d, baudrate:%d, div=%d, udma_cmd cfg =%lx\n",
-            __func__,__LINE__,system_core_clock_get(),cs_data->max_baudrate,
-            system_core_clock_get() / cs_data->max_baudrate,cfg);
-    uint32_t byte_align = (cs_data->wordsize == PI_SPI_WORDSIZE_32)
-        && cs_data->big_endian;
-    int size = (len + 7) >> 3;
-
-    int cmd_id = 0;
-
-    int irq = __disable_irq();
-    if(!drv_data->end_of_transfer)
-    {
-        if(use_ucode)
-        {
-            //cs_data->udma_cmd[cmd_id++] = SPI_CMD_TX_DATA(8*4, qspi, byte_align);
-            printf("insert ucode\n");
-            //memcpy(&(cs_data->udma_cmd[cmd_id]), ucode, ucode_size);
-            //cmd_id += (ucode_size/4);
-        }
-        drv_data->end_of_transfer = task;
-        drv_data->repeat_transfer = NULL;
-        if(cs_mode == PI_SPI_CS_AUTO)
-        {
-            //cs_data->udma_cmd[cmd_id++] = SPI_CMD_EOT(1);
-        }
-        else
-        {
-            hal_soc_eu_set_fc_mask(SOC_EVENT_UDMA_SPIM_RX(device_id));
-        }
-
-        for(int i = 0; i<ucode_size; i++)
-        {
-            printf("ucode[i]=%x\n",((uint8_t*)ucode)[i]);
-        }
-        spim_enqueue_channel(SPIM(device_id), (uint32_t)data, size,
-                UDMA_CORE_RX_CFG_EN(1) | (2<<1), RX_CHANNEL);
-        spim_enqueue_channel(SPIM(device_id), (uint32_t)ucode,
-                ucode_size, UDMA_CORE_TX_CFG_EN(1), TX_CHANNEL);
-    }
-    else
-    {
-#if 0
-        struct spim_transfer transfer;
-        transfer.data = data;
-        transfer.flags = flags;
-        transfer.len = len;
-        transfer.cfg_cmd = cfg;
-        transfer.byte_align = byte_align;
-        transfer.is_send = 0;
-        __pi_spim_drv_fifo_enqueue(cs_data, &transfer, task);
-#endif
-    }
-    restore_irq(irq);
-}
-
-#endif
-
-
 PI_L2 char write_string[] = {'h','e','l','l','o',' ','f','r','i','e','n','d','s','\n','\0'};
 
 PI_L2 volatile uint8_t data[256+5];
@@ -98,11 +30,6 @@ PI_L2 uint32_t g_zero = 0;
 
 #define DUMMY_CYCLES 8
 
-extern void pi_spi_receive_with_ucode(struct pi_device *device, void *data,
-        size_t len, pi_spi_flags_e flags, int use_ucode, int ucode_size,
-        void *ucode);
-extern uint32_t pi_spi_get_config(struct pi_device *device);
-
 //uint8_t g_set_qspif_dummy[] = {QSPIF_WR_EN_CMD, QSPIF_WR_READ_REG_CMD,
 //    QSPIF_DUMMY_CYCLES(DUMMY_CYCLES) | QSPIF_BURST_LEN(3) | QSPIF_BURST_ENA(1)};
 // set 2 dummy cycles @ 50MHz
@@ -111,7 +38,7 @@ uint8_t g_set_qspif_dummy[] = {QSPIF_WR_READ_REG_CMD,
 uint8_t g_enter_qpi_mode[] = {0x35,0,0,0};
 uint8_t g_exit_qpi_mode[]  = {0xf5,0,0,0};
 
-uint8_t g_erase_block_0[] = {0xD7, 0, 0x20, 0, 0, 0, 0,0};
+uint8_t g_erase_block_0[] = {0xD7, 0, 0x10, 0, 0, 0, 0, 0};
 uint8_t g_buf[32] = {0};
 
 int single_lanes_test()
@@ -137,7 +64,7 @@ int single_lanes_test()
     memset(&spi_conf, 0, sizeof(struct pi_spi_conf));
 
     pi_spi_conf_init(&spi_conf);
-    spi_conf.max_baudrate = system_core_clock_get(); // 50MHz for now
+    spi_conf.max_baudrate = 45000000; // 50MHz for now
     spi_conf.wordsize = PI_SPI_WORDSIZE_8;
     spi_conf.polarity = 0;
     spi_conf.phase = spi_conf.polarity;
@@ -148,37 +75,22 @@ int single_lanes_test()
     pi_open_from_conf(&qspi_dev0, &spi_conf);
     int ret = pi_spi_open(&qspi_dev0);
 
+    // IO3 is gpio 27
+    pi_pad_set_function(PI_PAD_43_A10_SPIM0_SDIO3, 1);
+    hal_gpio_pin_enable(27, 0x1);
+    hal_gpio_pin_set_output_value(27, 1);
+    hal_gpio_pin_set_direction(27, 0x1);
+
     printf("ret=%x\n",ret);
 
-    // init flash --> setup dummy cycles first
-#if 0
-    g_buf[0] = 0x66;
-    pi_spi_transfer(&qspi_dev0, (void*)&g_buf[0], (void*)&g_buf[4],8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    aos_msleep(100);
-    g_buf[0] = 0x99;
-    pi_spi_transfer(&qspi_dev0, (void*)&g_buf[0], (void*)&g_buf[4],8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    aos_msleep(100);
-    printf("------------Reset done-------------\n");
-#endif
-    
-    //g_buf[0] = QSPIF_WR_EN_CMD;
-    //pi_spi_transfer(&qspi_dev0, (void*)g_buf, (void*)&g_buf[4],8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-
     g_buf[0] = 0x9F;
-    pi_spi_transfer(&qspi_dev0, (void*)&g_buf[0], (void*)&g_buf[4], 8, PI_SPI_LINES_SINGLE | PI_SPI_CS_KEEP);
-    pi_spi_transfer(&qspi_dev0, (void*)&g_zero, (void*)&g_buf[0], 8*3, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    printf("jdec id reg= %x\n",g_buf[0]);
-    printf("jdec id reg= %x\n",g_buf[1]);
-    printf("jdec id reg= %x\n",g_buf[2]);
-
-    // flash is now in QPI mode, with 2 dummy read cycles
-    // -------------------------------------------------
+    pi_spi_send(&qspi_dev0, (void*)&g_buf[0], 8, PI_SPI_LINES_SINGLE | PI_SPI_CS_KEEP);
+    pi_spi_receive(&qspi_dev0, (void*)&g_buf[0], 8*3, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
+    printf("jdec id reg[0]= %x, jdec id reg[1]= %x, jdec id reg[2]= %x\n",g_buf[0],g_buf[1],g_buf[2]);
     
     // Erase block 0
-    
     g_buf[0] = QSPIF_WR_EN_CMD;
-    pi_spi_transfer(&qspi_dev0, (void*)g_buf, (void*)&g_buf[4],8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-
+    pi_spi_send(&qspi_dev0, (void*)g_buf,8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
     pi_spi_send(&qspi_dev0, (void*)g_erase_block_0, 4*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
     uint8_t wip = 0;
     do
@@ -191,7 +103,7 @@ int single_lanes_test()
     }while(wip);
     // Write
     g_buf[0] = QSPIF_WR_EN_CMD;
-    pi_spi_transfer(&qspi_dev0, (void*)g_buf, (void*)&g_buf[4],8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
+    pi_spi_send(&qspi_dev0, (void*)g_buf, 8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
     pi_spi_send(&qspi_dev0, (void*)data, 260*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO); 
     wip = 0;
     do
@@ -208,7 +120,6 @@ int single_lanes_test()
     g_buf[1] = 0;
     g_buf[2] = 0x10;
     g_buf[3] = 0;
-    //*(uint32_t*)(&g_buf[4]) = SPI_CMD_DUMMY(DUMMY_CYCLES);
 
     printf("data_r: %x\n",data_r);
     pi_spi_send(&qspi_dev0, (void*)g_buf, 8*4, PI_SPI_LINES_SINGLE | PI_SPI_CS_KEEP);
@@ -231,14 +142,14 @@ int qpi_flash_test(void)
 {
     int count = 0;
     int errors = 0;
-    printf("nano entry here!\n");
+    printf("QSPI flash test\n");
 
     aos_msleep(1000);
     // Add wr enable, then send cmd, addr, and finally, data from index 5
     //data[0] = QSPIF_WR_EN_CMD;
     data[0] = 0x02;
     data[1] = 0x0;
-    data[2] = 0x20;
+    data[2] = 0x10;
     data[3] = 0x0;
 
     for(int i = 0; i<256; i++)
@@ -250,7 +161,7 @@ int qpi_flash_test(void)
     memset(&spi_conf, 0, sizeof(struct pi_spi_conf));
 
     pi_spi_conf_init(&spi_conf);
-    spi_conf.max_baudrate = system_core_clock_get(); // 50MHz for now
+    spi_conf.max_baudrate = 45000000; // 50MHz for now
     spi_conf.wordsize = PI_SPI_WORDSIZE_8;
     spi_conf.polarity = 0;
     spi_conf.phase = spi_conf.polarity;
@@ -261,48 +172,38 @@ int qpi_flash_test(void)
     pi_open_from_conf(&qspi_dev0, &spi_conf);
     int ret = pi_spi_open(&qspi_dev0);
 
-    printf("ret=%x\n",ret);
+    // IO3 is gpio 27 --> workaround hold/reset pin
+    pi_pad_set_function(PI_PAD_43_A10_SPIM0_SDIO3, 1);
+    hal_gpio_pin_enable(27, 0x1);
+    hal_gpio_pin_set_output_value(27, 1);
+    hal_gpio_pin_set_direction(27, 0x1);
 
-    // init flash --> setup dummy cycles first
-#if 0
-    g_buf[0] = 0x66;
-    pi_spi_transfer(&qspi_dev0, (void*)&g_buf[0], (void*)&g_buf[4],8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    aos_msleep(100);
-    g_buf[0] = 0x99;
-    pi_spi_transfer(&qspi_dev0, (void*)&g_buf[0], (void*)&g_buf[4],8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    aos_msleep(100);
-    printf("------------Reset done-------------\n");
-#endif
-    
-    //g_buf[0] = QSPIF_WR_EN_CMD;
-    //pi_spi_transfer(&qspi_dev0, (void*)g_buf, (void*)&g_buf[4],8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-
-    g_buf[0] = 0x9F;
+    g_buf[0] = 0x9F; // jedec id: spi mode
     pi_spi_send(&qspi_dev0, (void*)&g_buf[0], 8, PI_SPI_LINES_SINGLE | PI_SPI_CS_KEEP);
     pi_spi_receive(&qspi_dev0, (void*)&g_buf[0], 8*3, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    printf("jdec id reg= %x\n",g_buf[0]);
-    printf("jdec id reg= %x\n",g_buf[1]);
-    printf("jdec id reg= %x\n",g_buf[2]);
-
+    printf("jdec id reg = %x:%x:%x\n",g_buf[0],g_buf[1],g_buf[2]);
+#if 1
     g_buf[0] = QSPIF_WR_EN_CMD;
     pi_spi_send(&qspi_dev0, (void*)g_buf, 8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-
     pi_spi_send(&qspi_dev0, (void*)g_set_qspif_dummy, 2*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
     g_buf[0] = 0x61;
-    pi_spi_send(&qspi_dev0, (void*)g_buf, 1*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_KEEP);
-    pi_spi_receive(&qspi_dev0, (void*)g_buf, 1*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    printf("read param reg= %x\n",g_buf[0]),
     // then QPI mode enter
-    printf("g_enter_qpi_mode: %x\n",g_enter_qpi_mode);
     pi_spi_send(&qspi_dev0, (void*)g_enter_qpi_mode, 1*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
+#endif
     // flash is now in QPI mode, with 2 dummy read cycles
     // -------------------------------------------------
-    
+    // reset IO3 pin to alt0   
+    pi_pad_set_function(PI_PAD_43_A10_SPIM0_SDIO3, 0);
     // Erase block 0
+ 
     
+    g_buf[0] = 0xAF; //jedec id: qspi mode
+    pi_spi_send(&qspi_dev0, (void*)&g_buf[0], 8, PI_SPI_LINES_QUAD | PI_SPI_CS_KEEP);
+    pi_spi_receive(&qspi_dev0, (void*)&g_buf[0], 8*3, PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
+    printf("jdec id reg QPI = %x:%x:%x\n",g_buf[0],g_buf[1],g_buf[2]);
+
     g_buf[0] = QSPIF_WR_EN_CMD;
     pi_spi_send(&qspi_dev0, (void*)g_buf,8, PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
-
     pi_spi_send(&qspi_dev0, (void*)g_erase_block_0, 4*8, PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
     uint8_t wip = 0;
     do
@@ -334,15 +235,12 @@ int qpi_flash_test(void)
     g_buf_u32[2] = SPI_CMD_TX_DATA(8*4, 1, 0);
     g_buf[12] = 0xb;
     g_buf[13] = 0;
-    g_buf[14] = 0x20;
+    g_buf[14] = 0x10;
     g_buf[15] = 0;
     g_buf_u32[4] = SPI_CMD_DUMMY(DUMMY_CYCLES);
     g_buf_u32[5] = SPI_CMD_RX_DATA(len, 1, 0);
     g_buf_u32[6] = SPI_CMD_EOT(1);
 
-    printf("data_r: %x\n",data_r);
-    printf("g_buf: %x\n",g_buf);
-    //pi_spi_send(&qspi_dev0, (void*)g_buf, 8*8, PI_SPI_LINES_QUAD | PI_SPI_CS_KEEP);
     pi_spi_receive_with_ucode(&qspi_dev0, (void*)data_r, len,
             PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO, 1, 28, g_buf);
 
@@ -362,5 +260,8 @@ int qpi_flash_test(void)
 
 int application_start(int argc, char *argv[])
 {
-    return qpi_flash_test();
+    int ret = single_lanes_test();
+    ret |= qpi_flash_test();
+    pmsis_exit(ret);
+    return 0;
 }
