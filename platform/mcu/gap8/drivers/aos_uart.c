@@ -9,8 +9,8 @@
 
 uart_dev_t uart_0 = {
     .port = 0,                                                  /* uart port */
-    .config = {9600, DATA_WIDTH_8BIT, NO_PARITY, STOP_BITS_1,
-        FLOW_CONTROL_DISABLED, MODE_TX_RX}, /* uart config */
+    .config = {115200, DATA_WIDTH_8BIT, NO_PARITY, STOP_BITS_1,
+        FLOW_CONTROL_DISABLED, MODE_TX_RX},                     /* uart config */
     .priv = NULL                                                /* priv data */
 };
 
@@ -65,8 +65,8 @@ int32_t hal_uart_init(uart_dev_t *uart)
 
         // FIXME: data width ignored for now, TODO:check RTL
 
-        conf.baudrate_bps = uart->config.baud_rate;;
-        conf.src_clock_Hz = system_core_clock;
+        conf.baudrate_bps = uart->config.baud_rate;
+        conf.src_clock_Hz = system_core_clock_get();
 
         // prepare handler here
         pi_fc_event_handler_set(UDMA_EVENT_UART_RX, uart_handler);
@@ -126,11 +126,11 @@ int32_t hal_uart_send(uart_dev_t *uart, const void *data, uint32_t size, uint32_
     }
     else
     {
-            pi_task_t task_block;
-            pi_task_block(&task_block);
-            __pi_uart_write(uart->priv, (void*)data, size, &task_block);
-            pi_task_wait_on(&task_block);
-            pi_task_destroy(&task_block);
+        pi_task_t task_block;
+        pi_task_block(&task_block);
+        __pi_uart_write(uart->priv, (void*)data, size, &task_block);
+        pi_task_wait_on(&task_block);
+        pi_task_destroy(&task_block);
     }
     return 0;
 #else
@@ -187,13 +187,12 @@ int32_t hal_uart_recv_II(uart_dev_t *uart, void *data, uint32_t expect_size,
     // copy the buffer to L2 if need be -- if app is not made with gap in mind
     if(((uintptr_t)data & 0xFFF00000) != 0x1C000000)
     {
-        void *l2_buff = pmsis_l2_malloc(expect_size);;
+        void *l2_buff = pi_l2_malloc(expect_size);;
         if(!l2_buff)
         {
             krhino_mutex_unlock(&((struct uart_driver_data*)uart->priv)->uart_mutex_rx);
             return EIO;
         }
-        //gap8_semihost_write0(write_string);
         int ret = __pi_uart_read(uart->priv, l2_buff, expect_size, &task_block);
         pi_task_wait_on(&task_block);
         memcpy(data, l2_buff, expect_size);

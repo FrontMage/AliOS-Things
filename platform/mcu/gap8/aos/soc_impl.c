@@ -208,6 +208,10 @@ int semihost_flush_print_buffer(FILE *stream)
 
 int fflush(FILE *stream)
 {
+    if(stream->fd != 1)
+    {
+        return 0;
+    }
     return stream->vmt->flush(stream);
 }
 
