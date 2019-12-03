@@ -54,8 +54,6 @@ enum semihosting_operation_numbers {
 #define SEMIHOST_EXIT_SUCCESS 0x20026
 #define SEMIHOST_EXIT_ERROR   0x20023
 
-//extern long __syscall_error(long);
-
 /* riscv semihosting standard: 
  * IN: a0 holds syscall number
  * IN: a1 holds pointer to arg struct
@@ -84,23 +82,69 @@ __internal_semihost(long n, long _a1)
     return a0;
 }
 
-
-// roughly this is the last stage of printf:
-// print a string until '\0'
+/**
+ * Printf a '\0' terminated string on host computer
+ * Works both with gap8 semihosting and gvsoc
+ *
+ * @param[in]   print_string    pointer to a '\0' terminated string
+ *
+ */
 void gap8_semihost_write0(const char *print_string);
 
+
+/**
+ * open file with name "name" and mode "mode" and return unix file descriptor
+ * @param[in]   name    pointer to name of the file to be opened
+ * @param[in]   mode    open mode (unix style)
+ * @return  fd : On success, EIO : If an error occurred with any step
+ */
 int gap8_semihost_open(const char *name, int mode);
 
+/**
+ * Close unix file descriptor fd
+ * @param[in]   fd    Unix file descriptor
+ * @return  0 : On success, EIO : If an error occurred with any step
+ */
 int gap8_semihost_close(int fd);
 
+/**
+ * Read len bytes from file descriptor fd to buffer "buffer"
+ * @param[in]   fd      Unix file descriptor
+ * @param[in]   buffer  pointer to buffer to store the data
+ * @param[in]   len     number of bytes to read
+ * @return  0 : On success, EIO : If an error occurred with any step
+ */
 int gap8_semihost_read(int fd, uint8_t *buffer, int len);
 
+/**
+ * Write len bytes from buffer "buffer" to file corresponding to 
+ * unix file descriptor fd
+ * @param[in]   fd      Unix file descriptor
+ * @param[in]   buffer  pointer to buffer to read data from
+ * @param[in]   len     number of bytes to read
+ * @return  0 : On success, EIO : If an error occurred with any step
+ */
 int gap8_semihost_write(int fd, uint8_t *buffer, int len);
 
+/**
+ * Seek position (byte) in file corresponding to file descriptor fd
+ * @param[in]   fd      Unix file descriptor
+ * @param[in]   mode    position (byte) in file
+ * @return  0 : On success, EIO : If an error occurred with any step
+ */
 int gap8_semihost_seek(int fd, uint32_t pos);
 
+/**
+ * Returns the file length corresponding to unix file descriptor fd
+ * @param[in]   fd      Unix file descriptor
+ * @return  file length
+ */
 int gap8_semihost_flen(int fd);
 
+/**
+ * Singal exit to opencod or gvsoc
+ * @param[in]   code    Exit code (SEMIHOST_EXIT_SUCCESS/SEMIHOST_EXIT_ERROR)
+ */
 void gap8_semihost_exit(int code);
 
 #endif

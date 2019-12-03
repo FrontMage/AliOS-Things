@@ -49,24 +49,16 @@ static void sys_init(void)
     // depends on event kernel, comes last
     hal_uart_init(&uart_0);
 #endif
-#if 0
-#ifdef AOS_COMP_KV
-    kv_init();
-#endif
-#endif
 
-    printf("AliOS-Things on GAP8, ready to go!\n");
+    printf("Welcome on AliOS-Things with GAP8\n");
     platform_init();
-//#ifdef AOS_COMP_VFS
+
     vfs_init();
-//#endif
     aos_cli_init();
-//#ifdef AOS_LOOP
     vfs_device_init();
     aos_loop_init();
     ulog_init();
-    //kv_init();
-//#endif
+    kv_init();
 
     // client application start
     application_start(0, NULL);
@@ -75,8 +67,7 @@ static void sys_init(void)
 static void platform_init(void)
 {
     // Actually init uart pins where needed
-    board_init_debug_console();
-    //board_init();
+    board_init();
 }
 
 #define us2tick(us) \
