@@ -345,7 +345,7 @@ static int32_t cli_handle_input(char *inbuf)
  * @return none
  *
  */
-static void cli_tab_complete(char *inbuf, unsigned int *bp)
+static void cli_tab_complete(char *inbuf, uint32_t *bp)
 {
     int32_t i, n, m;
 
