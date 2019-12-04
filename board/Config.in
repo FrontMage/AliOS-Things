@@ -299,6 +299,15 @@ if AOS_BOARD_GAPOC_A
     source "platform/arch/risc-v/ri5cy_gap8/Config.in"
 endif
 
+source "board/gapoc_a_qpif/Config.in"
+if AOS_BOARD_GAPOC_A_QPIF
+    config AOS_BUILD_BOARD
+        default "gapoc_a_qpif"
+
+    source "platform/mcu/gap8/Config.in"
+    source "platform/arch/risc-v/ri5cy_gap8/Config.in"
+endif
+
 source "board/gvsoc_gap8/Config.in"
 if AOS_BOARD_GVSOC_GAP8
     config AOS_BUILD_BOARD
