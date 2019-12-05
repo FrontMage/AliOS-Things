@@ -246,25 +246,15 @@ static const uint8_t g_write_enable[]   = {QSPIF_WR_EN_CMD,0};
 PI_L2 static uint8_t g_qspif_status[4] = {0};
 static inline void qpi_flash_enter_qpi(pi_device_t *qspi_dev)
 {
-    // IO3 is gpio 27 --> workaround hold/reset pin
-    pi_pad_set_function(PI_PAD_43_A10_SPIM0_SDIO3, 1);
-    hal_gpio_pin_enable(27, 0x1);
-    hal_gpio_pin_set_output_value(27, 1);
-    hal_gpio_pin_set_direction(27, 0x1);
-
     // Enter QPI mode
     pi_spi_send(qspi_dev, (void*)g_enter_qpi_mode, 1*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    
-    // reset IO3 pin to alt0   
-    pi_pad_set_function(PI_PAD_43_A10_SPIM0_SDIO3, 0);
-
     // flash chip erase (optional!)
 #ifdef FLASH_CHIP_ERASE
     pi_spi_send(qspi_dev, (void*)g_write_enable, 8, PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
     pi_spi_send(qspi_dev, (void*)g_chip_erase, 8, PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
     wait_wip(qspi_dev);
-    printf("erase done, exiting\n");
-    pmsis_exit(0);
+    printf("erase done\n");
+    //pmsis_exit(0);
 #endif
     // Set read parameters (dummy cycles)
     pi_spi_send(qspi_dev, (void*)g_write_enable, 8, PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
@@ -299,6 +289,7 @@ void wait_wip(pi_device_t *flash_dev)
     volatile uint8_t wip = 0;
     do
     {
+        aos_msleep(1);
         g_qspif_status[0] = QSPIF_READ_STATUS_CMD; // read status reg
         pi_spi_send(flash_dev, (void*)&g_qspif_status[0], 1*8, PI_SPI_LINES_QUAD | PI_SPI_CS_KEEP);
         pi_spi_receive(flash_dev, (void*)&g_qspif_status[0], 1*8, PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
@@ -422,7 +413,6 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set,
         pi_spi_send(flash_dev, (void*)l2_buff, (curr_size+QSPIF_WR_PROLOGUE_SIZE)*8,
                 PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
         wait_wip(flash_dev);
-        flash_addr += curr_size;
         curr_pos += curr_size;
     }
     pi_l2_free(l2_buff, QSPIF_PAGE_SIZE+QSPIF_WR_PROLOGUE_SIZE);
@@ -509,7 +499,6 @@ int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set,
         pi_spi_receive_with_ucode(flash_dev, (void*)l2_buff, (curr_size)*8,
                 PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO, 1, QSPIF_RCV_UCODE_SIZE, ucode );
         memcpy(out_buf+curr_pos, l2_buff, curr_size);
-        flash_addr += curr_size;
         curr_pos += curr_size;
     }
     pi_l2_free(l2_buff, QSPIF_PAGE_SIZE);
@@ -586,7 +575,7 @@ int32_t hal_flash_addr2offset(hal_partition_t *in_partition, uint32_t *off_set, 
         uint32_t part_max = hal_partitions[i].aos_partition.partition_start_addr
             + (hal_partitions[i].aos_partition.partition_length-1);
 
-        if((addr > part_min) && (addr < part_max))
+        if((addr >= part_min) && (addr <= part_max))
         {
             *in_partition = (hal_partition_t) i;
             *off_set =  addr-part_min;
