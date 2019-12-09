@@ -44,21 +44,24 @@ static void sys_init(void)
     struct pmsis_event_kernel_wrap *wrap;
     pmsis_event_kernel_init(&wrap, pmsis_event_kernel_main);
     pmsis_event_set_default_scheduler(wrap);
-    // just make sure irqs are enabled
+
 #ifdef PRINTF_USE_UART
     // depends on event kernel, comes last
     hal_uart_init(&uart_0);
 #endif
+    platform_init();
 
     printf("Welcome on AliOS-Things with GAP8\n");
-    platform_init();
 
     vfs_init();
     aos_cli_init();
     vfs_device_init();
     aos_loop_init();
     ulog_init();
+#if (!defined(NO_FLASH_PREINIT) && !defined(KV_DISABLED))
+    // might be disabled for some continuous integration tests
     kv_init();
+#endif
 
     // client application start
     application_start(0, NULL);
@@ -67,6 +70,7 @@ static void sys_init(void)
 static void platform_init(void)
 {
     // Actually init uart pins where needed
+    board_init_debug_console();
     board_init();
 }
 

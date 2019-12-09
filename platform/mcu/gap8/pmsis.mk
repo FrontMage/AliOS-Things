@@ -20,7 +20,7 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/gpio/gpio.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/pad/pad.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/pmsis_fc_event.c
 $(NAME)_SOURCES     += ./PMSIS/pmsis_driver/pmu/pmu_gap8.c
-$(NAME)_SOURCES     += ./PMSIS/pmsis_hal/fll/fll_gap8.c
+$(NAME)_SOURCES     += ./PMSIS/pmsis_hal/GAP8/fll/fll_gap8.c
 
 #rtos utils
 # Cluster L1 memory malloc
@@ -45,8 +45,7 @@ $(NAME)_SOURCES     += ./PMSIS/pmsis_cluster/cl_malloc.c
 #BSP
 ifeq ($(BOARD_NAME),gapuino8)
 $(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapuino.c
-endif
-ifeq ($(BOARD_NAME),gapoc_a)
+else
 $(NAME)_SOURCES     += ./pmsis_bsp/bsp/gapoc_a.c
 $(NAME)_SOURCES     += ./pmsis_bsp/camera/mt9v034/mt9v034.c
 $(NAME)_SOURCES     += ./pmsis_bsp/ble/nina_b112/nina_b112.c

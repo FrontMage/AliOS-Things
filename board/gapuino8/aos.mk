@@ -4,6 +4,7 @@ JTAG := gapuino_ftdi
 
 HOST_ARCH           := ri5cy
 HOST_MCU_FAMILY     := mcu_gap8
+BOARD_NAME          := gapuino8
 
 CONFIG_SYSINFO_PRODUCT_MODEL := ALI_AOS_GAP8
 CONFIG_SYSINFO_DEVICE_NAME := gap8
@@ -30,7 +31,6 @@ GLOBAL_DEFINES += KV_CONFIG_TOTAL_SIZE=32768 #32kb
 
 $(NAME)_COMPONENTS += yloop vfs
 # include pmsis stuff
-BOARD_NAME=gapuino8
 # configure for soc and board
 GLOBAL_CFLAGS += -D__GAP8__ -DGAPUINO8 -fdata-sections -ffunction-sections -Os -g -DCONFIG_GAPUINO
 GLOBAL_LDFLAGS += -Wl,--gc-sections -Os -g -DCONFIG_GAPUINO
@@ -39,3 +39,4 @@ GLOBAL_ASMFLAGS += -D__GAP8__ -DGAPUINO8 -DCONFIG_GAPUINO
 GLOBAL_CFLAGS += -DHIMAX -DPRINTF_USE_UART
 
 TEST_COMPONENTS += testcase.kernel.rhino testcase.kernel.basic aos_test kv_test
+EXTRA_TARGET_MAKEFILES +=  $($(BOARD_NAME)_LOCATION)/gen_image_bin.mk

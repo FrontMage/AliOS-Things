@@ -19,12 +19,23 @@
 # | FLASH_ADDR  | (4)  | 
 # |-----+24-----|------|
 # | FLASH_SIZE  | (4)  |
+# |-----+28-----|------|
+# | FLASH_TYPE  | (4)  |
 # |_____________|______|
 
+# Flash types:
+# HYPERFLASH = 0
+# SPI FLASH  = 1
+
 # gap flasher ctrl: load a bin ImageName of size ImageSize to flash at addr 0x0+flash_offset
-proc gap_flasher_ctrl {ImageName ImageSize flash_offset sector_size} {
+proc gap_flasher_ctrl {ImageName ImageSize flash_offset sector_size flash_type} {
 	# set pointers to right addresses
 	set device_struct_ptr_addr 0x1c000190
+    mem2array wait1 32 $device_struct_ptr_addr 1
+    while { [expr $wait1(0) == 0] } {
+        mem2array wait1 32 $device_struct_ptr_addr 1
+        sleep 1
+    }
 	mem2array device_struct_ptr 32 $device_struct_ptr_addr 1
 	set host_rdy 	    [expr $device_struct_ptr(0) + 0 ]
 	set gap_rdy 	    [expr $device_struct_ptr(0) + 4 ]
@@ -33,10 +44,12 @@ proc gap_flasher_ctrl {ImageName ImageSize flash_offset sector_size} {
 	set flash_run 	    [expr $device_struct_ptr(0) + 16 ]
 	set flash_addr 	    [expr $device_struct_ptr(0) + 20 ]
 	set flash_size 	    [expr $device_struct_ptr(0) + 24 ]
+    set flash_type_addr [expr $device_struct_ptr(0) + 28 ]
 	set size            [expr $ImageSize]
 	# rest synchronisation vars
 	# GAP RDY  <--- 0
 	mww [expr $gap_rdy] 0x0
+	mww [expr $flash_type_addr] [expr $flash_type]
 	# tell the chip we are going to flash
 	mww [expr $flash_run] 0x1
 	# HOST RDY <--- 1 / signal to begin app
@@ -91,8 +104,26 @@ proc gap_flasher_ctrl {ImageName ImageSize flash_offset sector_size} {
 proc gap_flash_raw {image_name image_size gap_tools_path} {
 	# flash the flasher
 	gap8_jtag_load_binary_and_start ${gap_tools_path}/gap_bins/gap_flasher@gapoc_a.elf elf
+	sleep 100
+	# flash the flash image with the flasher
+	gap_flasher_ctrl $image_name $image_size 0 0x40000 0
+	sleep 2
+}
+
+proc gap_flash_raw_hyper {image_name image_size gap_tools_path} {
+	# flash the flasher
+	gap8_jtag_load_binary_and_start ${gap_tools_path}/gap_bins/gap_flasher@gapoc_a.elf elf
 	sleep 2
 	# flash the flash image with the flasher
-	gap_flasher_ctrl $image_name $image_size 0 0x40000
+	gap_flasher_ctrl $image_name $image_size 0 0x40000 0
+	sleep 2
+}
+
+proc gap_flash_raw_spi {image_name image_size gap_tools_path} {
+	# flash the flasher
+	gap8_jtag_load_binary_and_start ${gap_tools_path}/gap_bins/gap_flasher@gapoc_a_qpif.elf elf
+	sleep 2
+	# flash the flash image with the flasher
+	gap_flasher_ctrl $image_name $image_size 0 0x1000 1
 	sleep 2
 }

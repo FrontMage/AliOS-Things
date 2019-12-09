@@ -73,7 +73,7 @@ SECTIONS
     .vectors_M :
     {
         . = ALIGN(4);
-        irq_m_vector_base = .;
+        __irq_vector_base_m__ = .;
         KEEP(*(.vectors_M))
     } > L2
 

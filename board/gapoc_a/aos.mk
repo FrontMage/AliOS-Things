@@ -4,6 +4,7 @@ JTAG := jlink_jtag
 
 HOST_ARCH           := RI5CY
 HOST_MCU_FAMILY     := mcu_gap8
+BOARD_NAME          := gapoc_a
 
 CONFIG_SYSINFO_PRODUCT_MODEL := ALI_AOS_GAPOC_A
 CONFIG_SYSINFO_DEVICE_NAME := gapoc_a
@@ -26,7 +27,6 @@ $(NAME)_SOURCES     += ./clock_config.c
 $(NAME)_SOURCES     += ./pin_mux.c
 $(NAME)_SOURCES     += ./k_config.c
 
-BOARD_NAME=gapoc_a
 # include pmsis stuff
 include ./platform/mcu/gap8/pmsis.mk
 # configure for soc and board
@@ -34,5 +34,4 @@ GLOBAL_CFLAGS   += -D__GAP8__ -D__GAPOC_A__ -DPRINTF_USE_UART
 GLOBAL_ASMFLAGS += -D__GAP8__ -D__GAPOC_A__
 
 #TEST_COMPONENTS += certificate
-GLOBAL_CFLAGS += -DTEST_CONFIG_KV_ENABLED=0
-GLOBAL_CFLAGS += -DTEST_CONFIG_YLOOP_ENABLED=0
+EXTRA_TARGET_MAKEFILES +=  $($(BOARD_NAME)_LOCATION)/gen_image_bin.mk
