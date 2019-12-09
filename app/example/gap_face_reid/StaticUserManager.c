@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-#ifndef __PARAM_LAYERS_STRUCT_H__
-#define __PARAM_LAYERS_STRUCT_H__
+#include "StaticUserManager.h"
+#include "face_db.h"
 
-struct param_conv_layer {
-  int nb_if;
-  int nb_of;
-  int win;
-  int hin;
-  int kernel_width;
-  int kernel_height;
-  char relu;
-  char max_pool;
-  char pool_size;
-  char pool_stride;
-  char norm_data;
-  char conv_padding;
-  char conv_stride;
-  char* name;
-};
+int initHandler(struct pi_device* fs)
+{
+    PRINTF("Loading static ReID database\n");
+    int status = load_static_db(fs);
+    if(!status)
+    {
+        PRINTF("Static DB load failed!\n");
+    }
 
-#define NB_CONV 26
-extern struct param_conv_layer convLayers[NB_CONV];
+    return status;
+}
 
-#endif
+int prepareStranger(void* preview)
+{
+
+}
+
+int handleStranger(short* descriptor)
+{
+    (void) descriptor;
+    return 0;
+}

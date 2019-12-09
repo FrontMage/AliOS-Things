@@ -1,8 +1,17 @@
-# Copyright (C) 2017 GreenWaves Technologies
-# All rights reserved.
+# Copyright 2019 GreenWaves Technologies, SAS
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# This software may be modified and distributed under the terms
-# of the BSD license.  See the LICENSE file for details.
 
 
 NAME := gap_face_reid
@@ -10,19 +19,53 @@ NAME := gap_face_reid
 APP_PATH = app/example/gap_face_reid
 GAP8_PATH = platform/mcu/gap8
 PMSIS_BSP_ROOT = $(GAP8_PATH)/pmsis_bsp
-TILER_PATH = $(GAP8_PATH)/autotiler
+TILER_PATH = $(GAP8_PATH)/autotiler_v3
 TILER_LIB = $(TILER_PATH)/lib/libtile.a
 TILER_INC = $(TILER_PATH)/include
 TILER_GENERATOR_PATH = $(TILER_PATH)/generators
 CNN_GEN_PATH = $(TILER_GENERATOR_PATH)/CNN
 CNN_KER_PATH = $(TILER_GENERATOR_PATH)/CNN
 
-APP_CFLAGS += -g -D__PMSIS__ -Os -DGAPOC=1 #-DPRINTF_GVSOC
+APP_CFLAGS += -g -D__PMSIS__ -Os -D_FOR_GAPOC_=1 #-DPRINTF_GVSOC
 APP_CFLAGS += -Wno-unused-but-set-variable -Wno-unused-variable
 
 USE_PMSIS=1
 USE_AUTOTILER=1
+BOARD_NAME=gapoc_a
 
+ifeq ($(STATIC_FACE_DB),1)
+  FACE_DB_SIZE=$(shell wc -l < ./known_faces/index.txt)
+  ifeq ($(FACE_DB_SIZE),)
+    $(error known_faces/index.txt file doesn't exist! Please add people names there)
+  endif
+  ifeq ($(BLE_NOTIFIER),1)
+    APP_SRCS += StaticUserManagerBleNotifier.c
+    APP_CFLAGS += -DBLE_NOTIFIER=1
+  else
+    APP_SRCS += StaticUserManager.c
+  endif
+
+  DATA_FILES += ./known_faces/index.txt ./known_faces/*.bin
+  APP_CFLAGS += -DSTATIC_FACE_DB=1 -DFACE_DB_SIZE=$(FACE_DB_SIZE)
+else
+  ifeq ($(BOARD_NAME),gapoc_a)
+    APP_SRCS += BleUserManager.c strangers_db.c
+    APP_CFLAGS += -DUSE_BLE_USER_MANAGEMENT=1
+  endif
+endif
+
+ifeq ($(DUMP_SUCCESSFUL_FRAME),1)
+  APP_CFLAGS += -DDUMP_SUCCESSFUL_FRAME=1
+endif
+
+ifeq ($(DUMP_SUCCESSFUL_FRAME),1)
+prepare_debug:
+	mkdir -p dumps
+	rm -rf dumps/*
+else
+prepare_debug:
+	true
+endif
 
 ########################################
 #
@@ -102,6 +145,7 @@ $(NAME)_SOURCES := main.c ImageDraw.c
 $(NAME)_SOURCES += $(FACE_DET_SRCS)
 $(NAME)_SOURCES += $(REID_SRCS)
 $(NAME)_SOURCES += $(RESIZE_SRCS)
+$(NAME)_SOURCES += $(APP_SRCS)
 
 GLOBAL_CFLAGS += $(APP_CFLAGS)
 

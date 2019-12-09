@@ -1,11 +1,24 @@
+/*
+ * Copyright 2019 GreenWaves Technologies, SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "face_db.h"
 #include "Gap.h"
 #include "dnn_utils.h"
 
 #include <fcntl.h>
-#if HAVE_BRIDGE
-#include "bridge_stubs.h"
-#endif
 
 #ifdef STATIC_FACE_DB
 int identified_people = FACE_DB_SIZE;
@@ -16,25 +29,11 @@ int identified_people = 0;
 short PeopleDescriptors[FACE_DB_SIZE][FACE_DESCRIPTOR_SIZE];
 char PeopleNames[FACE_DB_SIZE][16];
 
-unsigned int l2_distance(short* v1, short* v2)
-{
-    unsigned int sum = 0;
-
-    for (int i = 0; i < FACE_DESCRIPTOR_SIZE; i++)
-    {
-        int delta = v1[i]-v2[i];
-        sum += delta*delta;
-    }
-
-    return sum;
-}
-
 int load_static_db(struct pi_device * fs)
 {
     char buffer[64];
     int descriptors = 0;
     int names = 0;
-    int size;
 
     PRINTF("Reading face descriptors\n");
     for(int i = 0; i < FACE_DB_SIZE; i++)
@@ -95,7 +94,6 @@ int identify_by_db(short* descriptor, char** name)
 {
     if(identified_people == 0)
     {
-        printf("identified_people ==0\n");
         return -1;
     }
 
@@ -105,7 +103,7 @@ int identify_by_db(short* descriptor, char** name)
     for(int i = 0; i < identified_people; i++)
     {
         unsigned int l2 = l2_distance(PeopleDescriptors[i], descriptor);
-        printf("L2 distance for %d (%s): %u\n", i, PeopleNames[i], l2);
+        PRINTF("L2 distance for %d (%s): %u\n", i, PeopleNames[i], l2);
         if(l2 < min_l2)
         {
             min_l2 = l2;
@@ -113,7 +111,7 @@ int identify_by_db(short* descriptor, char** name)
         }
     }
 
-    printf("Found person with index %d from %d people\n", min_l2_idx, identified_people);
+    PRINTF("Found person with index %d from %d people\n", min_l2_idx, identified_people);
 
     *name = PeopleNames[min_l2_idx];
     return min_l2;

@@ -1,10 +1,17 @@
 /*
- * Copyright (C) 2017 GreenWaves Technologies
- * All rights reserved.
+ * Copyright 2019 GreenWaves Technologies, SAS
  *
- * This software may be modified and distributed under the terms
- * of the BSD license.  See the LICENSE file for details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <stdio.h>
@@ -217,7 +224,6 @@ static void WritePPMHeader(int FD, unsigned int W, unsigned int H)
   }
 int WriteImageToFile(char *ImageName, unsigned int W, unsigned int H, unsigned char *OutBuffer)
 {
-	#define CHUNK_NUM 10
 	int File = rt_bridge_open(ImageName, O_RDWR | O_CREAT, S_IRWXU, NULL);
 	int ret = 0;
 	WritePPMHeader(File,W,H);

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 GreenWaves Technologies, SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "pmsis.h"
 
 #include "Gap.h"
@@ -13,7 +29,7 @@
 //Permanently Store a scascade stage to L1
 single_cascade_t* sync_copy_cascade_stage_to_l1(single_cascade_t* cascade_l2)
 {
-    cl_dma_copy_t DmaR_Evt1;
+    pi_cl_dma_copy_t DmaR_Evt1;
 
     single_cascade_t* cascade_l1;
     cascade_l1 = (single_cascade_t* )pmsis_l1_malloc( sizeof(single_cascade_t));
@@ -22,31 +38,31 @@ single_cascade_t* sync_copy_cascade_stage_to_l1(single_cascade_t* cascade_l2)
     cascade_l1->rectangles_size = cascade_l2->rectangles_size;
 
     cascade_l1->thresholds     = (short*)pmsis_l1_malloc( sizeof(short)*cascade_l2->stage_size);
-    __cl_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-    cl_dma_wait(&DmaR_Evt1);
+    pi_cl_dma_cmd((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, &DmaR_Evt1);
+    pi_cl_dma_cmd_wait(&DmaR_Evt1);
 
     cascade_l1->alpha1         = (short*)pmsis_l1_malloc( sizeof(short)*cascade_l2->stage_size);
-    __cl_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-    cl_dma_wait(&DmaR_Evt1);
+    pi_cl_dma_cmd((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, &DmaR_Evt1);
+    pi_cl_dma_cmd_wait(&DmaR_Evt1);
 
     cascade_l1->alpha2         = (short*)pmsis_l1_malloc( sizeof(short)*cascade_l2->stage_size);
-    __cl_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-    cl_dma_wait(&DmaR_Evt1);
+    pi_cl_dma_cmd((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, &DmaR_Evt1);
+    pi_cl_dma_cmd_wait(&DmaR_Evt1);
 
     cascade_l1->rect_num       = (unsigned  short*)pmsis_l1_malloc( sizeof(unsigned short)*((cascade_l2->stage_size)+1));
-    __cl_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-    cl_dma_wait(&DmaR_Evt1);
+    pi_cl_dma_cmd((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), PI_CL_DMA_DIR_EXT2LOC, &DmaR_Evt1);
+    pi_cl_dma_cmd_wait(&DmaR_Evt1);
 
     cascade_l1->weights    = (signed char*)pmsis_l1_malloc( sizeof(signed char)*(cascade_l2->rectangles_size/4));
-    __cl_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-    cl_dma_wait(&DmaR_Evt1);
+    pi_cl_dma_cmd((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), PI_CL_DMA_DIR_EXT2LOC, &DmaR_Evt1);
+    pi_cl_dma_cmd_wait(&DmaR_Evt1);
 
     cascade_l1->rectangles = (char*)pmsis_l1_malloc( sizeof(char)*cascade_l2->rectangles_size);
-    __cl_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-    cl_dma_wait(&DmaR_Evt1);
+    pi_cl_dma_cmd((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, PI_CL_DMA_DIR_EXT2LOC, &DmaR_Evt1);
+    pi_cl_dma_cmd_wait(&DmaR_Evt1);
 
     if(cascade_l1->rectangles==0)
-        printf("Allocation Error...\n");
+        PRINTF("Allocation Error...\n");
 
     return cascade_l1;
 }
@@ -56,7 +72,7 @@ cascade_t *getFaceCascade(){
 
     face_cascade = (cascade_t*) pmsis_l1_malloc( sizeof(cascade_t));
     if(face_cascade==0){
-        printf("Error allocatin model thresholds...");
+        PRINTF("Error allocatin model thresholds...");
         return 0;
     }
     single_cascade_t **model_stages = (single_cascade_t**) pmsis_l1_malloc( sizeof(single_cascade_t*)*CASCADE_TOTAL_STAGES);
@@ -64,7 +80,7 @@ cascade_t *getFaceCascade(){
     face_cascade->stages_num = CASCADE_TOTAL_STAGES;
     face_cascade->thresholds = (signed short *) pmsis_l1_malloc( sizeof(signed short )*face_cascade->stages_num);
     if(face_cascade->thresholds==0){
-        printf("Error allocatin model thresholds...");
+        PRINTF("Error allocatin model thresholds...");
         return 0;
     }
 
@@ -129,7 +145,7 @@ cascade_t *getFaceCascade(){
     face_cascade->stages = model_stages;
 
     int max_cascade_size = biggest_cascade_stage(face_cascade);
-    printf("Max cascade size:%d\n",max_cascade_size);
+    PRINTF("Max cascade size:%d\n",max_cascade_size);
 
     for(int i=0; i<CASCADE_STAGES_L1; i++)
         face_cascade->stages[i] = sync_copy_cascade_stage_to_l1((face_cascade->stages[i]));
@@ -138,11 +154,11 @@ cascade_t *getFaceCascade(){
     face_cascade->buffers_l1[1] = pmsis_l1_malloc(max_cascade_size);
 
     if(face_cascade->buffers_l1[0]==0 ){
-        printf("Error allocating cascade buffer 0...\n");
+        PRINTF("Error allocating cascade buffer 0...\n");
     }
 
     if(face_cascade->buffers_l1[1] == 0){
-        printf("Error allocating cascade buffer 1...\n");
+        PRINTF("Error allocating cascade buffer 1...\n");
     }
 
 
@@ -171,7 +187,7 @@ int biggest_cascade_stage(cascade_t *cascade){
 
         if(cur_layer>biggest_stage_size)
                 biggest_stage_size=cur_layer;
-        //printf ("Stage size: %d\n",cur_layer);
+        //PRINTF ("Stage size: %d\n",cur_layer);
     }
 
     return biggest_stage_size;
@@ -189,7 +205,7 @@ int rect_intersect_area(unsigned short a_x, unsigned short a_y, unsigned short a
     int size_x = MIN(a_x+a_w,b_x+b_w) - x;
     int size_y = MIN(a_y+a_h,b_y+b_h) - y;
 
-    if(size_x <=0 || size_x <=0)
+    if(size_x <=0 || size_y <=0)
         return 0;
     else
         return size_x*size_y;
@@ -262,7 +278,7 @@ void cascade_detect(ArgCluster_T *ArgC)
                 reponses[reponse_idx].score   = result;
                 reponses[reponse_idx].layer_idx = 0;
                 reponse_idx++;
-                printf("Face Found on layer 1 in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
+                PRINTF("Face Found on layer 1 in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
             }
         }
 #endif
@@ -287,7 +303,7 @@ void cascade_detect(ArgCluster_T *ArgC)
                 reponses[reponse_idx].score = result;
                 reponses[reponse_idx].layer_idx = 1;
                 reponse_idx++;
-                printf("Face Found on layer 2 in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
+                PRINTF("Face Found on layer 2 in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
             }
         }
 #endif
@@ -312,7 +328,7 @@ void cascade_detect(ArgCluster_T *ArgC)
                 reponses[reponse_idx].score = result;
                 reponses[reponse_idx].layer_idx = 2;
                 reponse_idx++;
-                printf("Face Found on layer 3 in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
+                PRINTF("Face Found on layer 3 in %dx%d at X: %d, Y: %d - value: %d\n",Wout,Hout,j,i,result);
             }
         }
 #endif

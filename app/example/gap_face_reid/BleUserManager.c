@@ -1,8 +1,25 @@
+/*
+ * Copyright 2019 GreenWaves Technologies, SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "bsp/gapoc_a.h"
+#include "bsp/ram/hyperram.h"
 #include "bsp/ble/nina_b112/nina_b112.h"
 
 #include "setup.h"
-#include "BLE_user_manager.h"
+#include "BleUserManager.h"
 #include "ble_protocol.h"
 #include "strangers_db.h"
 #include "face_db.h"
@@ -13,6 +30,8 @@ uint8_t ack = BLE_ACK;
 uint8_t action = 0;
 volatile uint8_t ble_exit = 0;
 
+//#define PRINTF(...) pi_time_wait_us(1*1000)
+
 typedef struct BleContext_T
 {
     int queue_head;
@@ -22,7 +41,7 @@ typedef struct BleContext_T
     int face_chunk_idx;
     int descriptor_chank_idx;
     struct pi_device* display;
-    nina_ble_t* ble;
+    pi_nina_ble_t* ble;
     Stranger* l2_strangers;
     char* current_name;
     short* current_descriptor;
@@ -42,41 +61,41 @@ void ble_protocol_handler(void* params)
 
             if(context->queue_head != context->queue_tail)
             {
-#if HAVE_DISPLAY
+#if defined(HAVE_DISPLAY)
                 char message[32];
                 sprintf(message, "Sending %d/%d", context->queue_head+1, context->queue_tail);
-                setCursor(context->display,0, 220);
+                setCursor(context->display, 0, 220);
                 writeFillRect(context->display, 0, 220, 240, 8*2, 0xFFFF);
                 writeText(context->display, message, 2);
 #endif
 
                 // there is something in queue
                 context->read_mode = 1;
-                nina_b112_send_data_blocking(context->ble, &ack, 1);
+                pi_nina_b112_send_data_blocking(context->ble, &ack, 1);
                 PRINTF("BLE_ACK responded\n");
             }
             else
             {
                 PRINTF("Nothing to read\n");
-#if HAVE_DISPLAY
-                setCursor(context->display,0, 220);
+#if defined(HAVE_DISPLAY)
+                setCursor(context->display, 0, 220);
                 writeFillRect(context->display, 0, 220, 240, 8*2, 0xFFFF);
                 writeText(context->display, "Ready", 2);
 #endif
-                nina_b112_send_data_blocking(context->ble, &empty_response, 1);
+                pi_nina_b112_send_data_blocking(context->ble, &empty_response, 1);
             }
             break;
         case BLE_GET_NAME:
             PRINTF("BLE_GET_NAME request got\n");
             if(context->read_mode && (context->queue_head != context->queue_tail)) // we are reading and have something in queue
             {
-                nina_b112_send_data_blocking(context->ble, (uint8_t *) context->l2_strangers[context->queue_head].name, 16);
+                pi_nina_b112_send_data_blocking(context->ble, (uint8_t *) context->l2_strangers[context->queue_head].name, 16);
                 PRINTF("Name %s responded\n", context->l2_strangers[context->queue_head].name);
             }
             else
             {
                 PRINTF("ERROR: Empty respond sent\n");
-                nina_b112_send_data_blocking(context->ble, &empty_response, 1);
+                pi_nina_b112_send_data_blocking(context->ble, &empty_response, 1);
             }
             break;
         case BLE_GET_PHOTO:
@@ -85,7 +104,7 @@ void ble_protocol_handler(void* params)
             {
                 char* ptr = (char *) (context->l2_strangers[context->queue_head].preview + context->face_chunk_idx * DATA_CHANK_SIZE);
                 int size = MIN(DATA_CHANK_SIZE, 128 * 128 - context->face_chunk_idx * DATA_CHANK_SIZE);
-                nina_b112_send_data_blocking(context->ble,(uint8_t *) ptr, size);
+                pi_nina_b112_send_data_blocking(context->ble,(uint8_t *) ptr, size);
                 context->face_chunk_idx++;
                 int iters = (128*128 + DATA_CHANK_SIZE-1) / DATA_CHANK_SIZE;
                 if(context->face_chunk_idx >= iters)
@@ -98,20 +117,20 @@ void ble_protocol_handler(void* params)
             else
             {
                 PRINTF("ERROR: Empty respond sent\n");
-                nina_b112_send_data_blocking(context->ble,&empty_response, 1);
+                pi_nina_b112_send_data_blocking(context->ble,&empty_response, 1);
             }
             break;
         case BLE_GET_DESCRIPTOR:
             PRINTF("BLE_GET_DESCRIPTOR request got\n");
             if(context->read_mode && (context->queue_head != context->queue_tail)) // we are reading and have something in queue
             {
-                nina_b112_send_data_blocking(context->ble,(uint8_t *) context->l2_strangers[context->queue_head].descriptor, 512*sizeof(short));
+                pi_nina_b112_send_data_blocking(context->ble,(uint8_t *) context->l2_strangers[context->queue_head].descriptor, 512*sizeof(short));
                 PRINTF("Face descriptor sent for %s\n", context->l2_strangers[context->queue_head].name);
             }
             else
             {
                 PRINTF("ERROR: Empty respond sent\n");
-                nina_b112_send_data_blocking(context->ble, &empty_response, 1);
+                pi_nina_b112_send_data_blocking(context->ble, &empty_response, 1);
             }
             break;
         case BLE_REMOVE:
@@ -121,12 +140,12 @@ void ble_protocol_handler(void* params)
                 context->read_mode = 0;
                 context->queue_head++;
                 PRINTF("Queue head: %d, Queue tail: %d\n", context->queue_head, context->queue_tail);
-                nina_b112_send_data_blocking(context->ble, &ack, 1);
+                pi_nina_b112_send_data_blocking(context->ble, &ack, 1);
                 PRINTF("BLE_ACK responded\n");
             }
             else
             {
-                nina_b112_send_data_blocking(context->ble, &empty_response, 1);
+                pi_nina_b112_send_data_blocking(context->ble, &empty_response, 1);
                 PRINTF("ERROR: Empty respond sent\n");
             }
             break;
@@ -134,15 +153,15 @@ void ble_protocol_handler(void* params)
         case BLE_WRITE:
             PRINTF("BLE_WRITE request got\n");
             context->write_mode = 1;
-            nina_b112_send_data_blocking(context->ble, &ack, 1);
+            pi_nina_b112_send_data_blocking(context->ble, &ack, 1);
             PRINTF("BLE_ACK responded\n");
             break;
         case BLE_SET_NAME:
-            nina_b112_get_data_blocking(context->ble, (uint8_t *) context->current_name, 16);
+            pi_nina_b112_get_data_blocking(context->ble, (uint8_t *) context->current_name, 16);
             context->current_name[15] = '\0';
             PRINTF("Name %s got\n", context->current_name);
 
-            nina_b112_send_data_blocking(context->ble, (uint8_t *)  &ack, 1);
+            pi_nina_b112_send_data_blocking(context->ble, (uint8_t *)  &ack, 1);
             PRINTF("BLE_ACK responded\n");
             if (context->write_mode && (context->queue_head != context->queue_tail))
             {
@@ -153,14 +172,14 @@ void ble_protocol_handler(void* params)
         {
             // In GAP side, you don't need to devide it into package size,
             // you can program the udma for 1K, than the uDMA will wait for each package
-            nina_b112_get_data_blocking(context->ble, (uint8_t *) context->current_descriptor, 512*sizeof(short));
+            pi_nina_b112_get_data_blocking(context->ble, (uint8_t *) context->current_descriptor, 512*sizeof(short));
             PRINTF("BLE_SET_DESCRIPTOR request got\n");
             PRINTF("Got face descriptor\n");
 
             // Add to Known People DB here
             add_to_db(context->current_descriptor, context->current_name);
 
-            nina_b112_send_data_blocking(context->ble, (uint8_t *)  &ack, 1);
+            pi_nina_b112_send_data_blocking(context->ble, (uint8_t *)  &ack, 1);
             PRINTF("BLE_ACK responded\n");
         } break;
 
@@ -178,7 +197,7 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
 {
     PRINTF("Starting Admin (BLE) body\n");
 
-    uint8_t rx_buffer[AT_RESP_ARRAY_LENGTH];
+    uint8_t rx_buffer[PI_AT_RESP_ARRAY_LENGTH];
 
     BleContext context;
 
@@ -188,8 +207,8 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
 
     context.display = display;
 
-#if HAVE_DISPLAY
-    setCursor(display,0, 220);
+#if defined(HAVE_DISPLAY)
+    setCursor(display, 0, 220);
     writeFillRect(context.display, 0, LCD_OFF_Y, 240, 320, 0xFFFF);
     writeText(display, "Loading Photos", 2);
 #endif
@@ -202,31 +221,18 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
     context.l2_strangers = (Stranger*) (memory_pool + 512 + 16/sizeof(short));
     Stranger* current_stranger = context.l2_strangers;
     char* previews = (char*) &context.l2_strangers[context.queue_tail+1]; // right after the last structure
-    short* descriptors = previews + 128*128*context.queue_tail;
+
+    PRINTF("Getting the first stranger from queue\n");
 
     for(int i = 0; i < context.queue_tail; i++)
     {
         context.l2_strangers[i].preview = previews + i*128*128;
-        context.l2_strangers[i].descriptor = descriptors + i*512;
-    }
-
-    PRINTF("Getting the first stranger from queue\n");
-    if(getFirstStranger(current_stranger) == 0)
-    {
-        PRINTF("Name: %s\n", current_stranger->name);
-        current_stranger++;
-        PRINTF("Getting the next one\n");
-        while(getNextStranger(current_stranger) == 0)
-        {
-            PRINTF("Name: %s\n", current_stranger->name);
-            PRINTF("Getting the next one\n");
-            current_stranger++;
-        }
+        getStranger(i, &context.l2_strangers[i]);
     }
 
     PRINTF("Switching to UART mode\n");
-#if HAVE_DISPLAY
-    setCursor(display,0, 220);
+#if defined(HAVE_DISPLAY)
+    setCursor(display, 0, 220);
     writeFillRect(context.display, 0, LCD_OFF_Y, 240, 320, 0xFFFF);
     writeText(display, "Enabling BLE", 2);
 #endif
@@ -250,8 +256,9 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
     GAPOC_AnyPin_Config( B7, NOPULL, uPORT_MuxAlt0 );  // pin GAP_B7 keeps default function = SPIM0_SCK (output)
     #endif
 
-    nina_ble_t ble;
-    nina_b112_open(&ble);
+    pi_nina_ble_t ble;
+    pi_nina_b112_open(&ble);
+
 
     PRINTF("BLE UART init done\n");
 
@@ -267,10 +274,10 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
     GAPOC_GPIO_Init_HighZ(GPIO_A1_B2);
     #else
     // Init GPIO that will control NINA DSR in deasserted position
-    rt_gpio_set_pin_value(0, GPIOA21_NINA17, 0);
+    pi_gpio_pin_write(0, GPIOA21_NINA17, 0);
 
     // Enable BLE (release reset)
-    rt_gpio_set_pin_value(0, GPIOA2_NINA_RST, 1);
+    pi_gpio_pin_write(0, GPIOA2_NINA_RST, 1);
 
     pi_time_wait_us(1*1000*1000);
     #endif
@@ -278,26 +285,26 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
     // Initiliaze NINA as BLE Peripheral
 
     PRINTF("Sending cmd using pmsis bsp\n");
-    nina_b112_AT_send(&ble, "E0");
+    pi_nina_b112_AT_send(&ble, "E0");
     PRINTF("Echo disabled\n");
-    nina_b112_AT_send(&ble, "+UFACTORY");
+    pi_nina_b112_AT_send(&ble, "+UFACTORY");
     PRINTF("Factory configuration restored\n");
-    nina_b112_AT_send(&ble, "+UBTUB=FFFFFFFFFFFF");
+    pi_nina_b112_AT_send(&ble, "+UBTUB=FFFFFFFFFFFF");
     PRINTF("Set UBTUB\n");
-    nina_b112_AT_send(&ble, "+UBTLE=2");
+    pi_nina_b112_AT_send(&ble, "+UBTLE=2");
     PRINTF("Set UBTLE\n");
-    nina_b112_AT_send(&ble, "+UBTLN=GreenWaves-GAPOC");
+    pi_nina_b112_AT_send(&ble, "+UBTLN=GreenWaves-GAPOC");
     PRINTF("Set UBTLN\n");
-    nina_b112_AT_query(&ble, "+UMRS?", (char *) rx_buffer);
+    pi_nina_b112_AT_query(&ble, "+UMRS?", (char *) rx_buffer);
     PRINTF("BLE configuration : %s\n", rx_buffer);
-    nina_b112_AT_query(&ble, "+UBTLN?", (char *) rx_buffer);
+    pi_nina_b112_AT_query(&ble, "+UBTLN?", (char *) rx_buffer);
     PRINTF("BLE name : %s\n", rx_buffer);
     //nina_b112_close(&ble);
 
     PRINTF("AT Config Done\n");
 
-#if HAVE_DISPLAY
-    setCursor(0, 220);
+#if defined(HAVE_DISPLAY)
+    setCursor(display, 0, 220);
     writeFillRect(display, 0, 220, 240, 8*2, 0xFFFF);
     writeText(display, "Waiting for client", 2);
 #endif
@@ -307,15 +314,15 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
     // (...but sometimes just provides empty event instead !?)
 
     // Just make sure NINA sends something as AT unsolicited response, therefore is ready :
-    nina_b112_wait_for_event(&ble, rx_buffer);
+    pi_nina_b112_wait_for_event(&ble, rx_buffer);
     PRINTF("Received Event after reboot: %s\n", rx_buffer);
 
     // Enter Data Mode
-    nina_b112_AT_send(&ble, "O");
+    pi_nina_b112_AT_send(&ble, "O");
     PRINTF("Data Mode Entered!\n");
 
-#if HAVE_DISPLAY
-    setCursor(display,0, 220);
+#if defined(HAVE_DISPLAY)
+    setCursor(display, 0, 220);
     writeFillRect(display, 0, 220, 240, 8*2, 0xFFFF);
     writeText(display, "Client connected", 2);
 #endif
@@ -330,7 +337,7 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
 
     struct pi_task ble_command_task;
 
-    pi_gpio_pin_notif_clear(&gpio_port, button_pin);
+    pi_gpio_pin_notif_clear(gpio_port, button_pin);
 
     while(!ble_exit)
     {
@@ -342,18 +349,18 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
         }
         else
         {
-            nina_b112_get_data(&ble, &action, 1, pi_task_callback(&ble_command_task, ble_protocol_handler, &context));
+            pi_nina_b112_get_data(&ble, &action, 1, pi_task_callback(&ble_command_task, ble_protocol_handler, &context));
             pi_yield();
         }
     }
 
-#if HAVE_DISPLAY
-    setCursor(display,0, 220);
+#if defined(HAVE_DISPLAY)
+    setCursor(display, 0, 220);
     writeFillRect(display, 0, 220, 240, 8*2, 0xFFFF);
     writeText(display, "Disabling BLE", 2);
 #endif
 
-    nina_b112_close(&ble);
+    pi_nina_b112_close(&ble);
 
     PRINTF("Switching back to HYPERRAM mode\n");
     pi_pad_set_function(CONFIG_HYPERBUS_DATA6_PAD, CONFIG_HYPERRAM_DATA6_PAD_FUNC);
@@ -361,6 +368,46 @@ void admin_body(struct pi_device *display, struct pi_device* gpio_port, uint8_t 
     PRINTF("Dropping strangers info fro L3\n");
     dropStrangers();
     PRINTF("Exiting admin (BLE) mode\n");
+}
+
+uint32_t preview_hyper;
+
+int initHandler(struct pi_device * gpio_port)
+{
+    PRINTF("Setting button handler..\n");
+    if(pi_gpio_pin_configure(gpio_port, BUTTON_PIN_ID, PI_GPIO_INPUT))
+    {
+        PRINTF("Error: cannot configure pin\n");
+        return 0;
+    }
+    pi_gpio_pin_notif_configure(gpio_port, BUTTON_PIN_ID, PI_GPIO_NOTIF_FALL);
+
+    pi_ram_alloc(&HyperRam, &preview_hyper, 128*128);
+
+    PRINTF("Setting button handler..done\n");
+
+    return !0;
+}
+
+int prepareStranger(void* preview)
+{
+    int iterations = 128*128 / 1024;
+    for(int i = 0; i < iterations; i++)
+    {
+        pi_ram_write(&HyperRam, preview_hyper+i*1024, ((char*)preview) + i*1024, 1024);
+    }
+
+    return 0;
+}
+
+int handleStranger(short* descriptor)
+{
+    int status = addStrangerL3(preview_hyper, descriptor);
+    if (status == 0)
+    {
+        pi_ram_alloc(&HyperRam, &preview_hyper, 128*128);
+    }
+    return status;
 }
 
 #undef MIN

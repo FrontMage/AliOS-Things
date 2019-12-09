@@ -1,10 +1,17 @@
 /*
- * Copyright (C) 2017 GreenWaves Technologies
- * All rights reserved.
+ * Copyright 2019 GreenWaves Technologies, SAS
  *
- * This software may be modified and distributed under the terms
- * of the BSD license.  See the LICENSE file for details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <stdio.h>
@@ -36,10 +43,6 @@ void KerResizeBilinearShort(KerResizeBilinearShort_ArgT *Arg)
     unsigned int FirstLineIndex      = Arg->FirstLineIndex;
 
     unsigned int CoreId = gap_coreid();
-    if(CoreId == 0)
-    {
-        printf("out:%p Htileout:%i wout:%i\n",Out,HTileOut,Wout);
-    }
     unsigned int ChunkCell = ChunkSize(Wout);
     unsigned int First = CoreId*ChunkCell, Last  = Min(Wout, First+ChunkCell);
 
@@ -65,11 +68,8 @@ void KerResizeBilinearShort(KerResizeBilinearShort_ArgT *Arg)
                     unsigned int P2 = In[(offsetY + 1)*Win + offsetX    ];
                     unsigned int P3 = In[offsetY*Win       + offsetX + 1];
                     unsigned int P4 = In[(offsetY + 1)*Win + offsetX + 1];
+
                     unsigned char tmp = ((P1*hc1 + P2*hc2)*wc1 + (P3*hc1 + P4*hc2)*wc2) >> 14;
-                    if(CoreId == 0)
-                    {
-                        //printf("addr Out:%p y=%i\n",&Out[y*Wout + x],y);
-                    }
                     Out[y*Wout + x] = tmp;
                     wCoeff += WStep;
             }

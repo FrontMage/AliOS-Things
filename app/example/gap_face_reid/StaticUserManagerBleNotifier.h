@@ -14,27 +14,15 @@
  * limitations under the License.
  */
 
-#ifndef __PARAM_LAYERS_STRUCT_H__
-#define __PARAM_LAYERS_STRUCT_H__
+#ifndef __STATIC_USER_MANAGER_BLE_NOTIFIER_H__
+#define __STATIC_USER_MANAGER_BLE_NOTIFIER_H__
 
-struct param_conv_layer {
-  int nb_if;
-  int nb_of;
-  int win;
-  int hin;
-  int kernel_width;
-  int kernel_height;
-  char relu;
-  char max_pool;
-  char pool_size;
-  char pool_stride;
-  char norm_data;
-  char conv_padding;
-  char conv_stride;
-  char* name;
-};
+#include "pmsis.h"
+#include "strangers_db.h"
 
-#define NB_CONV 26
-extern struct param_conv_layer convLayers[NB_CONV];
+int initHandler(struct pi_device* fs, struct pi_device* display);
+int handleStranger(short* descriptor);
+int handleUser(char* name);
+void closeHandler();
 
 #endif

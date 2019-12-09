@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 GreenWaves Technologies, SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "cascade.h"
 
@@ -468,7 +483,10 @@ single_cascade_t stage_24 = {
 };
 
 
+//Multiplied by 1.5
+//signed short model_thresholds[] = {-1935, -1912, -1786, -1710, -1683, -1585, -1543, -1491, -1474, -1399, -1485, -1426, -1368, -1420, -1315, -1348, -1380, -1302, -1243, -1231, -1257, -1273, -1249, -1293, -1149};
 
+//Standard
 signed short model_thresholds[] = {-1290, -1275, -1191, -1140, -1122, -1057, -1029, -994, -983, -933, -990, -951, -912, -947, -877, -899, -920, -868, -829, -821, -838, -849, -833, -862, -766};
 
 

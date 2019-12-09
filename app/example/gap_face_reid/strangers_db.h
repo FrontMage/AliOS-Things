@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-#ifndef __PARAM_LAYERS_STRUCT_H__
-#define __PARAM_LAYERS_STRUCT_H__
+#ifndef __STRANGERS_DB_H__
+#define __STRANGERS_DB_H__
 
-struct param_conv_layer {
-  int nb_if;
-  int nb_of;
-  int win;
-  int hin;
-  int kernel_width;
-  int kernel_height;
-  char relu;
-  char max_pool;
-  char pool_size;
-  char pool_stride;
-  char norm_data;
-  char conv_padding;
-  char conv_stride;
-  char* name;
-};
+#include "setup.h"
 
-#define NB_CONV 26
-extern struct param_conv_layer convLayers[NB_CONV];
+#define ALLOC_ERROR       1
+#define DB_FULL           2
+#define DUPLICATE_DROPPED 3
+
+typedef struct Stranger_T
+{
+    short descriptor[FACE_DESCRIPTOR_SIZE];
+    char  name[16];
+    char* preview;
+} Stranger;
+
+char addStrangerL2(char* preview, short* descriptor);
+char addStrangerL3(char* preview, short* descriptor);
+char getStranger(int idx, Stranger* s);
+void dropStrangers();
+char getStrangersCount();
 
 #endif

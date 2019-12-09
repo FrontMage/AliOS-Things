@@ -1,8 +1,23 @@
+/*
+ * Copyright 2019 GreenWaves Technologies, SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "param_layer_struct.h"
 #include "network_process_manual.h"
 #include "dnn_utils.h"
 #include "ExtraKernels.h"
-#include "ExtraBasicKernels.h"
 
 short int* l3_weights[NB_CONV];
 int weights_size[NB_CONV];
@@ -52,12 +67,13 @@ ConvLayerFunctionType ConvLayerArray[NB_CONV] =
 // Expected format: 128x128xshort
 short* network_init()
 {
-    L1_Memory =  pmsis_l1_malloc(_ExtraKernels_L1_Memory_SIZE);
+    L1_Memory =  pmsis_l1_malloc((_L1_Memory_SIZE>_ExtraKernels_L1_Memory_SIZE?_L1_Memory_SIZE:_ExtraKernels_L1_Memory_SIZE));
     if(L1_Memory == NULL)
     {
-        printf("L1 Working area alloc error\n");
+        PRINTF("L1 Working area alloc error\n");
         return NULL;
     }
+
     if(!__networ_init_done)
     {
         L2_Memory =  pmsis_l2_malloc(_L2_Memory_SIZE);
@@ -68,23 +84,18 @@ short* network_init()
         }
         __networ_init_done = 1;
     }
-    printf("ALLOC: L1 memory: %p, L2 memory:%p\n", L1_Memory, L2_Memory);
 
     return memory_pool;
 }
 
 void network_deinit()
 {
-    printf("DEINIT DONE!!!!\n");
-    printf("L1 memory: %p, L2 memory:%p\n", L1_Memory, L2_Memory);
     pmsis_l1_malloc_free(L1_Memory, _L1_Memory_SIZE);
-    pmsis_l2_malloc_free(L2_Memory, _L2_Memory_SIZE);
+    pmsis_l2_malloc_free(L2_Memory,  _L2_Memory_SIZE);
     __networ_init_done = 0;
 }
 
 #define MAX(a, b) (((a)>(b))?(a):(b))
-
-#define NETWORK_DEBUG
 
 short* network_process(int* activation_size)
 {
@@ -103,7 +114,7 @@ short* network_process(int* activation_size)
     //bias = weight_base_address;
     //loadLayerFromL3ToL2(&hyper, l3_weights[0], weights, weights_size[0]);
     //loadLayerFromL3ToL2(&HyperRam, l3_bias[0], bias, bias_size[0]);
-    printf("Conv1, %p, %p\n", l3_weights[0], l3_bias[0]);
+
     ConvLayer0(layer_input, l3_weights[0], l3_bias[0], layer_output, convLayers[0].norm_data);
 
 #ifdef STOP_AFTER_ConvLayer0
@@ -122,9 +133,8 @@ short* network_process(int* activation_size)
 
     //loadLayerFromL3ToL2(&hyper, l3_weights[1], weights, weights_size[1]);
     //loadLayerFromL3ToL2(&HyperRam, l3_bias[1], bias, bias_size[1]);
-    printf("Conv2\n");
+
     ConvLayer1(layer_input, l3_weights[1], l3_bias[1], layer_output, convLayers[1].norm_data);
-//    PRINTF("Conv layer1 done\n");
 
 #ifdef STOP_AFTER_ConvLayer1
     *activation_size = get_activations_size(1);
@@ -145,7 +155,7 @@ short* network_process(int* activation_size)
                      get_activations_size(fire_entry_idx+i+2);
 
 #ifdef NETWORK_DEBUG
-        PRINTF("Fire module iteration %d, layer %d\n", i/3, fire_entry_idx+i);
+        PRINTF("Fire module iteration %d\n", i/3);
         PRINTF("\tPrevious activation size: %d\n", previous_activation_size);
         PRINTF("\tConcatenated activation size: %d\n", concated_activation_size);
 #endif
@@ -206,7 +216,6 @@ short* network_process(int* activation_size)
         //bias = weight_base_address;
 #ifdef NETWORK_DEBUG
         PRINTF("\tE3x3\n");
-        PRINTF("\tfire_entry_idx: %d\n", fire_entry_idx+i+2);
         PRINTF("\tActivation size: %d\n", get_activations_size(fire_entry_idx+i+2));
         PRINTF("\tWeight size, bytes: %d\n", weights_size[fire_entry_idx+i+2]);
         PRINTF("\tBias size, bytes: %d\n", bias_size[fire_entry_idx+i+2]);
@@ -254,7 +263,7 @@ void network_free()
 {
     for (unsigned int i = 0; i < NB_CONV; i++)
     {
-        ram_free(&HyperRam, (uint32_t)l3_weights[i], weights_size[i]);
-        ram_free(&HyperRam, (uint32_t)l3_bias[i], bias_size[i]);
+        pi_ram_free(&HyperRam, (uint32_t)l3_weights[i], weights_size[i]);
+        pi_ram_free(&HyperRam, (uint32_t)l3_bias[i], bias_size[i]);
     }
 }

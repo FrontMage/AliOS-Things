@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 GreenWaves Technologies, SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "reid_pipeline.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -54,7 +70,6 @@ static void copy_roi(unsigned char* in, int WinStride, unsigned char* out, int W
 void reid_prepare_cluster(ArgClusterDnn_T* ArgC)
 {
     PRINTF("reid_cluster_main call\n");
-    char* name;
     int face_stride = CAMERA_WIDTH;
 
     unsigned char* face_ptr = ArgC->frame + ArgC->roi->y*CAMERA_WIDTH + ArgC->roi->x;
@@ -67,17 +82,17 @@ void reid_prepare_cluster(ArgClusterDnn_T* ArgC)
     {
         PRINTF("Cut face ROI from scale 1\n");
         copy_roi(face_ptr, CAMERA_WIDTH, ArgC->face, 152, 152);
-         PRINTF("CopyROI done\n");
+        // PRINTF("CopyROI done\n");
         ResizeImageForDnn_Scale1(ArgC->face, ArgC->scaled_face);
-         PRINTF("Resize done\n");
+        // PRINTF("Resize done\n");
     }
     else if(ArgC->roi->layer_idx == 2)
     {
         PRINTF("Cut face ROI from scale 2\n");
         copy_roi(face_ptr, CAMERA_WIDTH, ArgC->face, 194, 194);
-         PRINTF("CopyROI done\n");
+        // PRINTF("CopyROI done\n");
         ResizeImageForDnn_Scale2(ArgC->face, ArgC->scaled_face);
-         PRINTF("Resize done\n");
+        // PRINTF("Resize done\n");
     }
     else
     {
@@ -88,12 +103,13 @@ void reid_prepare_cluster(ArgClusterDnn_T* ArgC)
 
 void reid_inference_cluster(ArgClusterDnn_T* ArgC)
 {
-    //PRINTF("Start DNN inference\n");
-    unsigned int Ti;
-    // gap8_resethwtimer();
-    // Ti = gap8_readhwtimer();
+    PRINTF("Start DNN inference\n");
+    //gap_cl_starttimer();
+    //gap_cl_resethwtimer();
+    //unsigned int Ti = gap_cl_readhwtimer();
     ArgC->output = network_process(&ArgC->activation_size);
-    // Ti = gap8_readhwtimer() - Ti;
-    // PRINTF("Network Cycles: %d\n",Ti);
+    //Ti = gap_cl_readhwtimer() - Ti;
+    //ArgC->cycles = Ti;
+    //PRINTF("Network Cycles: %d\n",Ti);
     //PRINTF("DNN inference finished\n");
 }
