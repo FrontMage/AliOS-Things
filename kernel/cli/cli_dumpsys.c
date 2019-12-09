@@ -346,12 +346,12 @@ uint32_t dumpsys_func(char *pcWriteBuffer, int32_t xWriteBufferLen, int32_t argc
     }
 }
 
-static void task_cmd(char *buf, int len, int argc, char **argv)
+static void task_cmd(char *buf, int32_t len, int32_t argc, char **argv)
 {
     dumpsys_task_func(NULL, 0, 1);
 }
 
-static void dumpsys_cmd(char *buf, int len, int argc, char **argv)
+static void dumpsys_cmd(char *buf, int32_t len, int32_t argc, char **argv)
 {
     dumpsys_func(buf, len, argc, argv);
 }
