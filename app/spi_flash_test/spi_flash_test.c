@@ -8,14 +8,11 @@
 #include "gap_semihost.h"
 #include <aos/kernel.h>
 
-PI_L2 char write_string[] = {'h','e','l','l','o',' ','f','r','i','e','n','d','s','\n','\0'};
-
+// prepare L2 buffers to simplify
 PI_L2 volatile uint8_t data[256+5];
 PI_L2 volatile uint8_t data_r[256] = {0};
 
 PI_L2 pi_device_t qspi_dev0 = {0};
-
-PI_L2 uint32_t g_zero = 0;
 
 #define QSPI_FLASH_CS 0
 
@@ -30,9 +27,6 @@ PI_L2 uint32_t g_zero = 0;
 
 #define DUMMY_CYCLES 8
 
-//uint8_t g_set_qspif_dummy[] = {QSPIF_WR_EN_CMD, QSPIF_WR_READ_REG_CMD,
-//    QSPIF_DUMMY_CYCLES(DUMMY_CYCLES) | QSPIF_BURST_LEN(3) | QSPIF_BURST_ENA(1)};
-// set 2 dummy cycles @ 50MHz
 uint8_t g_set_qspif_dummy[] = {QSPIF_WR_READ_REG_CMD,
     QSPIF_DUMMY_CYCLES(DUMMY_CYCLES)};
 uint8_t g_enter_qpi_mode[] = {0x35,0,0,0};
@@ -49,7 +43,6 @@ int single_lanes_test()
 
     aos_msleep(1000);
     // Add wr enable, then send cmd, addr, and finally, data from index 5
-    //data[0] = QSPIF_WR_EN_CMD;
     data[0] = 0x02;
     data[1] = 0x0;
     data[2] = 0x10;
@@ -75,18 +68,12 @@ int single_lanes_test()
     pi_open_from_conf(&qspi_dev0, &spi_conf);
     int ret = pi_spi_open(&qspi_dev0);
 
-    // IO3 is gpio 27
-    pi_pad_set_function(PI_PAD_43_A10_SPIM0_SDIO3, 1);
-    hal_gpio_pin_enable(27, 0x1);
-    hal_gpio_pin_set_output_value(27, 1);
-    hal_gpio_pin_set_direction(27, 0x1);
-
     printf("ret=%x\n",ret);
 
     g_buf[0] = 0x9F;
     pi_spi_send(&qspi_dev0, (void*)&g_buf[0], 8, PI_SPI_LINES_SINGLE | PI_SPI_CS_KEEP);
     pi_spi_receive(&qspi_dev0, (void*)&g_buf[0], 8*3, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-    printf("jdec id reg[0]= %x, jdec id reg[1]= %x, jdec id reg[2]= %x\n",g_buf[0],g_buf[1],g_buf[2]);
+    printf("jdec id reg = %x:%x:%x\n",g_buf[0],g_buf[1],g_buf[2]);
     
     // Erase block 0
     g_buf[0] = QSPIF_WR_EN_CMD;
@@ -172,31 +159,20 @@ int qpi_flash_test(void)
     pi_open_from_conf(&qspi_dev0, &spi_conf);
     int ret = pi_spi_open(&qspi_dev0);
 
-    // IO3 is gpio 27 --> workaround hold/reset pin
-    pi_pad_set_function(PI_PAD_43_A10_SPIM0_SDIO3, 1);
-    hal_gpio_pin_enable(27, 0x1);
-    hal_gpio_pin_set_output_value(27, 1);
-    hal_gpio_pin_set_direction(27, 0x1);
-
     g_buf[0] = 0x9F; // jedec id: spi mode
     pi_spi_send(&qspi_dev0, (void*)&g_buf[0], 8, PI_SPI_LINES_SINGLE | PI_SPI_CS_KEEP);
     pi_spi_receive(&qspi_dev0, (void*)&g_buf[0], 8*3, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
     printf("jdec id reg = %x:%x:%x\n",g_buf[0],g_buf[1],g_buf[2]);
-#if 1
+    
     g_buf[0] = QSPIF_WR_EN_CMD;
     pi_spi_send(&qspi_dev0, (void*)g_buf, 8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
     pi_spi_send(&qspi_dev0, (void*)g_set_qspif_dummy, 2*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
     g_buf[0] = 0x61;
     // then QPI mode enter
     pi_spi_send(&qspi_dev0, (void*)g_enter_qpi_mode, 1*8, PI_SPI_LINES_SINGLE | PI_SPI_CS_AUTO);
-#endif
     // flash is now in QPI mode, with 2 dummy read cycles
-    // -------------------------------------------------
-    // reset IO3 pin to alt0   
-    pi_pad_set_function(PI_PAD_43_A10_SPIM0_SDIO3, 0);
-    // Erase block 0
- 
     
+    // Try to read id in QSPI mode to ensure switch worked
     g_buf[0] = 0xAF; //jedec id: qspi mode
     pi_spi_send(&qspi_dev0, (void*)&g_buf[0], 8, PI_SPI_LINES_QUAD | PI_SPI_CS_KEEP);
     pi_spi_receive(&qspi_dev0, (void*)&g_buf[0], 8*3, PI_SPI_LINES_QUAD | PI_SPI_CS_AUTO);
