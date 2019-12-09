@@ -49,7 +49,7 @@ static void test_kv_find(void)
 {
     int ret = 0;
     char buf[10] = {0};
-    int len = sizeof(buf);
+    int32_t len = sizeof(buf);
 
     ret = aos_kv_get(g_key_1,buf,&len);
     YUNIT_ASSERT(0 == ret);
@@ -72,7 +72,7 @@ static void test_kv_del(void)
 {
     int ret = 0;
     char buf[10] = {0};
-    int len = sizeof(buf);
+    int32_t len = sizeof(buf);
 
     ret = aos_kv_del(g_key_1);
     YUNIT_ASSERT(0 == ret);
