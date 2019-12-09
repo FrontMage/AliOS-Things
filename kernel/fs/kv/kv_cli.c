@@ -17,7 +17,7 @@ void kv_register_cli_command(void) {}
 
 extern kv_item_t *kv_item_traverse(item_func func, uint8_t blk_idx, const char *key);
 
-static int __item_print_cb(kv_item_t *item, const char *key)
+static int32_t __item_print_cb(kv_item_t *item, const char *key)
 {
     kv_size_t off;
 
@@ -50,12 +50,12 @@ static int __item_print_cb(kv_item_t *item, const char *key)
     return KV_LOOP_CONTINUE;
 }
 
-static void handle_kv_cmd(char *pwbuf, int blen, int argc, char **argv)
+static void handle_kv_cmd(char *pwbuf, int32_t blen, int32_t argc, char **argv)
 {
     int i   = 0;
     int num = 0;
     int res = KV_OK;
-    int len = KV_MAX_VAL_LEN;
+    int32_t len = KV_MAX_VAL_LEN;
 
     char *buffer = NULL;
 

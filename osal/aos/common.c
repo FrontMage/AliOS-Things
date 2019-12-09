@@ -31,7 +31,7 @@ void aos_srand(unsigned int seed)
 {
 #if !defined (ENABLE_RNG) && defined (AOS_COMP_KV)
     int           ret        = 0;
-    int           seed_len   = 0;
+    int32_t       seed_len   = 0;
     unsigned int  seed_val   = 0;
     static char  *g_seed_key = "seed_key";
 
