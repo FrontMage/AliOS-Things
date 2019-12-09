@@ -22,7 +22,7 @@ void gap8_breakout_flash_partition_init(pi_device_t *flash_dev)
 
     hal_partitions[HAL_PARTITION_PARAMETER_2].aos_partition.partition_owner       = HAL_FLASH_QSPI;
     hal_partitions[HAL_PARTITION_PARAMETER_2].aos_partition.partition_description = "KV object storage";
-    hal_partitions[HAL_PARTITION_PARAMETER_2].aos_partition.partition_start_addr  = 0x000A0000;
+    hal_partitions[HAL_PARTITION_PARAMETER_2].aos_partition.partition_start_addr  = 0x00080000;
     hal_partitions[HAL_PARTITION_PARAMETER_2].aos_partition.partition_length      = 0x8000; /* 32k bytes -- 4KB sectors */
     hal_partitions[HAL_PARTITION_PARAMETER_2].aos_partition.partition_options     = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN;
     hal_partitions[HAL_PARTITION_PARAMETER_2].flash_dev                           = flash_dev;
@@ -30,8 +30,8 @@ void gap8_breakout_flash_partition_init(pi_device_t *flash_dev)
 
     hal_partitions[HAL_PARTITION_SPIFFS].aos_partition.partition_owner          = HAL_FLASH_QSPI;
     hal_partitions[HAL_PARTITION_SPIFFS].aos_partition.partition_description    = "Spiffs data";
-    hal_partitions[HAL_PARTITION_SPIFFS].aos_partition.partition_start_addr     = 0x000A8000;
-    hal_partitions[HAL_PARTITION_SPIFFS].aos_partition.partition_length         = 0x00E00000; /* 15M bytes -- 4KB sectors*/
+    hal_partitions[HAL_PARTITION_SPIFFS].aos_partition.partition_start_addr     = 0x00088000;
+    hal_partitions[HAL_PARTITION_SPIFFS].aos_partition.partition_length         = 0x00F00000; /* 15M bytes -- 4KB sectors*/
     hal_partitions[HAL_PARTITION_SPIFFS].aos_partition.partition_options        = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN;
     hal_partitions[HAL_PARTITION_SPIFFS].flash_dev                              = flash_dev;
     hal_partitions[HAL_PARTITION_SPIFFS].sector_size                            = 0x1000;
