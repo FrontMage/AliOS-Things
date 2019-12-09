@@ -29,9 +29,8 @@ void board_init_debug_console(void)
 
 void board_init(void)
 {
-    printf("--- board init ---\n");
+#ifdef GAPUINO8_HYPERFLASH_SUPPORT
     aos_flash_init();
-    printf("flash init done\n");
     gapuino8_flash_partition_init(&pi_aos_flash_dev);
-    printf("--- board init done!\n");
+#endif
 }
