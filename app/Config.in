@@ -9,6 +9,18 @@ if AOS_APP_SPI_FLASH_TEST
         default "spi_flash_test"
 endif
 
+source "app/tools/gap_flasher/Config.in"
+if AOS_APP_GAP_FLASHER
+    config AOS_BUILD_APP
+        default "gap_flasher"
+endif
+
+source "app/tools/gap_fuser/Config.in"
+if AOS_APP_GAP_FUSER
+    config AOS_BUILD_APP
+        default "gap_fuser"
+endif
+
 ### Sample for user's application:
 ### The app's Config.in must be there before "source" it
 #
