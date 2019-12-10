@@ -15,4 +15,4 @@ IMG_SIZE=$(stat -c %s "$FLASH_IMG")
 
 BOARD_SCRIPT="board/$BOARD/$BOARD.cfg"
 
-openocd -c "script $BOARD_SCRIPT; gap_flash $FLASH_IMG $IMG_SIZE $GAP_TOOLS; exit;"
+openocd -c "script $BOARD_SCRIPT; gap_flash $FLASH_IMG $IMG_SIZE $GAP_TOOLS"
