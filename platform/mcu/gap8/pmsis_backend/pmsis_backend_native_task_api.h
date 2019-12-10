@@ -66,7 +66,7 @@ static inline void *__os_native_api_create_task(void (*entry)(void*),
 {
     ktask_t *dyn_task;
     // task is auitostarted
-    krhino_task_dyn_create(&dyn_task, name, arg, priority, 0, 1024, (task_entry_t)entry, 1);
+    krhino_task_dyn_create(&dyn_task, name, arg, priority, 0, 256, (task_entry_t)entry, 1);
     return (void*)dyn_task;
 }
 

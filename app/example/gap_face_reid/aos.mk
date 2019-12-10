@@ -16,6 +16,9 @@
 
 NAME := gap_face_reid
 
+APP_NAME := gap_face_reid
+BOARD_NAME := gapoc_a
+
 APP_PATH = app/example/gap_face_reid
 GAP8_PATH = platform/mcu/gap8
 PMSIS_BSP_ROOT = $(GAP8_PATH)/pmsis_bsp
@@ -26,12 +29,11 @@ TILER_GENERATOR_PATH = $(TILER_PATH)/generators
 CNN_GEN_PATH = $(TILER_GENERATOR_PATH)/CNN
 CNN_KER_PATH = $(TILER_GENERATOR_PATH)/CNN
 
-APP_CFLAGS += -g -D__PMSIS__ -Os -D_FOR_GAPOC_=1 #-DPRINTF_GVSOC
+APP_CFLAGS += -g -D__PMSIS__ -D_FOR_GAPOC_=1
 APP_CFLAGS += -Wno-unused-but-set-variable -Wno-unused-variable
 
 USE_PMSIS=1
 USE_AUTOTILER=1
-BOARD_NAME=gapoc_a
 
 ifeq ($(STATIC_FACE_DB),1)
   FACE_DB_SIZE=$(shell wc -l < ./known_faces/index.txt)
@@ -157,7 +159,13 @@ GLOBAL_INCLUDES += $(REID_INCS)
 GLOBAL_INCLUDES += $(RESIZE_INCS)
 
 AOS_PRE_BUILD_TARGETS += face_det_model reid_model resizing_model
-
 $(info #### GLOBAL_INCLUDES $(GLOBAL_INCLUDES))
 
 GLOBAL_DEFINES += AOS_NO_WIFI
+
+#
+# Prepare real flash image
+#
+##################
+
+EXTRA_TARGET_MAKEFILES += $($(APP_NAME)_LOCATION)/gen_image_bin.mk

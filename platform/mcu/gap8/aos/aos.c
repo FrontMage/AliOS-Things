@@ -20,7 +20,7 @@
 #include "pmsis.h"
 #include "pmsis/rtos/event_kernel/event_kernel.h"
 
-#define AOS_START_STACK 512
+#define AOS_START_STACK 768
 
 extern int application_start(int argc, char **argv);
 extern int vfs_init(void);
@@ -52,10 +52,12 @@ static void sys_init(void)
 
     printf("Welcome on AliOS-Things with GAP8\n");
 
-    vfs_init();
-    aos_cli_init();
-    vfs_device_init();
-    aos_loop_init();
+    //vfs_init();
+#ifndef CLI_DISABLED
+    //aos_cli_init();
+#endif
+    //vfs_device_init();
+    //aos_loop_init();
     ulog_init();
 #if (!defined(NO_FLASH_PREINIT) && !defined(KV_DISABLED))
     // might be disabled for some continuous integration tests

@@ -56,7 +56,7 @@ __FC_STACK_SIZE      = 0x100;
 
 __IRQ_STACK_SIZE     = 0x400;
 
-__heapl2osram_size = 0x10000;
+__heapl2osram_size = 0x01000;
 
 /* We have to align each sector to word boundaries as our current s19->slm
  * conversion scripts are not able to handle non-word aligned sections. */
