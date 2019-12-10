@@ -20,7 +20,7 @@
 void board_init_debug_console(void)
 {
 #if ((defined(PRINTF_USE_UART) || defined(GAPOC_USE_UART))\
-        && !defined(GAPOC_NO_UART))
+        && !defined(GAPOC_NO_UART)) && defined(GAPOC_V2)
     // Init B2 gpio pad
     // enable pull (down/up)
     hal_gpio_pin_enable_pull(1, 1);
