@@ -36,7 +36,6 @@ void __systick_handler(void);
 ktask_t *g_aos_app;
 static void sys_init(void)
 {
-
     system_init();
     // We are now ready to handle systicks
     system_setup_systick(RHINO_CONFIG_TICKS_PER_SECOND);

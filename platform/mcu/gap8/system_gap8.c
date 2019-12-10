@@ -148,7 +148,7 @@ uint32_t system_core_clock_get(void)
     {
         /* Write return value to APB device or do semihost exit */
         soc_ctrl_corestatus_set(code);
-#if USE_SEMIHOSTING
+#if defined(USE_SEMIHOSTING)
         if(code == 0)
         {
             gap8_semihost_exit(SEMIHOST_EXIT_SUCCESS);

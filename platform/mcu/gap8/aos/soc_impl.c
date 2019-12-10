@@ -14,7 +14,7 @@
 #define PRINTF_BUFF_SIZE 16
 
 extern uart_dev_t uart_0;
-static char g_printf_buff[PRINTF_BUFF_SIZE+1];
+volatile static char g_printf_buff[PRINTF_BUFF_SIZE+1];
 static kmutex_t g_printf_mutex;
 static uint32_t g_printf_buff_cur_size = 0;
 static int printf_is_init = 0;
@@ -47,6 +47,7 @@ int flush_null(FILE *stream)
 
 /* Standard file descriptors - implement these globals yourself. */
 #if defined(PRINTF_USE_UART)
+#warning "use uart"
 struct File_methods uart_methods = {
     .write = write_uart,
     .read = read_uart,
@@ -66,6 +67,7 @@ FILE const i_stderr = {
 };
 #else
 #if (defined(USE_SEMIHOSTING) || defined (PRINTF_GVSOC))
+#warning "use semihosting"
 struct File_methods semihost_methods = {
     .write = write_semihost,
     .read = read_semihost,
@@ -142,28 +144,19 @@ size_t write_semihost(FILE* instance, const char *bp, size_t n)
 #if defined(PRINTF_GVSOC)
     FC_STDOUT->PUTC[0] = c;
 #else
-    if(instance->fd != 2)
+    for(int i=0; i<n; i++)
     {
-        
-        for(int i=0; i<n; i++)
+        char c = bp[i];
+        g_printf_buff[g_printf_buff_cur_size] = c;
+        g_printf_buff_cur_size++;
+        if((c=='\n') || (c=='\r') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))
         {
-            char c = bp[i];
-            g_printf_buff[g_printf_buff_cur_size] = c;
-            g_printf_buff_cur_size++;
-            if((c=='\n') || (c=='\r') || (g_printf_buff_cur_size==PRINTF_BUFF_SIZE))
-            {
-                g_printf_buff[g_printf_buff_cur_size] = '\0';
-                gap8_semihost_write0(g_printf_buff);
-                g_printf_buff_cur_size = 0;
-            }
+            g_printf_buff[g_printf_buff_cur_size] = '\0';
+            hal_compiler_barrier();
+            gap8_semihost_write0(g_printf_buff);
+            hal_compiler_barrier();
+            g_printf_buff_cur_size = 0;
         }
-    }
-    else
-    { // TODO: use actual stderr from computer!
-        char *write_string = aos_malloc(n+1);
-        memcpy(write_string, bp, n);
-        write_string[n] = '\0';
-        gap8_semihost_write0(write_string);
     }
 #endif
     // either we're here or stuck on a breakpoint....
