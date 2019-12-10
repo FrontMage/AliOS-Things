@@ -29,6 +29,9 @@
     "gapoc_a_qpif": [
         "gap8.json"
     ],
+    "gapoc_a": [
+        "gap8.json"
+    ],
     "m400": [
         "stm32_stlink.json"
     ],
