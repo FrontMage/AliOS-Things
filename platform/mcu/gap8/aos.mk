@@ -18,6 +18,7 @@ GLOBAL_INCLUDES += aos/                               \
 		   drivers/                                   \
 		   gcc/                                       \
 		   hal/                                       \
+		   .                                          \
 		   include/
 
 
