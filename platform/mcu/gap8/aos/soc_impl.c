@@ -112,11 +112,21 @@ FILE* const stdin  = (FILE* const)&i_stdin;
 FILE* const stdout = (FILE* const)&i_stdout;
 FILE* const stderr = (FILE* const)&i_stderr;
 
+static kmutex_t g_buffer_mutex;
+static int buffer_is_init = 0;
+
 size_t write_uart(FILE* instance, const char *bp, size_t n)
 {
     int ret = 0;
     if(instance->fd != 2)
     {
+        if(!buffer_is_init)
+        {
+            krhino_mutex_create(&g_buffer_mutex, "g_buffer_mutex");
+            krhino_mutex_unlock(&g_buffer_mutex);
+            buffer_is_init= 1;
+        }
+        krhino_mutex_lock(&g_printf_mutex, RHINO_WAIT_FOREVER);
         for(int i=0; i<n; i++)
         {
             char c = bp[i];
@@ -130,6 +140,7 @@ size_t write_uart(FILE* instance, const char *bp, size_t n)
                 g_printf_buff_cur_size = 0;
             }
         }
+        krhino_mutex_unlock(&g_buffer_mutex);
     }
     else
     {
@@ -144,6 +155,10 @@ size_t write_semihost(FILE* instance, const char *bp, size_t n)
 #if defined(PRINTF_GVSOC)
     FC_STDOUT->PUTC[0] = c;
 #else
+    if(!pi_is_fc())
+    {
+        return 0;
+    }
     for(int i=0; i<n; i++)
     {
         char c = bp[i];
