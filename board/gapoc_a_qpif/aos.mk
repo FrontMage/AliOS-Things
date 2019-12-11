@@ -20,12 +20,9 @@ GLOBAL_LDFLAGS +=
 GLOBAL_INCLUDES += .
 GLOBAL_INCLUDES += ./include
 
-GLOBAL_INCLUDES += ../../platform/mcu/gap8/
-GLOBAL_INCLUDES += ../../platform/mcu/gap8/drivers/
-
-$(NAME)_SOURCES     := ./board.c
-$(NAME)_SOURCES     += ./k_config.c
-$(NAME)_SOURCES     += ./hal/board_flash.c
+$(NAME)_SOURCES := ./board.c
+$(NAME)_SOURCES += ./k_config.c
+$(NAME)_SOURCES += ./hal/board_flash.c
 
 GLOBAL_DEFINES += KV_CONFIG_TOTAL_SIZE=32768 #32kb
 
