@@ -61,6 +61,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <stdio.h>
+#include "pmsis.h"
 #include <k_api.h>
 static kmutex_t g_printf_mutex;
 static int printf_is_init = 0;
@@ -358,6 +359,10 @@ int fprintf(FILE *f, const char *fmt, ...)
 
 int printf(const char *fmt, ...)
 {
+    if(!pi_is_fc())
+    {
+        return 0;
+    }
     if(!printf_is_init)
     {
         krhino_mutex_create(&g_printf_mutex, "g_printf_mutex");
