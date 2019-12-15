@@ -56,6 +56,7 @@ FLASH_BINS := --comp=$(MODELS_DIR)/conv1.bias.bin\
    --comp=$(MODELS_DIR)/features.9.squeeze.weights.bin
 
 build_full_flash_image: build_elf_flash_image
+	install $(MODELS_DIR)/final.bin $(BIN_DIR)/$(CLEANED_BUILD_STRING)$(RADIXPOINT)$(BINSTYPE_LOWER)$(LINK_OUTPUT_SUFFIX)
 	$(IMG_BUILDER) --verbose --flash-boot-binary=$(BIN_DIR)/$(CLEANED_BUILD_STRING)$(RADIXPOINT)$(BINSTYPE_LOWER)$(LINK_OUTPUT_SUFFIX) --raw=$(BIN_DIR)/$(CLEANED_BUILD_STRING)$(RADIXPOINT)$(BINSTYPE_LOWER).raw $(FLASH_BINS)
 
 EXTRA_POST_BUILD_TARGETS += build_full_flash_image
