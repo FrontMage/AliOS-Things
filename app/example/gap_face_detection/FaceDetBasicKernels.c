@@ -1,10 +1,17 @@
 /*
- * Copyright (C) 2017 GreenWaves Technologies
- * All rights reserved.
+ * Copyright 2019 GreenWaves Technologies, SAS
  *
- * This software may be modified and distributed under the terms
- * of the BSD license.  See the LICENSE file for details.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #include <stdio.h>
@@ -266,7 +273,7 @@ static void spawn_eval_weak_classifier(eval_weak_classifier_Arg_T* Arg)
 }
 
 //COPY a cascade stage to L1
-void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* cascade_l1, cl_dma_copy_t* Dma_Evt){
+void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* cascade_l1, pi_cl_dma_copy_t* Dma_Evt){
 
     unsigned int addr = (unsigned int) cascade_l1;
     //cascade_l1 = cascade_l1(single_cascade_t*) addr;
@@ -278,39 +285,39 @@ void async_cascade_stage_to_l1(single_cascade_t* cascade_l2, single_cascade_t* c
 
     cascade_l1->thresholds     = (short*)addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);
     addr+=sizeof(short)*cascade_l1->stage_size;
-    __cl_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    cl_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    pi_cl_dma_wait(Dma_Evt);
 
     cascade_l1->alpha1       = (short*) addr;//(short*)rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);
     addr+=sizeof(short)*cascade_l1->stage_size;
-    __cl_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    cl_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    pi_cl_dma_wait(Dma_Evt);
 
     cascade_l1->alpha2         = (short*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(short)*cascade_l2->stage_size);
     addr+=sizeof(short)*cascade_l1->stage_size;
-    __cl_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    cl_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    pi_cl_dma_wait(Dma_Evt);
 
     cascade_l1->rect_num       = (unsigned  short*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(unsigned short)*((cascade_l2->stage_size)+1));
     addr+= sizeof(unsigned short)*((cascade_l1->stage_size)+1);
-    __cl_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    cl_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), PI_CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    pi_cl_dma_wait(Dma_Evt);
 
     cascade_l1->weights    = (signed char*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(signed char)*(cascade_l2->rectangles_size/4));
     addr+=sizeof(signed char)*(cascade_l1->rectangles_size << 2);
-    __cl_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    cl_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), PI_CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    pi_cl_dma_wait(Dma_Evt);
 
     cascade_l1->rectangles = (char*) addr;//rt_alloc( RT_ALLOC_CL_DATA, sizeof(char)*cascade_l2->rectangles_size);
     addr+=sizeof(signed char)*(cascade_l2->rectangles_size<<2);
-    __cl_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
-    cl_dma_wait(Dma_Evt);
+    __cl_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, PI_CL_DMA_DIR_EXT2LOC, 0, Dma_Evt);
+    pi_cl_dma_wait(Dma_Evt);
 
 }
 
 static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, unsigned int* __restrict__ sqaredIntegralImage, cascade_t * __restrict__ cascade, int win_w, int win_h, int img_w,int off_x, int off_y){
 
-        cl_dma_copy_t Dma_Evt;
+        pi_cl_dma_copy_t Dma_Evt;
         int buffer=0;
         int n = (win_w * win_h);
         int i_s = integral_image_lookup (integralImage,      off_x,off_y,win_w,win_h,img_w);
@@ -350,7 +357,7 @@ static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, 
                     Arg.cascade_stage=(cascade->stages[i]);
 
                 if(i>=CASCADE_STAGES_L1){
-                    //cl_dma_wait(&Dma_Evt);
+                    //pi_cl_dma_wait(&Dma_Evt);
                     //PRINTF("Here 1 %d\n",i);
                     Arg.cascade_stage = (cascade->buffers_l1[buffer%2]);
                     //If it is not last
@@ -358,7 +365,7 @@ static int windows_cascade_classifier(unsigned int* __restrict__ integralImage, 
                         async_cascade_stage_to_l1((cascade->stages[i+1]), (cascade->buffers_l1[(++buffer)%2]), &Dma_Evt);
                     //PRINTF("Here 2 %d\n",i);
                 }
-                cl_team_fork(gap_ncore(), (void *) spawn_eval_weak_classifier, (void *) &Arg);
+                pi_cl_team_fork(gap_ncore(), (void *) spawn_eval_weak_classifier, (void *) &Arg);
                 //Here we suppose always using 8 cores!
                 stage_sum[0]+= stage_sum[1] + stage_sum[2] + stage_sum[3] + stage_sum[4] + stage_sum[5] + stage_sum[6] + stage_sum[7];
                 //Move this operation offline

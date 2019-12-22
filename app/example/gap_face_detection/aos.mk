@@ -9,7 +9,7 @@ NAME := gap_face_detection
 
 APP_PATH = $(PWD)/app/example/gap_face_detection
 GAP8_PATH = $(PWD)/platform/mcu/gap8
-TILER_PATH = $(GAP8_PATH)/autotiler
+TILER_PATH = $(GAP8_PATH)/autotiler_v3
 TILER_LIB = $(TILER_PATH)/lib/libtile.a
 TILER_INC = $(TILER_PATH)/include
 
@@ -20,7 +20,8 @@ MODEL_SRC = $(APP_PATH)/FaceDetGenerator.c $(APP_PATH)/FaceDetModel.c
 MODEL_GEN = FaceDetKernels
 MODEL_GEN_C = $(addsuffix .c, $(MODEL_GEN))
 MODEL_GEN_CLEAN = $(MODEL_GEN_C) $(addsuffix .h, $(MODEL_GEN))
-APP_CFLAGS += -g -D__PMSIS__ -Os
+NB_FRAMES ?= -1
+APP_CFLAGS += -O3 -g -D__PMSIS__ -DUSE_CAMERA -DUSE_DISPLAY -DNB_FRAMES=$(NB_FRAMES)
 APP_CFLAGS += -Wno-unused-but-set-variable -Wno-unused-variable
 
 PMSIS_BSP_ROOT = $(GAP8_PATH)/pmsis_bsp/

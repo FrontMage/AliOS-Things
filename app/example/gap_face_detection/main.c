@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 GreenWaves Technologies, SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <stdio.h>
 #include <aos/kernel.h>
 
@@ -6,25 +22,32 @@
 #include "pmsis.h"
 
 /* PMSIS BSP includes */
+#if defined(GAPOC)
 #include "bsp/gapoc_a.h"
-#include "bsp/display/ili9341.h"
-#include "bsp/camera/mt9v034.h"
+#else
+#include "bsp/gapuino.h"
+#endif  /* GAPOC */
+#if defined(HIMAX)
 #include "bsp/camera/himax.h"
-#include "stdio.h"
-
-#include "ImageDraw.h"
-#include "setup.h"
-#include "FaceDetKernels.h"
+#else
+#include "bsp/camera/mt9v034.h"
+#endif  /* HIMAX */
+#if defined(USE_DISPLAY)
+#include "bsp/display/ili9341.h"
+#endif  /* USE_DISPLAY */
 
 #include "faceDet.h"
+#include "FaceDetKernels.h"
+#include "ImageDraw.h"
+#include "setup.h"
 
-#ifdef HIMAX
+#if defined(HIMAX)
 #define CAM_WIDTH    324
 #define CAM_HEIGHT   244
 #else
 #define CAM_WIDTH    320
 #define CAM_HEIGHT   240
-#endif
+#endif  /* HIMAX */
 
 #define LCD_WIDTH    320
 #define LCD_HEIGHT   240
@@ -35,6 +58,7 @@
 static unsigned char *imgBuff0;
 static struct pi_device ili;
 static pi_buffer_t buffer;
+static pi_buffer_t buffer_out;
 static struct pi_device cam;
 
 L2_MEM unsigned char *ImageOut;
@@ -44,7 +68,7 @@ L2_MEM char str_to_lcd[100];
 
 struct pi_device cluster_dev;
 struct pi_cluster_task *task;
-struct cluster_driver_conf conf;
+struct pi_cluster_conf conf;
 ArgCluster_T ClusterCall;
 
 #if defined(USE_DISPLAY)
@@ -53,65 +77,67 @@ void writeFillRect(struct pi_device *device, unsigned short x, unsigned short y,
 void writeText(struct pi_device *device,char* str,int fontsize);
 #endif  /* USE_DISPLAY */
 
-
 static int open_display(struct pi_device *device)
 {
-#ifdef USE_DISPLAY
-  struct ili9341_conf ili_conf;
+#if defined(USE_DISPLAY)
+    struct pi_ili9341_conf ili_conf;
 
-  ili9341_conf_init(&ili_conf);
+    pi_ili9341_conf_init(&ili_conf);
 
-  pi_open_from_conf(device, &ili_conf);
+    pi_open_from_conf(device, &ili_conf);
 
-  if (display_open(device))
-    return -1;
-
-  display_ioctl(device, ILI_IOCTL_ORIENTATION, ILI_ORIENTATION_270);
+    if (pi_display_open(device))
+    {
+        return -1;
+    }
 #endif
-  return 0;
+    return 0;
 }
 
+#if defined(USE_CAMERA)
+#if defined(HIMAX)
 static int open_camera_himax(struct pi_device *device)
 {
-  struct himax_conf cam_conf;
+  struct pi_himax_conf cam_conf;
 
-  himax_conf_init(&cam_conf);
+  pi_himax_conf_init(&cam_conf);
 
-  cam_conf.format = CAMERA_QVGA;
+  cam_conf.format = PI_CAMERA_QVGA;
 
   pi_open_from_conf(device, &cam_conf);
-  if (camera_open(device))
+  if (pi_camera_open(device))
     return -1;
 
   return 0;
 }
-
+#else
 static int open_camera_mt9v034(struct pi_device *device)
 {
-  struct mt9v034_conf cam_conf;
+  struct pi_mt9v034_conf cam_conf;
 
-  mt9v034_conf_init(&cam_conf);
-  cam_conf.format = CAMERA_QVGA;
+  pi_mt9v034_conf_init(&cam_conf);
+  cam_conf.format = PI_CAMERA_QVGA;
 
   pi_open_from_conf(device, &cam_conf);
-  if (camera_open(device))
+  if (pi_camera_open(device))
     return -1;
 
   return 0;
 }
+#endif  /* HIMAX */
+#endif  /* USE_CAMERA */
 
 static int open_camera(struct pi_device *device)
 {
-#ifdef USE_CAMERA
-#ifdef HIMAX
-  return open_camera_himax(device);
-#else
-  return open_camera_mt9v034(device);
-#endif
-  return -1;
-#else
-  return 0;
-#endif
+    #if defined(USE_CAMERA)
+    #if defined(HIMAX)
+    return open_camera_himax(device);
+    #else
+    return open_camera_mt9v034(device);
+    #endif  /* HIMAX */
+    #else
+    return 0;
+    #endif  /* USE_CAMERA */
 }
 
 //int main()
@@ -172,65 +198,72 @@ int application_start(int argc, char *argv[])
   pi_buffer_init(&buffer, PI_BUFFER_TYPE_L2, imgBuff0);
 #endif
 
-  pi_buffer_set_format(&buffer, CAM_WIDTH, CAM_HEIGHT, 1, PI_BUFFER_FORMAT_GRAY);
+    #if defined(USE_DISPLAY)
+    buffer_out.data = ImageOut;
+    buffer_out.stride = 0;
+    pi_buffer_init(&buffer_out, PI_BUFFER_TYPE_L2, ImageOut);
+    pi_buffer_set_stride(&buffer_out, 0);
+    #endif /* USE_DISPLAY */
 
-  ClusterCall.ImageIn              = imgBuff0;
-  ClusterCall.Win                  = W;
-  ClusterCall.Hin                  = H;
-  ClusterCall.Wout                 = Wout;
-  ClusterCall.Hout                 = Hout;
-  ClusterCall.ImageOut             = ImageOut;
-  ClusterCall.ImageIntegral        = ImageIntegral;
-  ClusterCall.SquaredImageIntegral = SquaredImageIntegral;
+    pi_buffer_set_format(&buffer, CAM_WIDTH, CAM_HEIGHT, 1, PI_BUFFER_FORMAT_GRAY);
 
-  //Why il faut faire le deux
-  pi_cluster_conf_init(&conf);
-  pi_open_from_conf(&cluster_dev, (void*)&conf);
-  pi_cluster_open(&cluster_dev);
+    ClusterCall.ImageIn              = imgBuff0;
+    ClusterCall.Win                  = W;
+    ClusterCall.Hin                  = H;
+    ClusterCall.Wout                 = Wout;
+    ClusterCall.Hout                 = Hout;
+    ClusterCall.ImageOut             = ImageOut;
+    ClusterCall.ImageIntegral        = ImageIntegral;
+    ClusterCall.SquaredImageIntegral = SquaredImageIntegral;
 
-  task = pmsis_l2_malloc(sizeof(struct pi_cluster_task));
-  memset(task, 0, sizeof(struct pi_cluster_task));
-  task->entry = faceDet_cluster_init;
-  task->arg = &ClusterCall;
+    pi_cluster_conf_init(&conf);
+    pi_open_from_conf(&cluster_dev, (void*)&conf);
+    pi_cluster_open(&cluster_dev);
 
-  pi_cluster_send_task_to_cl(&cluster_dev, task);
+    task = pmsis_l2_malloc(sizeof(struct pi_cluster_task));
+    memset(task, 0, sizeof(struct pi_cluster_task));
+    task->entry = faceDet_cluster_init;
+    task->arg = &ClusterCall;
 
-  task->entry = faceDet_cluster_main;
-  task->arg = &ClusterCall;
+    pi_cluster_send_task_to_cl(&cluster_dev, task);
 
+    task->entry = faceDet_cluster_main;
+    task->arg = &ClusterCall;
 
-#ifdef USE_DISPLAY
-  //Setting Screen background to white
-  writeFillRect(&ili, 0, 0, 320, 240, 0xFFFF);
-  setCursor(&ili, 0, 180);
-  writeText(&ili,"        Alios-Things",2);
-  setCursor(&ili, 0, 200);
-  writeText(&ili,"        Greenwaves \n       Technologies",2);
-#endif
-  DEBUG_PRINTF("main loop start\n");
+    #if defined(USE_DISPLAY)
+    //Setting Screen background to white
+    writeFillRect(&ili, 0, 0, 240, 320, 0xFFFF);
+    setCursor(&ili, 0, 0);
+    writeText(&ili,"      Greenwaves \n       Technologies", 2);
+    #endif  /* USE_DISPLAY */
+    DEBUG_PRINTF("main loop start\n");
 
-  while(1)
-  {
-#ifdef USE_CAMERA
-    camera_control(&cam, CAMERA_CMD_START, 0);
-    camera_capture(&cam, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
-    camera_control(&cam, CAMERA_CMD_STOP, 0);
-#endif
+    int nb_frames = 0;
+    while (1 && (NB_FRAMES == -1 || nb_frames < NB_FRAMES))
+    {
+        #if defined(USE_CAMERA)
+        pi_camera_control(&cam, PI_CAMERA_CMD_START, 0);
+        pi_camera_capture(&cam, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
+        pi_camera_control(&cam, PI_CAMERA_CMD_STOP, 0);
+        #endif  /* USE_CAMERA */
 
     pi_cluster_send_task_to_cl(&cluster_dev, task);
     //DEBUG_PRINTF("end of face detection\n");
 
-#ifdef USE_DISPLAY
-  sprintf(str_to_lcd,"1 Image/Sec: \n%d uWatt @ 1.2V   \n%d uWatt @ 1.0V   %c", (int)((float)(1/(50000000.f/ClusterCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterCall.cycles)) * 16800.f),'\0');
-  //sprintf(out_perf_string,"%d  \n%d  %c", (int)((float)(1/(50000000.f/cycles)) * 28000.f),(int)((float)(1/(50000000.f/cycles)) * 16800.f),'\0');
+        #if defined(USE_DISPLAY)
+        pi_display_write(&ili, &buffer_out, 40, 40, 160, 120);
+        if (ClusterCall.num_reponse)
+        {
+            sprintf(str_to_lcd, "Face detected: %d\n", ClusterCall.num_reponse);
+            setCursor(&ili, 0, 170);
+            writeText(&ili, str_to_lcd, 2);
+            //sprintf(str_to_lcd,"1 Image/Sec: \n%d uWatt @ 1.2V   \n%d uWatt @ 1.0V   %c", (int)((float)(1/(50000000.f/ClusterCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterCall.cycles)) * 16800.f),'\0');
+            //sprintf(out_perf_string,"%d  \n%d  %c", (int)((float)(1/(50000000.f/cycles)) * 28000.f),(int)((float)(1/(50000000.f/cycles)) * 16800.f),'\0');
+        }
+        #endif  /* USE_DISPLAY */
 
-  //setCursor(&ili, 0, 190);
-  //writeText(&ili, str_to_lcd, 2);
-  // write image
-  buffer.data = ImageOut;
-  display_write(&ili, &buffer, 80, 40, 160, 120);
-#endif
-  }
-
-  return 0;
+        nb_frames++;
+    }
+    DEBUG_PRINTF("Test face detection done.\n");
+    return 0;
 }

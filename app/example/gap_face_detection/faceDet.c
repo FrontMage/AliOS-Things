@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 GreenWaves Technologies, SAS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "faceDet.h"
 #include "face_cascade.h"
 #include "ImageDraw.h"
@@ -159,7 +175,7 @@ static int biggest_cascade_stage(cascade_t *cascade){
 //Permanently Store a scascade stage to L1
 static single_cascade_t* sync_copy_cascade_stage_to_l1(single_cascade_t* cascade_l2){
 
-	cl_dma_copy_t DmaR_Evt1;
+	pi_cl_dma_copy_t DmaR_Evt1;
 
 	single_cascade_t* cascade_l1;
 	cascade_l1 = (single_cascade_t* )__l1_malloc_private( sizeof(single_cascade_t));
@@ -169,31 +185,31 @@ static single_cascade_t* sync_copy_cascade_stage_to_l1(single_cascade_t* cascade
 
 
 	cascade_l1->thresholds     = (short*)__l1_malloc_private(sizeof(short)*cascade_l2->stage_size);
-	__cl_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-	cl_dma_wait(&DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->thresholds, (unsigned int) cascade_l1->thresholds, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	pi_cl_dma_wait(&DmaR_Evt1);
 
 
 	cascade_l1->alpha1         = (short*)__l1_malloc_private( sizeof(short)*cascade_l2->stage_size);
-	__cl_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-	cl_dma_wait(&DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->alpha1, (unsigned int) cascade_l1->alpha1, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	pi_cl_dma_wait(&DmaR_Evt1);
 
 	cascade_l1->alpha2         = (short*)__l1_malloc_private( sizeof(short)*cascade_l2->stage_size);
-	__cl_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-	cl_dma_wait(&DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->alpha2, (unsigned int) cascade_l1->alpha2, sizeof(short)*cascade_l1->stage_size, PI_CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	pi_cl_dma_wait(&DmaR_Evt1);
 
 	cascade_l1->rect_num       = (unsigned  short*)__l1_malloc_private( sizeof(unsigned short)*((cascade_l2->stage_size)+1));
-	__cl_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-	cl_dma_wait(&DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->rect_num, (unsigned int) cascade_l1->rect_num, sizeof(unsigned short)*(cascade_l1->stage_size+1), PI_CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	pi_cl_dma_wait(&DmaR_Evt1);
 
 
 	cascade_l1->weights    = (signed char*)__l1_malloc_private( sizeof(signed char)*(cascade_l2->rectangles_size/4));
-	__cl_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-	cl_dma_wait(&DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->weights, (unsigned int) cascade_l1->weights, sizeof(signed char)*(cascade_l2->rectangles_size/4), PI_CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	pi_cl_dma_wait(&DmaR_Evt1);
 
 
 	cascade_l1->rectangles = (char*)__l1_malloc_private( sizeof(char)*cascade_l2->rectangles_size);
-	__cl_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
-	cl_dma_wait(&DmaR_Evt1);
+	__cl_dma_memcpy((unsigned int) cascade_l2->rectangles, (unsigned int) cascade_l1->rectangles, sizeof(char)*cascade_l2->rectangles_size, PI_CL_DMA_DIR_EXT2LOC, 0, &DmaR_Evt1);
+	pi_cl_dma_wait(&DmaR_Evt1);
 
 	if(cascade_l1->rectangles==0)
 		DEBUG_PRINTF("Allocation Error...\n");
@@ -425,17 +441,18 @@ void faceDet_cluster_main(ArgCluster_T *ArgC)
 
 
 	ArgC->num_reponse=reponse_idx;
-	for(int i=0;i<reponse_idx;i++)
-		if(reponses[i].x!=-1){
-			printf("Found a face: ");
-			printf("X: %d Y: %d W: %d H: %d\n",reponses[i].x,reponses[i].y,reponses[i].w,reponses[i].h);
-			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x, reponses[i].y, reponses[i].w, reponses[i].h, 0);
-			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-1, reponses[i].y-1, reponses[i].w+2, reponses[i].h+2, 0);
-			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-2, reponses[i].y-2, reponses[i].w+4, reponses[i].h+4, 0);
-			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-3, reponses[i].y-3, reponses[i].w+6, reponses[i].h+6, 0);
-			DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-4, reponses[i].y-4, reponses[i].w+8, reponses[i].h+8, 0);
-			//real_detections++;
-		}
+	for (int i=0; i<reponse_idx; i++)
+            if (reponses[i].x!=-1)
+            {
+                //printf("Found a face: ");
+                //printf("X: %d Y: %d W: %d H: %d\n",reponses[i].x,reponses[i].y,reponses[i].w,reponses[i].h);
+                DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x, reponses[i].y, reponses[i].w, reponses[i].h, 0);
+                DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-1, reponses[i].y-1, reponses[i].w+2, reponses[i].h+2, 0);
+                DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-2, reponses[i].y-2, reponses[i].w+4, reponses[i].h+4, 0);
+                DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-3, reponses[i].y-3, reponses[i].w+6, reponses[i].h+6, 0);
+                DrawRectangle(ArgC->ImageIn, Hin, Win,  reponses[i].x-4, reponses[i].y-4, reponses[i].w+8, reponses[i].h+8, 0);
+                //real_detections++;
+            }
 
 	final_resize(ArgC->ImageIn,ArgC->ImageOut);
 }
