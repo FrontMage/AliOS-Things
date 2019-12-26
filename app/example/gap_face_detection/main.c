@@ -77,9 +77,19 @@ void writeFillRect(struct pi_device *device, unsigned short x, unsigned short y,
 void writeText(struct pi_device *device,char* str,int fontsize);
 #endif  /* USE_DISPLAY */
 
+static void add_gwt_logo(struct pi_device* display)
+{
+    setCursor(display, 30, 0);
+    writeText(display, "GreenWaves\0", 3);
+    setCursor(display, 10, 3*8);
+    writeText(display, "Technologies\0", 3);
+}
+
 static int open_display(struct pi_device *device)
 {
 #if defined(USE_DISPLAY)
+
+    int display_orientation = PI_ILI_ORIENTATION_270;
     struct pi_ili9341_conf ili_conf;
 
     pi_ili9341_conf_init(&ili_conf);
@@ -90,6 +100,7 @@ static int open_display(struct pi_device *device)
     {
         return -1;
     }
+    pi_display_ioctl(device, PI_ILI_IOCTL_ORIENTATION, display_orientation);
 #endif
     return 0;
 }
@@ -98,112 +109,112 @@ static int open_display(struct pi_device *device)
 #if defined(HIMAX)
 static int open_camera_himax(struct pi_device *device)
 {
-  struct pi_himax_conf cam_conf;
+    struct pi_himax_conf cam_conf;
 
-  pi_himax_conf_init(&cam_conf);
+    pi_himax_conf_init(&cam_conf);
 
-  cam_conf.format = PI_CAMERA_QVGA;
+    cam_conf.format = PI_CAMERA_QVGA;
 
-  pi_open_from_conf(device, &cam_conf);
-  if (pi_camera_open(device))
-    return -1;
+    pi_open_from_conf(device, &cam_conf);
+    if (pi_camera_open(device))
+        return -1;
 
-  return 0;
+    return 0;
 }
 #else
 static int open_camera_mt9v034(struct pi_device *device)
 {
-  struct pi_mt9v034_conf cam_conf;
+    struct pi_mt9v034_conf cam_conf;
 
-  pi_mt9v034_conf_init(&cam_conf);
-  cam_conf.format = PI_CAMERA_QVGA;
+    pi_mt9v034_conf_init(&cam_conf);
+    cam_conf.format = PI_CAMERA_QVGA;
 
-  pi_open_from_conf(device, &cam_conf);
-  if (pi_camera_open(device))
-    return -1;
+    pi_open_from_conf(device, &cam_conf);
+    if (pi_camera_open(device))
+        return -1;
 
-  return 0;
+    return 0;
 }
 #endif  /* HIMAX */
 #endif  /* USE_CAMERA */
 
 static int open_camera(struct pi_device *device)
 {
-    #if defined(USE_CAMERA)
-    #if defined(HIMAX)
+#if defined(USE_CAMERA)
+#if defined(HIMAX)
     return open_camera_himax(device);
-    #else
+#else
     return open_camera_mt9v034(device);
-    #endif  /* HIMAX */
-    #else
+#endif  /* HIMAX */
+#else
     return 0;
-    #endif  /* USE_CAMERA */
+#endif  /* USE_CAMERA */
 }
 
 //int main()
 int application_start(int argc, char *argv[])
 {
-  DEBUG_PRINTF("Entering main controller...\n");
+    DEBUG_PRINTF("Entering main controller...\n");
 
-  unsigned int W = CAM_WIDTH, H = CAM_HEIGHT;
-  unsigned int Wout = 64, Hout = 48;
-  unsigned int ImgSize = W*H;
+    unsigned int W = CAM_WIDTH, H = CAM_HEIGHT;
+    unsigned int Wout = 64, Hout = 48;
+    unsigned int ImgSize = W*H;
 
-  imgBuff0 = (unsigned char *)pmsis_l2_malloc((CAM_WIDTH*CAM_HEIGHT)*sizeof(unsigned char));
-  if (imgBuff0 == NULL) {
-      DEBUG_PRINTF("Failed to allocate Memory for Image \n");
-      return 1;
-  }
+    imgBuff0 = (unsigned char *)pmsis_l2_malloc((CAM_WIDTH*CAM_HEIGHT)*sizeof(unsigned char));
+    if (imgBuff0 == NULL) {
+        DEBUG_PRINTF("Failed to allocate Memory for Image \n");
+        return 1;
+    }
 
-  //This can be moved in init
-  ImageOut             = (unsigned char *) pmsis_l2_malloc((Wout*Hout)*sizeof(unsigned char));
-  ImageIntegral        = (unsigned int *)  pmsis_l2_malloc((Wout*Hout)*sizeof(unsigned int));
-  SquaredImageIntegral = (unsigned int *)  pmsis_l2_malloc((Wout*Hout)*sizeof(unsigned int));
+    //This can be moved in init
+    ImageOut             = (unsigned char *) pmsis_l2_malloc((Wout*Hout)*sizeof(unsigned char));
+    ImageIntegral        = (unsigned int *)  pmsis_l2_malloc((Wout*Hout)*sizeof(unsigned int));
+    SquaredImageIntegral = (unsigned int *)  pmsis_l2_malloc((Wout*Hout)*sizeof(unsigned int));
 
-  if (ImageOut==0) {
-    DEBUG_PRINTF("Failed to allocate Memory for Image (%d bytes)\n", ImgSize*sizeof(unsigned char));
-    return 1;
-  }
-  if (ImageIntegral==0 || SquaredImageIntegral==0) {
-    DEBUG_PRINTF("Failed to allocate Memory for one or both Integral Images (%d bytes)\n", ImgSize*sizeof(unsigned int));
-    return 1;
-  }
-  DEBUG_PRINTF("malloc done\n");
+    if (ImageOut==0) {
+        DEBUG_PRINTF("Failed to allocate Memory for Image (%d bytes)\n", ImgSize*sizeof(unsigned char));
+        return 1;
+    }
+    if (ImageIntegral==0 || SquaredImageIntegral==0) {
+        DEBUG_PRINTF("Failed to allocate Memory for one or both Integral Images (%d bytes)\n", ImgSize*sizeof(unsigned int));
+        return 1;
+    }
+    DEBUG_PRINTF("malloc done\n");
 
-  board_init();
+    board_init();
 
-  if (open_display(&ili))
-  {
-    DEBUG_PRINTF("Failed to open display\n");
-    return -1;
-  }
-  DEBUG_PRINTF("display done\n");
+    if (open_display(&ili))
+    {
+        DEBUG_PRINTF("Failed to open display\n");
+        return -1;
+    }
+    DEBUG_PRINTF("display done\n");
 
-  if (open_camera(&cam))
-  {
-    DEBUG_PRINTF("Failed to open camera\n");
-    return -1;
-  }
-  DEBUG_PRINTF("Camera open success\n");
+    if (open_camera(&cam))
+    {
+        DEBUG_PRINTF("Failed to open camera\n");
+        return -1;
+    }
+    DEBUG_PRINTF("Camera open success\n");
 
 #ifdef HIMAX
-  buffer.data = imgBuff0+CAM_WIDTH*2+2;
-  buffer.stride = 4;
+    buffer.data = imgBuff0+CAM_WIDTH*2+2;
+    buffer.stride = 4;
 
-  // WIth Himax, propertly configure the buffer to skip boarder pixels
-  pi_buffer_init(&buffer, PI_BUFFER_TYPE_L2, imgBuff0+CAM_WIDTH*2+2);
-  pi_buffer_set_stride(&buffer, 4);
+    // WIth Himax, propertly configure the buffer to skip boarder pixels
+    pi_buffer_init(&buffer, PI_BUFFER_TYPE_L2, imgBuff0+CAM_WIDTH*2+2);
+    pi_buffer_set_stride(&buffer, 4);
 #else
-  buffer.data = imgBuff0;
-  pi_buffer_init(&buffer, PI_BUFFER_TYPE_L2, imgBuff0);
+    buffer.data = imgBuff0;
+    pi_buffer_init(&buffer, PI_BUFFER_TYPE_L2, imgBuff0);
 #endif
 
-    #if defined(USE_DISPLAY)
+#if defined(USE_DISPLAY)
     buffer_out.data = ImageOut;
     buffer_out.stride = 0;
     pi_buffer_init(&buffer_out, PI_BUFFER_TYPE_L2, ImageOut);
     pi_buffer_set_stride(&buffer_out, 0);
-    #endif /* USE_DISPLAY */
+#endif /* USE_DISPLAY */
 
     pi_buffer_set_format(&buffer, CAM_WIDTH, CAM_HEIGHT, 1, PI_BUFFER_FORMAT_GRAY);
 
@@ -230,37 +241,38 @@ int application_start(int argc, char *argv[])
     task->entry = faceDet_cluster_main;
     task->arg = &ClusterCall;
 
-    #if defined(USE_DISPLAY)
+#if defined(USE_DISPLAY)
     //Setting Screen background to white
-    writeFillRect(&ili, 0, 0, 240, 320, 0xFFFF);
-    setCursor(&ili, 0, 0);
-    writeText(&ili,"      Greenwaves \n       Technologies", 2);
-    #endif  /* USE_DISPLAY */
+    writeFillRect(&ili, 0, 0, 320, 240, 0xFFFF);
+    add_gwt_logo(&ili);
+    setCursor(&ili, 0, 220);
+    writeFillRect(&ili, 0, 220, 240, 8*2, 0xFFFF);
+#endif  /* USE_DISPLAY */
     DEBUG_PRINTF("main loop start\n");
 
     int nb_frames = 0;
     while (1 && (NB_FRAMES == -1 || nb_frames < NB_FRAMES))
     {
-        #if defined(USE_CAMERA)
+#if defined(USE_CAMERA)
         pi_camera_control(&cam, PI_CAMERA_CMD_START, 0);
         pi_camera_capture(&cam, imgBuff0, CAM_WIDTH*CAM_HEIGHT);
         pi_camera_control(&cam, PI_CAMERA_CMD_STOP, 0);
-        #endif  /* USE_CAMERA */
+#endif  /* USE_CAMERA */
 
-    pi_cluster_send_task_to_cl(&cluster_dev, task);
-    //DEBUG_PRINTF("end of face detection\n");
+        pi_cluster_send_task_to_cl(&cluster_dev, task);
+        //DEBUG_PRINTF("end of face detection\n");
 
-        #if defined(USE_DISPLAY)
-        pi_display_write(&ili, &buffer_out, 40, 40, 160, 120);
+#if defined(USE_DISPLAY)
+        pi_display_write(&ili, &buffer_out, 60, 60, 160, 120);
         if (ClusterCall.num_reponse)
         {
             sprintf(str_to_lcd, "Face detected: %d\n", ClusterCall.num_reponse);
-            setCursor(&ili, 0, 170);
+            setCursor(&ili, 0, 220);
             writeText(&ili, str_to_lcd, 2);
             //sprintf(str_to_lcd,"1 Image/Sec: \n%d uWatt @ 1.2V   \n%d uWatt @ 1.0V   %c", (int)((float)(1/(50000000.f/ClusterCall.cycles)) * 28000.f),(int)((float)(1/(50000000.f/ClusterCall.cycles)) * 16800.f),'\0');
             //sprintf(out_perf_string,"%d  \n%d  %c", (int)((float)(1/(50000000.f/cycles)) * 28000.f),(int)((float)(1/(50000000.f/cycles)) * 16800.f),'\0');
         }
-        #endif  /* USE_DISPLAY */
+#endif  /* USE_DISPLAY */
 
         nb_frames++;
     }
