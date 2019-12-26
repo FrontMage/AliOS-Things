@@ -1,25 +1,20 @@
 ## Environment setup
 
-1. Download the pre-built pulp-riscv-gcc toolchain from [open-isa.org](www.open-isa.org). Extract and
-   add to the system variable PATH.
-2. Download the pre-built openocd from [open-isa.org](www.open-isa.org). Extract and add to the system
-   variable PATH.
-3. Refer the section _Install OpenOCD_ in [rv32m1_sdk_riscv user guide](https://github.com/open-isa-rv32m1/rv32m1_sdk_riscv)
-   to setup the OpenOCD in Windows.
+1. Download and install the pre built toolchain: 
+    a. "git clone https://github.com/GreenWaves-Technologies/gap_riscv_toolchain_ubuntu_18.git"
+    b. cd ~/gap_riscv_toolchain_ubuntu_18
+    c. ./install.sh
+2. Download and install our openocd fork:
+    a. git clone https://github.com/GreenWaves-Technologies/gap8_openocd.git (check that you are on branch gap8)
+    b. cd gap8_openocd
+    c. ./bootstrap
+    d. ./configure --prefix=/path/yo/your/prefix
+    e. make -j && make install
 
-## Download the binary to board
+## Upload the binary to board
 
-When the binary built successfully, follow the next steps to download and run.
-
-1. Connect Jlink to J55
-2. Connect J12 and PC.
-3. Open the terminal and set like this:
-    - 115200 baud rate
-    - 8 data bits
-    - No parity
-    - One stop bit
-    - No flow control
-4. In the binary output directory, for example _out/helloworld@rv32m1\_vega/binary_,
-   run the command
-   `openocd -f ../../../board/rv32m1_vega/rv32m1_ri5cy.cfg -c "program helloworld@rv32m1_vega.elf;reset;exit"`
-   then the board resets and run, the log is output to the terminal.
+To build and upload the binary to the board, use standard alios flow:
+1. Install aos cube (pip install aos-cube
+2. go to your alios directory
+3. aos make menuconfig to choose application and board
+4. aos make && aos upload to build and upload
