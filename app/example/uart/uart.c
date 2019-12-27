@@ -18,8 +18,6 @@
 
 #include "aos/hal/uart.h"
 
-#include "driver/uart.h"
-
 #define HAL_WAIT_FOREVER 0xFFFFFFFFU
 
 

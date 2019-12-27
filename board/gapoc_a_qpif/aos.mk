@@ -26,7 +26,7 @@ $(NAME)_SOURCES += ./hal/board_flash.c
 
 GLOBAL_DEFINES += KV_CONFIG_TOTAL_SIZE=32768 #32kb
 
-$(NAME)_COMPONENTS += yloop vfs kv ulog
+$(NAME)_COMPONENTS += yloop vfs kv cli ulog
 # include pmsis stuff
 # configure for soc and board
 GLOBAL_CFLAGS += -D__GAP8__ -DGAPUINO8 -fdata-sections -ffunction-sections -Os -g -DCONFIG_GAPUINO
